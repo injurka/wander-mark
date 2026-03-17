@@ -9,7 +9,10 @@
     --#{$colorType}-color: #{$colorValue};
 
     @if meta.type-of($colorValue) == color {
-      --#{$colorType}-color-rgb: #{color.red($colorValue)}, #{color.green($colorValue)}, #{color.blue($colorValue)};
+      --#{$colorType}-color-rgb: #{color.channel($colorValue, "red", $space: rgb)}, 
+                                 #{color.channel($colorValue, "green", $space: rgb)}, 
+                                 #{color.channel($colorValue, "blue", $space: rgb)};
     }
   }
+
 }

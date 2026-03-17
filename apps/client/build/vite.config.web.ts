@@ -27,7 +27,7 @@ export default defineConfig({
     Vue(),
     AutoImport(autoImportOptionsCfg),
     Compression({
-      algorithm: 'gzip',
+      algorithms: ['gzip'],
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
     VitePWA(pwaCfg),
@@ -50,6 +50,7 @@ export default defineConfig({
   build: {
     outDir: resolve(__dirname, '../dist'),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       input: {
         main: resolve(__dirname, '../src/index.html'),
