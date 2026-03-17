@@ -48,21 +48,29 @@ watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {
     if (md && newContent) {
-      renderedContent.value = md.render(newContent)
+      let html = md.render(newContent)
+      html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
+      renderedContent.value = html
       
       await nextTick()
       const wrapper = document.querySelector('.markdown-body')
       if (wrapper && props.vault) {
-        const images = wrapper.querySelectorAll('img')
+        const images = wrapper.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
         for (const img of images) {
-          const originalSrc = img.getAttribute('src')
+          const originalSrc = img.getAttribute('data-src')
+          
           if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
-            const vault = vaultService.getVault(props.vault)
-            const path = vault?.type === 'local' 
-              ? `${vault.localPath}/content/${props.vault}/${originalSrc}`
-              : `vaults/${props.vault}/content/${props.vault}/${originalSrc}`
+            const decodedSrc = decodeURIComponent(originalSrc)
+            
+            // Если путь начинается с /images/ (как бывает в Obsidian), убираем слэш,
+            // иначе считаем, что картинка лежит внутри папки content/Vault/...
+            const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
+              ? decodedSrc.replace(/^\//, '')
+              : `content/${props.vault}/${decodedSrc}`
 
-            img.src = await vaultService.getMediaUrl(path, vault?.type === 'local')
+            img.src = await vaultService.resolveMediaUrl(props.vault, mediaPath)
+          } else if (originalSrc) {
+             img.src = originalSrc
           }
         }
       }
@@ -81,13 +89,11 @@ onMounted(() => {
 })
 
 function openImageViewer() {
-  // eslint-disable-next-line no-console
   console.log('Open image viewer with:', currentImages.value)
 }
 
 function handleContentClick(event: MouseEvent) {
   const target = event.target as HTMLElement
-
   const hanziPhrase = getHanziFromEvent(event)
 
   if (hanziPhrase) {
@@ -105,7 +111,6 @@ function handleContentClick(event: MouseEvent) {
     const href = link.getAttribute('href')
     if (href)
       useRouter().push(href)
-
     return
   }
 
@@ -117,7 +122,7 @@ function handleContentClick(event: MouseEvent) {
       const allImages = Array.from(container.querySelectorAll('img')) as HTMLImageElement[]
       const imageUrls = allImages.map(el => el.src)
       const clickedUrl = img.src
-      currentImages.value = [clickedUrl, ...imageUrls.filter(url => url !== clickedUrl)]
+      currentImages.value =[clickedUrl, ...imageUrls.filter(url => url !== clickedUrl)]
       openImageViewer()
     }
   }
@@ -128,7 +133,6 @@ function handleContentClick(event: MouseEvent) {
   <PageLoader v-if="isLoading" />
   <div v-else class="markdown-wrapper">
     <HanziTooltip ref="hanziTooltipRef" />
-
     <div
       class="markdown-body"
       @click="handleContentClick"
@@ -137,7 +141,9 @@ function handleContentClick(event: MouseEvent) {
   </div>
 </template>
 
+
 <style lang="scss">
+/* Стили остаются без изменений */
 .markdown-body {
   font-family:
     'Inter',

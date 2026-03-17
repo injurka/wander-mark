@@ -14,7 +14,7 @@ const status = ref<'pending' | 'success' | 'error'>('pending')
 watch(params, async () => {
   status.value = 'pending'
   try {
-    const path = params.value.pwd.map((segment) => encodeURIComponent(segment)).join('/')
+    const path = params.value.pwd.join('/')
     const content = await vaultService.getFileContent(params.value.vault, `content/${params.value.vault}/${path}.md`)
     
     if (content) {
@@ -37,14 +37,14 @@ watch(params, async () => {
     </div>
 
     <template v-else-if="status === 'success' && contentData">
-      <ContentViewer :content="contentData" :image-base-path="imageBasePath" />
+      <ContentViewer :content="contentData" image-base-path="" :vault="params.vault" />
       <ContentViewerFooter :vault="params.vault" :current-item-path="params.pwd.join('/')" :items="store.navItems" />
     </template>
 
     <div v-else class="empty-state">
       <div class="alert">
         <h3>Страница не найдена или недоступна</h3>
-        <p>Пожалуйста, выберите другой раздел в меню.</p>
+        <p>Возможно, вы находитесь офлайн и файл не скачан, либо страница была перемещена.</p>
       </div>
     </div>
   </div>

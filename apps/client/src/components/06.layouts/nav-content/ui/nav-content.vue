@@ -1,3 +1,5 @@
+--- File: src/components/06.layouts/nav-content/ui/nav-content.vue ---
+
 <script lang="ts" setup>
 import { ref, watchEffect, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -8,6 +10,7 @@ import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } f
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { useVaultService } from '~/shared/services/vault.service'
+import { isNative } from '~/shared/services/fs.client'
 
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
@@ -60,10 +63,10 @@ watch(() => params.value.vault, async (vault) => {
     ])
     
     data.value = {
-      nav: navRes || [],
+      nav: navRes ||[],
       settings: settingsRes,
       backlinks: backlinksRes,
-      searchIndex: searchRes || [],
+      searchIndex: searchRes ||[],
     }
   } finally {
     status.value = 'success'
@@ -79,24 +82,53 @@ watchEffect(() => {
   })
 })
 
-useHead(() => {
-  const settings = data.value.settings
-  if (!settings) return {}
+const localScripts = ref<any[]>([])
+const localStyles = ref<any[]>([])
 
-  const vault = vaultService.getVault(params.value.vault)
-  if (!vault) return {}
-
-  const vaultBaseUrl = vault.type === 'remote' ? `${vault.url}/meta/${params.value.vault}/` : ''
-
-  return {
-    script: (settings.scripts ||[]).map((src: string) => ({
-      src: src.startsWith('http') || vault.type === 'local' ? src : `${vaultBaseUrl}${src}`, defer: true
-    })),
-    link: (settings.styles ||[]).map((href: string) => ({
-      rel: 'stylesheet', href: href.startsWith('http') || vault.type === 'local' ? href : `${vaultBaseUrl}${href}`
-    }))
+watch(() => data.value.settings, async (settings) => {
+  if (!settings) {
+    localScripts.value = []
+    localStyles.value =[]
+    return
   }
-})
+  const vault = vaultService.getVault(params.value.vault)
+  if (!vault) return
+
+  const resolveUrl = async (path: string) => {
+    if (path.startsWith('http') || path.startsWith('data:')) return path
+    
+    if (vault.type === 'local' && vault.localPath) {
+      return await vaultService.getMediaUrl(`${vault.localPath}/meta/${params.value.vault}/${path}`, true)
+    }
+
+    if (vault.isDownloaded) {
+      if (isNative) {
+        return await vaultService.getMediaUrl(`vaults/${params.value.vault}/meta/${params.value.vault}/${path}`)
+      } else {
+        const content = await vaultService.getFileContent(vault.id, `meta/${params.value.vault}/${path}`)
+        if (content) {
+          const mimeType = path.endsWith('.css') ? 'text/css' : 'application/javascript'
+          const blob = new Blob([content], { type: mimeType })
+          return URL.createObjectURL(blob)
+        }
+      }
+    }
+
+    return `${vault.url}/meta/${params.value.vault}/${path}`
+  }
+
+  localScripts.value = await Promise.all((settings.scripts ||[]).map(async (src: string) => ({
+    src: await resolveUrl(src), defer: true
+  })))
+  localStyles.value = await Promise.all((settings.styles ||[]).map(async (href: string) => ({
+    rel: 'stylesheet', href: await resolveUrl(href)
+  })))
+}, { immediate: true })
+
+useHead(() => ({
+  script: localScripts.value,
+  link: localStyles.value
+}))
 
 watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
 </script>
@@ -124,12 +156,10 @@ watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 
   background-color: var(--bg-primary-color);
   overflow: hidden;
 }
-
 .layout-content {
   display: flex;
   height: 100%;
 }
-
 .main-area {
   flex: 1;
   display: flex;
@@ -137,19 +167,16 @@ watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 
   min-width: 0;
   position: relative;
 }
-
 .content-scrollable {
   flex: 1;
   height: 100%;
   overflow-y: auto;
   padding: 50px 0 0 0;
-
   &.borderless :deep(.content-viewer) {
     width: 100% !important;
     max-width: 100% !important;
     padding-left: 40px;
     padding-right: 40px;
-
     @include mobile {
       padding: 0;
     }

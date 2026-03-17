@@ -1,9 +1,11 @@
+
 import type { Highlighter } from 'shiki'
 import catppuccinFrappe from '@shikijs/themes/catppuccin-frappe'
 import catppuccinLatte from '@shikijs/themes/catppuccin-latte'
 import catppuccinMacchiato from '@shikijs/themes/catppuccin-macchiato'
 import catppuccinMocha from '@shikijs/themes/catppuccin-mocha'
 import MarkdownIt from 'markdown-it'
+// @ts-expect-error no dts
 import MarkdownItAttrs from 'markdown-it-attrs'
 import MarkdownItCollapsible from 'markdown-it-collapsible'
 // @ts-expect-error no dts
@@ -56,11 +58,11 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
     },
   })
 
-  md.renderer.rules.table_open = (tokens, idx, options, env, self) => {
+  md.renderer.rules.table_open = (tokens, idx, options, _env, self) => {
     return `<div class="table-container">${self.renderToken(tokens, idx, options)}`
   }
 
-  md.renderer.rules.table_close = (tokens, idx, options, env, self) => {
+  md.renderer.rules.table_close = (tokens, idx, options, _env, self) => {
     return `${self.renderToken(tokens, idx, options)}</div>`
   }
 

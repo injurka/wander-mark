@@ -13,6 +13,8 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:menu'])
 const menu = defineModel<boolean>('menu', { required: true })
+  const router = useRouter()
+  
 const sidebarRef = ref<HTMLElement | null>(null)
 const sidebarWidth = ref(300)
 const resizing = ref(false)
@@ -35,7 +37,7 @@ async function selectItem(item: ContentNavItem) {
     if (window.innerWidth < 768) {
       menu.value = false
     }
-    await navigateTo(`/${params.value.vault}/${path.join('/')}`)
+    await router.push(`/${params.value.vault}/${path.join('/')}`)
   }
 }
 
@@ -107,7 +109,7 @@ function stopResize() {
           color="secondary"
           size="sm"
           class="w-full"
-          @click="navigateTo('/')"
+          @click="router.push(AppRoutePaths.Root)"
         >
           Вернуться к хранилищам
         </KitBtn>

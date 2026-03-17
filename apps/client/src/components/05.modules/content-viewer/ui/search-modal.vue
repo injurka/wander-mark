@@ -95,7 +95,7 @@ function close() {
 }
 
 function navigate(url: string) {
-  navigateTo(url)
+  useRouter().push(url)
   close()
 }
 

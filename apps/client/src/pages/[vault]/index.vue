@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-definePageMeta({
-  layout: 'nav-content',
-  pageTransition: {
-    name: 'fade',
-    mode: 'out-in',
-  },
-})
+// definePageMeta({
+//   layout: 'nav-content',
+//   pageTransition: {
+//     name: 'fade',
+//     mode: 'out-in',
+//   },
+// })
 </script>
 
 <template>

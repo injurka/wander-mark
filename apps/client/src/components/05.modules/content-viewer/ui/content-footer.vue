@@ -29,7 +29,7 @@ const nextItem = computed(() => (currentIndex.value !== -1 && currentIndex.value
       color="secondary"
       prepend-icon="mdi:arrow-left"
       class="footer-btn"
-      @click="navigateTo(`/${vault}/${previousItem.path}`)"
+      @click="$router.push(`/${vault}/${previousItem.path}`)"
     >
       {{ previousItem.title }}
     </KitBtn>
@@ -42,7 +42,7 @@ const nextItem = computed(() => (currentIndex.value !== -1 && currentIndex.value
       color="secondary"
       append-icon="mdi:arrow-right"
       class="footer-btn"
-      @click="navigateTo(`/${vault}/${nextItem.path}`)"
+      @click="$router.push(`/${vault}/${nextItem.path}`)"
     >
       {{ nextItem.title }}
     </KitBtn>

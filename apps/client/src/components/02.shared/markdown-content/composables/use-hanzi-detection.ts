@@ -1,3 +1,4 @@
+
 /**
  * Composable для определения китайского текста под курсором.
  * Работает с MouseEvent и Range API для извлечения текста из сложных HTML структур.
@@ -7,13 +8,7 @@ export function useHanziDetection() {
    * Проверка, является ли символ частью китайской фразы.
    */
   function isChineseChar(char: string): boolean {
-    // Диапазоны Unicode:
-    // 4E00-9FFF: Основные иероглифы (CJK Unified Ideographs)
-    // 3400-4DBF: Редкие иероглифы (Extension A)
-    // 3000-303F: Символы и пунктуация CJK (например, 。)
-    // FF00-FFEF: Полноширинные формы (например, ！ или ，)
     return /[\u4E00-\u9FFF\u3400-\u4DBF\u3000-\u303F\uFF00-\uFFEF]/.test(char)
-      // Исключаем обычные ASCII скобки и пробелы, чтобы не цеплять (Pinyin)
       && !/[a-z0-9\s()[\]<>]/i.test(char)
   }
 
@@ -51,8 +46,9 @@ export function useHanziDetection() {
         clickOffset = range.startOffset
       }
     }
-    else if (document.caretPositionFromPoint) {
-      const range = document.caretPositionFromPoint(x, y)
+    else if ('caretPositionFromPoint' in document) {
+      const doc = document as any
+      const range = doc.caretPositionFromPoint(x, y)
       if (range) {
         textNode = range.offsetNode
         clickOffset = range.offset
@@ -64,7 +60,6 @@ export function useHanziDetection() {
     }
 
     // 2. Находим контейнер и "плоский" текст
-    // Ищем ближайший блочный элемент, в котором может быть текст
     const element = textNode.parentElement
     const blockContainer = element?.closest('p, li, blockquote, div.callout-content, h1, h2, h3, h4, h5, h6') as HTMLElement
 
@@ -80,7 +75,6 @@ export function useHanziDetection() {
     // 3. Проверяем, попали ли мы вообще в китайский символ или его соседа
     let scanIndex = globalIndex!
 
-    // Проверяем текущий символ или символ слева (если клик был в конец символа)
     if (!isChineseChar((fullText as any)[scanIndex])) {
       if (scanIndex > 0 && isChineseChar((fullText as any)[scanIndex - 1])) {
         scanIndex--
@@ -94,12 +88,10 @@ export function useHanziDetection() {
     let start = scanIndex
     let end = scanIndex
 
-    // Идем влево
     while (start > 0 && isChineseChar((fullText as any)[start - 1])) {
       start--
     }
 
-    // Идем вправо (включая текущий символ)
     while (end < fullText.length && isChineseChar((fullText as any)[end])) {
       end++
     }
