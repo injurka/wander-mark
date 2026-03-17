@@ -3,7 +3,7 @@ services:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-client:${V_CLIENT:-latest}
     restart: unless-stopped
     ports:
-      - "3333:80"
+      - "3333:3333"
     depends_on:
       - server
     networks:
