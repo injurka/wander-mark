@@ -28,5 +28,5 @@ tsconfig.tsbuildinfo
 *storybook.log
 storybook-static
 out
-trip-scheduler.db
+wander-mark.db
 android

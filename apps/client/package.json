@@ -34,6 +34,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "vue-tsc --noEmit",
     "--------------------------------<     UTILS     >---------------------------------": "",
+    "generate-pwa-assets": "pwa-assets-generator",
     "icons:bundle": "bun run build/bundle-icons.ts"
   },
   "dependencies": {
@@ -49,6 +50,7 @@
     "@vueuse/core": "^14.2.1",
     "@vueuse/head": "^2.0.0",
     "fuse.js": "^7.1.0",
+    "vite-plugin-pwa": "^1.2.0",
     "idb-keyval": "^6.2.1",
     "markdown-it": "14.1.1",
     "markdown-it-attrs": "4.3.1",
@@ -70,7 +72,9 @@
     "@tauri-apps/cli": "^2.0.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.10.1",
+    "@vite-pwa/assets-generator": "1.0.2",
     "@vitejs/plugin-vue": "^5.0.0",
+    "@types/workbox-sw": "^4.3.7",
     "eslint": "9.0.0",
     "eslint-plugin-format": "2.0.1",
     "rollup-plugin-visualizer": "^5.12.0",

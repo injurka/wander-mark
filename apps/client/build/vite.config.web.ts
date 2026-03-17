@@ -8,6 +8,8 @@ import { compression as Compression } from 'vite-plugin-compression2'
 import { autoImportOptionsCfg } from './cfg/auto-import'
 import { iconsCfg } from './cfg/icons'
 import { visualizerPlugin } from './lib/helpers'
+import { VitePWA } from 'vite-plugin-pwa'
+import { pwaCfg } from './cfg/pwa'
 
 export default defineConfig({
   base: './',
@@ -28,6 +30,7 @@ export default defineConfig({
       algorithm: 'gzip',
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
+    VitePWA(pwaCfg),
     Icons(iconsCfg),
     ...visualizerPlugin('renderer'),
   ],
