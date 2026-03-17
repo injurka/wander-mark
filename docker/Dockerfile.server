@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN bun install --ignore-scripts
+RUN bun install
 RUN bun --cwd=apps/server run build
 
 # =================================================================
