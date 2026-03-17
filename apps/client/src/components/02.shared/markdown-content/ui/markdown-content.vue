@@ -6,6 +6,7 @@ import { useHanziDetection } from '../composables/use-hanzi-detection'
 import { createMarkdownRenderer } from '../lib'
 import HanziTooltip from './hanzi-tooltip.vue'
 import { useVaultService } from '~/shared/services/vault.service'
+import { useRouter } from 'vue-router'
 
 interface Props {
   content: string
@@ -17,6 +18,7 @@ const props = defineProps<Props>()
 const { theme } = useChangeTheme()
 const vaultService = useVaultService()
 const { getHanziFromEvent } = useHanziDetection()
+const router = useRouter()
 
 const renderedContent = ref<string>('')
 const mdInstance = ref<MarkdownIt | null>(null)
@@ -109,8 +111,9 @@ function handleContentClick(event: MouseEvent) {
   if (link && link.getAttribute('href')?.startsWith('/')) {
     event.preventDefault()
     const href = link.getAttribute('href')
-    if (href)
-      useRouter().push(href)
+    if (href) {
+      router.push(href)
+    }
     return
   }
 
@@ -141,9 +144,7 @@ function handleContentClick(event: MouseEvent) {
   </div>
 </template>
 
-
 <style lang="scss">
-/* Стили остаются без изменений */
 .markdown-body {
   font-family:
     'Inter',

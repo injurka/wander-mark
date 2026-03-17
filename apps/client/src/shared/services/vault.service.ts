@@ -77,8 +77,13 @@ export const useVaultService = () => {
       const setRes = await fetch(`${vault.url}/meta/${vaultId}/settings.json`)
       if (setRes.ok) {
         const settings = await setRes.json()
-        if (settings.scripts) filesToSync.push(...settings.scripts.map((s: string) => `meta/${vaultId}/${s}`))
-        if (settings.styles) filesToSync.push(...settings.styles.map((s: string) => `meta/${vaultId}/${s}`))
+
+        if (settings.scripts) {
+          filesToSync.push(...settings.scripts.map((s: string) => `meta/${vaultId}/${s}`))
+        }
+        if (settings.styles) {
+          filesToSync.push(...settings.styles.map((s: string) => `meta/${vaultId}/${s}`))
+        }
       }
     } catch (e) { }
 

@@ -9,6 +9,8 @@ import { useContentViewerStore } from '../store'
 const modelValue = defineModel<boolean>({ required: true })
 
 const store = useContentViewerStore()
+const router = useRouter()
+
 const query = ref('')
 const selectedTags = ref<Set<string>>(new Set())
 const activeIndex = ref(0)
@@ -95,7 +97,7 @@ function close() {
 }
 
 function navigate(url: string) {
-  useRouter().push(url)
+  router.push(url)
   close()
 }
 
