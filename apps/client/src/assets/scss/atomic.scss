@@ -1,0 +1,163 @@
+/* UI Elements Replacements */
+
+// Button
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  height: 36px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font-size: 0.9rem;
+  text-decoration: none;
+  gap: 8px;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--icon {
+    padding: 0;
+    width: 36px;
+    border-radius: 50%;
+  }
+
+  &--primary {
+    background-color: var(--fg-accent-color);
+    color: var(--bg-primary-color);
+  }
+
+  &--tonal {
+    background-color: var(--bg-tertiary-color);
+    color: var(--fg-primary-color);
+  }
+
+  &--text {
+    background: transparent;
+    &:hover {
+      background-color: var(--bg-hover-color);
+    }
+  }
+
+  &--compact {
+    height: 28px;
+    font-size: 0.8rem;
+    padding: 0 8px;
+    &.btn--icon {
+      width: 28px;
+    }
+  }
+}
+
+// Input
+.input-field {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-color: var(--bg-secondary-color);
+  color: var(--fg-primary-color);
+  outline: none;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: var(--border-focus-color);
+  }
+}
+
+// Checkbox
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+
+  input[type='checkbox'] {
+    accent-color: var(--fg-accent-color);
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Dropdown Menu Container
+.dropdown-menu {
+  position: relative;
+  display: inline-block;
+
+  &__content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background-color: var(--bg-tertiary-color);
+    border: 1px solid var(--border-primary-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    z-index: 100;
+    padding: 8px 0;
+  }
+}
+
+// List
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  &__item {
+    padding: 8px 16px;
+    &:hover {
+      background-color: var(--bg-hover-color);
+    }
+  }
+}
+
+// Divider
+.divider-text {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 8px;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-secondary-color);
+  }
+
+  span {
+    padding: 0 10px;
+    color: var(--fg-secondary-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+// Alert
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-primary-color);
+  background-color: var(--bg-tertiary-color);
+
+  &__title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+  }
+}
