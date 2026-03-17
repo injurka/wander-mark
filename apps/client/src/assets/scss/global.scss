@@ -11,7 +11,7 @@ html {
   border: none;
   font-size: 17px;
 
-  @include mobile {
+  @include media-down(md) {
     font-size: 14px;
   }
 }

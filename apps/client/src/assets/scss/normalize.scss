@@ -60,45 +60,8 @@ p {
 .fade-leave-to {
   opacity: 0;
 }
-
-.smooth-appear {
-  &-enter-active {
-    transition: opacity 0.3s ease;
-  }
-  &-leave-active {
-    transition: opacity 0s ease;
-  }
-  &-enter-from {
-    opacity: 0;
-  }
-  &-leave-to {
-    opacity: 0;
-  }
-}
-
 hr {
   margin: 16px 0;
   width: 100%;
   border: 1px solid var(--border-secondary-color);
-}
-
-.divider-text {
-  display: flex;
-  align-items: center;
-  margin: 16px 0 8px;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid var(--border-secondary-color);
-  }
-
-  span {
-    padding: 0 10px;
-    color: var(--fg-secondary-color);
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
 }

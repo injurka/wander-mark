@@ -177,7 +177,7 @@ watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 
     max-width: 100% !important;
     padding-left: 40px;
     padding-right: 40px;
-    @include mobile {
+    @include media-down(md) {
       padding: 0;
     }
   }

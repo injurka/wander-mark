@@ -6,9 +6,6 @@ import { useHead } from '@vueuse/head'
 import { useChangeTheme } from '~/shared/composables/use-change-theme'
 
 import { DefaultLayout } from '~/components/06.layouts/default'
-import '~/assets/scss/global.scss'
-import '~/assets/scss/atomic.scss'
-import '~/assets/scss/normalize.scss'
 
 useChangeTheme()
 

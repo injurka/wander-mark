@@ -196,7 +196,7 @@ const currentVault = computed(() => route.params.vault as string)
   }
 }
 
-@include mobile {
+@include media-down(md) {
   .content-header {
     padding: 0 12px;
     gap: 8px;

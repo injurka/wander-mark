@@ -141,7 +141,7 @@ function stopResize() {
     border: none;
   }
 
-  @include mobile {
+  @include media-down(md) {
     position: fixed;
     top: 0;
     left: 0;
@@ -167,7 +167,7 @@ function stopResize() {
   min-width: 250px;
   font-size: 1rem;
 
-  @include mobile {
+  @include media-down(md) {
     width: 100vw;
     font-size: 1.5rem;
   }
@@ -182,7 +182,7 @@ function stopResize() {
   height: 50px;
   flex-shrink: 0;
 
-  @include mobile {
+  @include media-down(md) {
     :deep(input) {
       font-size: 1.1rem !important;
     }
@@ -221,7 +221,7 @@ function stopResize() {
     background-color: var(--fg-accent-color);
   }
 
-  @include mobile {
+  @include media-down(md) {
     display: none !important;
   }
 }
@@ -251,7 +251,7 @@ function stopResize() {
   display: none;
 }
 
-@include mobile {
+@include media-down(md) {
   .sidebar-scrim {
     display: block;
   }

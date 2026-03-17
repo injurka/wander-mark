@@ -10,7 +10,7 @@ import { iconsCfg } from './cfg/icons'
 import { visualizerPlugin } from './lib/helpers'
 
 export default defineConfig({
-  base: './', 
+  base: './',
   root: resolve(__dirname, '../src'),
   publicDir: resolve(__dirname, '../public'),
   envDir: resolve(__dirname, '../../'),
@@ -25,7 +25,7 @@ export default defineConfig({
     Vue(),
     AutoImport(autoImportOptionsCfg),
     Compression({
-      algorithms: ['gzip'],
+      algorithm: 'gzip',
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
     Icons(iconsCfg),
@@ -42,16 +42,6 @@ export default defineConfig({
 
   server: {
     port: 5173,
-    proxy: {
-      '/local-files': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
   },
 
   build: {

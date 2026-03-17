@@ -8,7 +8,6 @@ import App from './app.vue'
 import { vRipple } from '~/shared/directives/ripple'
 
 import '~/assets/scss/global.scss'
-import '~/assets/scss/atomic.scss'
 import '~/assets/scss/normalize.scss'
 
 const app = createApp(App)

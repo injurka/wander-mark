@@ -61,7 +61,7 @@ const nextItem = computed(() => (currentIndex.value !== -1 && currentIndex.value
   margin: 0 auto;
   width: 100%;
 
-  @include mobile {
+  @include media-down(md) {
     padding: 16px 8px;
   }
 }
@@ -75,7 +75,7 @@ const nextItem = computed(() => (currentIndex.value !== -1 && currentIndex.value
   max-width: 45%;
 }
 
-@include mobile {
+@include media-down(md) {
   .content-footer {
     flex-direction: column;
     align-items: stretch;

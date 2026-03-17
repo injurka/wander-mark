@@ -82,7 +82,7 @@ function getMinString(n: number) {
   padding: 20px;
   background-color: var(--bg-primary-color);
 
-  @include mobile {
+  @include media-down(md) {
     padding: 8px;
   }
 }
@@ -109,7 +109,7 @@ function getMinString(n: number) {
     color: var(--fg-muted-color);
   }
 
-  @include mobile {
+  @include media-down(md) {
     gap: 12px;
     font-size: 0.8rem;
     margin-bottom: 16px;

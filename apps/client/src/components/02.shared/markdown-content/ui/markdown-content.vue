@@ -455,7 +455,8 @@ details.callout {
   margin: 2rem 0;
   position: relative;
   overflow: hidden;
-  @include mobile {
+
+  @include media-down(md) {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
@@ -472,7 +473,7 @@ details.callout {
   padding-right: 24px;
   border-right: 1px solid rgba(115, 233, 144, 0.3);
   flex-shrink: 0;
-  @include mobile {
+  @include media-down(md) {
     border-right: none;
     border-bottom: 1px solid rgba(115, 233, 144, 0.3);
     padding-right: 0;
