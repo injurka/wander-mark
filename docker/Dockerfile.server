@@ -5,12 +5,10 @@ FROM oven/bun:1-slim AS builder
 
 WORKDIR /usr/src/app
 
-COPY package.json ./
-RUN bun install
-
 COPY . .
 
-RUN bun run build
+RUN bun install --ignore-scripts
+RUN bun --cwd=apps/server run build
 
 # =================================================================
 # Этап 2: "release" - Финальный образ без devDependencies
@@ -22,7 +20,7 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/server/dist ./dist
 
 RUN chown -R bun:bun /usr/src/app
 USER bun
