@@ -3,7 +3,7 @@ services:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-client:${V_CLIENT:-latest}
     restart: unless-stopped
     ports:
-      - "${CLIENT_PORT:-80}:3333"
+      - "3333:80"
     depends_on:
       - server
     networks:
@@ -18,7 +18,7 @@ services:
     volumes:
       - ${VAULT_PATH:-./vault}:/data:ro
     ports:
-      - "${SERVER_PORT:-8080}:4444"
+      - "4444:8080"
     networks:
       - wander-mark
 
