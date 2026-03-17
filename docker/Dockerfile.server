@@ -11,7 +11,7 @@ RUN bun install --ignore-scripts
 RUN bun --cwd=apps/server run build
 
 # =================================================================
-# Этап 2: "release" - Финальный образ без devDependencies
+# Этап 2: "release" - Финальный образ
 # =================================================================
 FROM oven/bun:1-slim
 
@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-COPY --from=builder /usr/src/app/server/dist ./dist
+COPY --from=builder /usr/src/app/apps/server/dist ./dist
 
 RUN chown -R bun:bun /usr/src/app
 USER bun
