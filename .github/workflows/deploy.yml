@@ -107,8 +107,8 @@ jobs:
             export V_CLIENT=${{ steps.version.outputs.VERSION }}
             export V_SERVER=${{ steps.version.outputs.VERSION }}
 
-            docker compose pull client server
+            docker compose pull wander-mark-client wander-mark-server
 
-            docker compose up -d --no-deps client server
+            docker compose up -d --no-deps wander-mark-client wander-mark-server
 
             docker image prune -f
