@@ -43,7 +43,6 @@ export default defineConfig({
     },
   },
 
-  // Опции для Tauri
   clearScreen: false,
   server: {
     port: 1420,
@@ -57,7 +56,7 @@ export default defineConfig({
       }
       : undefined,
     watch: {
-      ignored: ["**/src-tauri/**"], // игнорируем бэк на расте
+      ignored: ["**/src-tauri/**"],
     },
   },
 
