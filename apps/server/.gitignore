@@ -27,3 +27,4 @@ sqlite.db
 tsconfig.tsbuildinfo
 static/**
 data/**
+docker/vault/**
