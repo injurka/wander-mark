@@ -1,15 +1,15 @@
 services:
-  client:
+  wander-mark-client:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-client:${V_CLIENT:-latest}
     restart: unless-stopped
     ports:
       - "3333:3333"
     depends_on:
-      - server
+      - wander-mark-server
     networks:
       - wander-mark
 
-  server:
+  wander-mark-server:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-server:${V_SERVER:-latest}
     restart: unless-stopped
     environment:
