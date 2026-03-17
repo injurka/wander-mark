@@ -10,7 +10,7 @@ RUN bun install
 
 COPY . .
 
-RUN bun run build:bun
+RUN bun run build
 
 # =================================================================
 # Этап 2: "release" - Финальный образ без devDependencies
