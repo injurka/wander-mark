@@ -8,6 +8,9 @@ const {
   vaults,
   progressMap,
   installingMap,
+  iconUrls,
+  iconErrors,
+  handleIconError,
   isAddDialogVisible,
   addError,
   addForm,
@@ -42,10 +45,28 @@ const {
         <div class="vault-list">
           <div v-for="vault in vaults" :key="vault.id" class="vault-item">
             <div class="vault-info" @click="openVault(vault.id)">
-              <Icon :icon="vault.isDownloaded ? 'mdi:database-check-outline' : 'mdi:cloud-outline'" class="vault-icon" :class="{ 'ready': vault.isDownloaded }" />
+              
+              <!-- Отображение кастомной иконки или дефолтной -->
+              <div class="vault-icon-wrapper">
+                <img 
+                  v-if="iconUrls[vault.id] && !iconErrors[vault.id]" 
+                  :src="iconUrls[vault.id]" 
+                  @error="handleIconError(vault.id)" 
+                  class="vault-image-icon" 
+                  alt="icon"
+                />
+                <Icon 
+                  v-else 
+                  :icon="vault.isDownloaded ? 'mdi:database-check-outline' : 'mdi:cloud-outline'" 
+                  class="vault-icon" 
+                  :class="{ 'ready': vault.isDownloaded }" 
+                />
+              </div>
+
               <div>
-                <h3 class="vault-name">{{ vault.name }}</h3>
-                <p class="vault-url">{{ vault.url }}</p>
+                <!-- Отображение названия и описания -->
+                <h3 class="vault-name">{{ vault.title || vault.name }}</h3>
+                <p class="vault-url">{{ vault.description || vault.url }}</p>
               </div>
             </div>
 
@@ -80,14 +101,8 @@ const {
         </div>
         
         <div class="form-group">
-          <label>Название</label>
-          <p class="input-hint">Понятное название для отображения</p>
-          <KitInput v-model="addForm.name" placeholder="Chinese Base" />
-        </div>
-        
-        <div class="form-group">
           <label>URL сервера</label>
-          <p class="input-hint">Базовый URL, откуда качать данные</p>
+          <p class="input-hint">Базовый URL (название само подтянется с сервера)</p>
           <KitInput v-model="addForm.url" placeholder="https://md.chinisik.ru/local-files" />
         </div>
       </div>
@@ -185,12 +200,30 @@ const {
   display: flex; align-items: center; gap: 16px;
   flex: 1; min-width: 0; cursor: pointer;
 }
+
+.vault-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vault-image-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 .vault-icon {
-  font-size: 2rem; color: var(--fg-muted-color); flex-shrink: 0;
+  font-size: 2.2rem; color: var(--fg-muted-color);
   &.ready { color: var(--fg-accent-color); }
 }
+
 .vault-name {
-  font-size: 1.1rem; font-weight: 600; color: var(--fg-primary-color); margin: 0 0 2px;
+  font-size: 1.15rem; font-weight: 600; color: var(--fg-primary-color); margin: 0 0 4px;
 }
 .vault-url {
   font-size: 0.85rem; color: var(--fg-secondary-color); margin: 0;

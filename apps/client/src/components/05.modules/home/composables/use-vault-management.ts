@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVaultService } from '~/shared/services/vault.service'
 
@@ -9,32 +9,45 @@ export function useVaultManagement() {
   const progressMap = ref<Record<string, number>>({})
   const installingMap = ref<Record<string, boolean>>({})
 
+  // --- Иконки ---
+  const iconUrls = ref<Record<string, string>>({})
+  const iconErrors = ref<Record<string, boolean>>({})
+
+  watch(() => vaultService.vaults.value, async (vaults) => {
+    for (const vault of vaults) {
+      iconUrls.value[vault.id] = await vaultService.resolveMediaUrl(vault.id, `meta/${vault.id}/images/icon.png`)
+    }
+  }, { immediate: true, deep: true })
+
+  function handleIconError(vaultId: string) {
+    iconErrors.value[vaultId] = true
+  }
+
   // --- Модальное окно добавления хранилища ---
   const isAddDialogVisible = ref(false)
   const addError = ref('')
   const addForm = ref({
     id: '',
-    name: '',
     url: '',
   })
 
   function openAddDialog() {
     addError.value = ''
-    addForm.value = { id: '', name: '', url: '' }
+    addForm.value = { id: '', url: '' }
     isAddDialogVisible.value = true
   }
 
   async function submitAddRemote() {
     addError.value = ''
-    const { id, name, url } = addForm.value
+    const { id, url } = addForm.value
 
-    if (!id || !name || !url) {
+    if (!id || !url) {
       addError.value = 'Пожалуйста, заполните все поля'
       return
     }
 
     try {
-      await vaultService.addRemoteVault(id, name, url)
+      await vaultService.addRemoteVault(id, url)
       isAddDialogVisible.value = false
     }
     catch (e: any) {
@@ -63,6 +76,9 @@ export function useVaultManagement() {
   async function proceedDelete() {
     if (vaultToDelete.value) {
       await vaultService.deleteVault(vaultToDelete.value)
+      // Очищаем кеш иконок для удаленного хранилища
+      delete iconUrls.value[vaultToDelete.value]
+      delete iconErrors.value[vaultToDelete.value]
     }
     isDeleteDialogVisible.value = false
     vaultToDelete.value = null
@@ -79,6 +95,9 @@ export function useVaultManagement() {
       await vaultService.installVault(vaultId, (p) => {
         progressMap.value[vaultId] = p
       })
+      // Перезагружаем иконку после скачивания
+      iconUrls.value[vaultId] = await vaultService.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
+      iconErrors.value[vaultId] = false
     }
     catch (e: any) {
       showError(`Ошибка при скачивании: ${e.message}`)
@@ -101,6 +120,9 @@ export function useVaultManagement() {
     vaults: vaultService.vaults,
     progressMap,
     installingMap,
+    iconUrls,
+    iconErrors,
+    handleIconError,
     isAddDialogVisible,
     addError,
     addForm,

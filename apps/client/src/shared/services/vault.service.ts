@@ -4,17 +4,19 @@ import { get } from 'idb-keyval'
 
 export interface VaultConfig {
   id: string
-  name: string
+  title: string
+  description?: string
   type: 'remote' | 'local'
   url: string
   localPath?: string
   isDownloaded: boolean
+  name?: string // Для обратной совместимости со старыми сохранениями
 }
 
 export const useVaultService = () => {
   const vaults = useLocalStorage<VaultConfig[]>('app-vaults', [])
 
-  const addRemoteVault = async (id: string, name: string, rawUrl: string) => {
+  const addRemoteVault = async (id: string, rawUrl: string) => {
     const cleanUrl = rawUrl.replace(/\/$/, '')
 
     if (vaults.value.find(v => v.id === id)) {
@@ -22,16 +24,19 @@ export const useVaultService = () => {
     }
 
     try {
-      const validationUrl = `${cleanUrl}/content/${id}/nav.json`
+      // Валидируем теперь по settings.json, так как он содержит метаданные
+      const validationUrl = `${cleanUrl}/meta/${id}/settings.json`
       const res = await fetch(validationUrl)
 
       if (!res.ok) {
         throw new Error(`Хранилище не найдено. Сервер вернул ошибку ${res.status} по адресу: ${validationUrl}. Проверьте правильность ID и URL.`)
       }
 
-      await res.json();
+      const settings = await res.json()
+      const title = settings.info?.title || id
+      const description = settings.info?.description || ''
 
-      vaults.value.push({ id, name, type: 'remote', url: cleanUrl, isDownloaded: false })
+      vaults.value.push({ id, title, description, type: 'remote', url: cleanUrl, isDownloaded: false })
 
     } catch (e: any) {
       console.error(e)
@@ -143,6 +148,18 @@ export const useVaultService = () => {
       }
       loaded++
       onProgress(Math.floor((loaded / (filesToSync.length + mediaArray.length)) * 100))
+    }
+
+    // Безопасная попытка загрузить иконку хранилища (не падает, если её нет)
+    try {
+      const iconPath = `meta/${vaultId}/images/icon.png`
+      const iconRes = await fetch(`${vault.url}/${iconPath}`)
+      if (iconRes.ok) {
+        const blob = await iconRes.blob()
+        await writeBinaryFile(`vaults/${vaultId}/${iconPath}`, blob)
+      }
+    } catch (e) {
+      // Игнорируем отсутствие иконки
     }
 
     if (failedFiles.length > 0) {

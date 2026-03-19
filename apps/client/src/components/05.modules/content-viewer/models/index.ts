@@ -18,6 +18,12 @@ interface ContentNavItem {
 }
 
 interface VaultMetaSettings {
+  info?: {
+    title?: string
+    description?: string
+    sysname?: string
+    [key: string]: any
+  }
   scripts?: string[]
   styles?: string[]
   [key: string]: any
