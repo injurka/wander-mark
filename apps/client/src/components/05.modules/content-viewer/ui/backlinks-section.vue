@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 import { useContentViewerStore } from '../store'
 
 const store = useContentViewerStore()
@@ -15,7 +17,7 @@ const route = useRoute()
     </div>
 
     <div class="backlinks-grid">
-      <NuxtLink
+      <router-link
         v-for="link in links"
         :key="link.url"
         :to="link.url"
@@ -23,7 +25,7 @@ const route = useRoute()
       >
         <span class="link-title">{{ link.title }}</span>
         <span class="link-path">{{ link.url.replace(`/${route.params.vault}`, '') }}</span>
-      </NuxtLink>
+      </router-link>
     </div>
   </div>
 </template>
@@ -66,6 +68,7 @@ const route = useRoute()
   border: 1px solid transparent;
   text-decoration: none;
   transition: all 0.2s;
+  cursor: pointer; /* На всякий случай явно указываем курсор */
 
   &:hover {
     background-color: var(--bg-hover-color);

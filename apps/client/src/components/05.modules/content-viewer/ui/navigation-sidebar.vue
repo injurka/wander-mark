@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { ContentNavItem } from '~/components/05.modules/content-viewer'
+import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
 import { KitBtn, KitInput } from '~/components/01.kit'
 import { findPathBySysname } from '../lib/navigation'
@@ -13,7 +14,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:menu'])
 const menu = defineModel<boolean>('menu', { required: true })
-  const router = useRouter()
+const router = useRouter()
   
 const sidebarRef = ref<HTMLElement | null>(null)
 const sidebarWidth = ref(300)
@@ -104,15 +105,10 @@ function stopResize() {
       </div>
 
       <div class="sidebar-footer">
-        <KitBtn
-          variant="text"
-          color="secondary"
-          size="sm"
-          class="w-full"
-          @click="router.push(AppRoutePaths.Root)"
-        >
-          Вернуться к хранилищам
-        </KitBtn>
+        <button class="home-link" @click="router.push(AppRoutePaths.Root)">
+          <Icon icon="mdi:home-outline" class="home-icon" />
+          <span>Все хранилища</span>
+        </button>
       </div>
     </div>
 
@@ -196,11 +192,39 @@ function stopResize() {
 }
 
 .sidebar-footer {
-  padding: 8px;
+  padding: 6px;
   border-top: 1px solid var(--border-secondary-color);
   flex-shrink: 0;
-  .w-full {
-    width: 100%;
+}
+
+.home-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--fg-muted-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  .home-icon {
+    font-size: 1.1rem;
+    opacity: 0.8;
+  }
+
+  &:hover {
+    color: var(--fg-primary-color);
+    background-color: var(--bg-hover-color);
+    
+    .home-icon {
+      opacity: 1;
+      color: var(--fg-accent-color);
+    }
   }
 }
 
