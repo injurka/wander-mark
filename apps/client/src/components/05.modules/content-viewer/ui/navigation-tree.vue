@@ -131,6 +131,10 @@ function getNextRootIndex(currentIndex: number) {
   padding: 0;
   margin: 0;
   width: 100%;
+  font-weight: 100;
+  font-variant-numeric: normal; 
+  font-family: 'Maple Mono CN';
+  letter-spacing: -0.5px;
 }
 
 .nav-tree-item {
@@ -141,16 +145,20 @@ function getNextRootIndex(currentIndex: number) {
   display: flex;
   align-items: center;
   padding: 4px 0px;
+  margin: 2px 4px;
   cursor: pointer;
   user-select: none;
   border-radius: 6px;
-  margin: 2px 4px;
   transition: all 0.1s ease-in-out;
   color: var(--fg-secondary-color);
   max-width: 100%;
   overflow: hidden;
   position: relative;
   z-index: 1;
+
+  @include media-down(md) {
+    padding: 2px 0px;
+  }
 
   &:hover {
     background-color: var(--bg-hover-color);

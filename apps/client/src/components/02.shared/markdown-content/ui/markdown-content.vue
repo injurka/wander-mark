@@ -146,13 +146,6 @@ function handleContentClick(event: MouseEvent) {
 
 <style lang="scss">
 .markdown-body {
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
   line-height: 1.7;
   color: var(--fg-primary-color);
   font-size: 1.05rem;

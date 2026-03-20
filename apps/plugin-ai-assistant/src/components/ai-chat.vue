@@ -27,7 +27,7 @@ watch(() => aiState.currentTopicId, () => scrollToBottom())
 
 function renderMarkdown(text: string) {
   try { return marked.parse(text) }
-  catch (e) { return text }
+  catch { return text }
 }
 
 function handleSend() {
@@ -56,7 +56,6 @@ function closeMenus() {
 
 <template>
   <div class="ai-tab-view" @click="closeMenus">
-    <!-- История чата -->
     <div ref="chatBodyRef" class="ai-body">
       <div v-if="!currentTopic || currentTopic.history.length === 0" style="text-align: center; color: var(--fg-muted-color); margin-top: 40px;">
         Новый диалог начат. Напишите первый запрос!
@@ -78,7 +77,6 @@ function closeMenus() {
       </template>
     </div>
 
-    <!-- Область ввода -->
     <div class="ai-input-area">
       <div class="ai-input-box">
         <textarea
@@ -89,19 +87,17 @@ function closeMenus() {
         />
 
         <div class="ai-input-bottom">
-          <!-- Левые инструменты -->
           <div class="ai-tools-left">
-            <button class="ai-tool-btn" title="Очистить чат" @click.stop="aiActions.clearCurrentTopic()">
+            <button class="ai-tool-btn shrink-none" title="Очистить чат" @click.stop="aiActions.clearCurrentTopic()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
             </button>
-            <button class="ai-tool-btn" title="Новый топик" @click.stop="aiActions.createNewTopic()">
+            <button class="ai-tool-btn shrink-none" title="Новый топик" @click.stop="aiActions.createNewTopic()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
             </button>
 
-            <!-- Промпты -->
             <div class="ai-dropdown-wrap">
               <button class="ai-tool-btn" title="Выбор промпта" @click.stop="showPromptMenu = !showPromptMenu; showModelMenu = false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 <span class="tool-text">{{ activePromptName }}</span>
               </button>
               <div v-if="showPromptMenu" class="ai-dropdown">
@@ -114,10 +110,9 @@ function closeMenus() {
               </div>
             </div>
 
-            <!-- Модели -->
             <div class="ai-dropdown-wrap">
               <button class="ai-tool-btn" title="Выбор модели" @click.stop="showModelMenu = !showModelMenu; showPromptMenu = false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></svg>
                 <span class="tool-text">{{ aiState.selectedModel }}</span>
               </button>
               <div v-if="showModelMenu" class="ai-dropdown">
@@ -131,7 +126,6 @@ function closeMenus() {
             </div>
           </div>
 
-          <!-- Правые инструменты (Кнопка отправки) -->
           <div class="ai-tools-right">
             <button v-if="aiState.isLoading" class="ai-send-btn is-stop" title="Отменить" @click.stop="cancelAiRequest">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>

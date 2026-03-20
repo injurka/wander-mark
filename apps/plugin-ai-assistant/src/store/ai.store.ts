@@ -1,4 +1,4 @@
-import type { AiHistoryItem, AiSystemPrompt, AiTopic } from '../types'
+import type { AiSystemPrompt, AiTopic } from '../types'
 import { reactive, watch } from 'vue'
 
 export const MODELS = [
@@ -11,17 +11,16 @@ export const MODELS = [
 export const aiState = reactive({
   isOpen: false,
   isMinimized: false,
+  isFullscreen: false,
   activeTab: 'chat' as 'chat' | 'settings' | 'topics',
   apiKey: '',
   isLoading: false,
   isInitialized: false,
   userPrompt: '',
 
-  // Топики
   topics: [] as AiTopic[],
   currentTopicId: null as string | null,
 
-  // Настройки генерации
   systemPrompts: [] as AiSystemPrompt[],
   selectedPromptId: 'default',
   selectedModel: MODELS[0],
@@ -43,8 +42,10 @@ export const aiActions = {
   toggle() {
     aiState.isOpen ? this.close() : this.open()
   },
+  toggleFullscreen() {
+    aiState.isFullscreen = !aiState.isFullscreen
+  },
 
-  // --- Управление топиками ---
   createNewTopic() {
     const newTopic: AiTopic = {
       id: Date.now().toString(),
@@ -78,7 +79,6 @@ export const aiActions = {
     return aiState.topics.find(t => t.id === aiState.currentTopicId)
   },
 
-  // --- Управление промптами ---
   addPrompt(name: string, content: string) {
     aiState.systemPrompts.push({ id: Date.now().toString(), name, content })
   },
