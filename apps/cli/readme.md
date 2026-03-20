@@ -49,10 +49,12 @@ bun run build
 ````json
 {
   "paths": {
-    "sourceNotesRoot": ".",
-    "metaSource": ".export/meta",
-    "outputContentRoot": ".output/content",
-    "outputMetaRoot": ".output/meta"
+    "sourceNotesRoot": "/mnt/c/Users/evai/Documents/obsidian-mark/",
+    "metaSource": "/mnt/c/Users/evai/Documents/obsidian-mark/.obsidian/export/meta",
+    "pluginsSource": "/mnt/c/Users/evai/Documents/obsidian-mark/.obsidian/export/plugins",
+    "outputContentRoot": "/mnt/c/Users/evai/Documents/obsidian-mark/.output/content",
+    "outputMetaRoot": "/mnt/c/Users/evai/Documents/obsidian-mark/.output/meta",
+    "outputPluginsRoot": "/mnt/c/Users/evai/Documents/obsidian-mark/.output/plugins"
   },
   "vaults": [
     {
