@@ -1,0 +1,100 @@
+import { aiActions, aiState } from '../store/ai.store'
+
+let abortController: AbortController | null = null
+
+export async function sendAiRequest(promptText: string, onScrollRequest: () => void) {
+  if (!promptText.trim() || aiState.isLoading)
+    return
+
+  if (!aiState.apiKey) {
+    aiState.activeTab = 'settings'
+    // eslint-disable-next-line no-alert
+    alert('Пожалуйста, укажите API ключ на вкладке "Настройки".')
+    return
+  }
+
+  // Если нет топика - создаем
+  if (!aiState.currentTopicId) {
+    aiActions.createNewTopic()
+  }
+
+  const topic = aiActions.getCurrentTopic()
+  if (!topic)
+    return
+
+  // Именуем топик по первому промпту, если он "Новый чат"
+  if (topic.title === 'Новый чат' || topic.title === 'Старый чат') {
+    topic.title = promptText.length > 30 ? `${promptText.slice(0, 30)}...` : promptText
+  }
+
+  const requestId = Date.now().toString()
+  const activePrompt = aiState.systemPrompts.find(p => p.id === aiState.selectedPromptId) || aiState.systemPrompts[0]
+
+  topic.history.push({
+    id: requestId,
+    prompt: promptText,
+    response: '',
+    status: 'loading',
+    date: Date.now(),
+  })
+  topic.updatedAt = Date.now()
+
+  aiState.isLoading = true
+  abortController = new AbortController()
+  onScrollRequest()
+
+  try {
+    const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiState.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: aiState.selectedModel,
+        messages: [
+          { role: 'system', content: activePrompt.content },
+          { role: 'user', content: promptText },
+        ],
+      }),
+      signal: abortController.signal,
+    })
+
+    if (!res.ok)
+      throw new Error(`Ошибка API: ${res.status}`)
+
+    const data = await res.json()
+    const responseText = data.choices?.[0]?.message?.content || 'Пустой ответ'
+
+    updateHistoryItem(requestId, { response: responseText, status: 'success' })
+  }
+  catch (error: any) {
+    if (error.name === 'AbortError') {
+      updateHistoryItem(requestId, { response: 'Запрос отменен.', status: 'aborted' })
+    }
+    else {
+      updateHistoryItem(requestId, { response: `Ошибка: ${error.message}`, status: 'error' })
+    }
+  }
+  finally {
+    aiState.isLoading = false
+    abortController = null
+    topic.updatedAt = Date.now()
+    onScrollRequest()
+  }
+}
+
+function updateHistoryItem(id: string, updates: any) {
+  const topic = aiActions.getCurrentTopic()
+  if (!topic)
+    return
+  const index = topic.history.findIndex(item => item.id === id)
+  if (index !== -1) {
+    topic.history[index] = { ...topic.history[index], ...updates }
+  }
+}
+
+export function cancelAiRequest() {
+  if (abortController)
+    abortController.abort()
+}

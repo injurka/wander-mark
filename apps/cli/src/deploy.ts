@@ -1,4 +1,5 @@
 import { exec } from 'node:child_process'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
@@ -15,7 +16,14 @@ export async function runDeploy(user: string, host: string, remotePath: string, 
     await execAsync(`ssh ${user}@${host} 'mkdir -p ${remotePath}'`)
 
     console.log('-> Создание архива payload.tar.gz...')
-    await execAsync(`cd ${absoluteOutputDir} && tar -czf ${tarballName} content meta`)
+
+    let foldersToArchive = 'content meta'
+    try {
+      await fs.access(path.join(absoluteOutputDir, 'plugins'))
+      foldersToArchive += ' plugins'
+    } catch (e) { }
+
+    await execAsync(`cd ${absoluteOutputDir} && tar -czf ${tarballName} ${foldersToArchive}`)
 
     console.log('-> Отправка архива на сервер...')
     const localTarPath = path.join(absoluteOutputDir, tarballName)

@@ -1,7 +1,7 @@
-import path from 'node:path'
 import { stat } from 'node:fs/promises'
+import path from 'node:path'
 
-const PORT = parseInt(process.env.PORT || '8080')
+const PORT = Number.parseInt(process.env.PORT || '8080')
 const BASE_PATH = process.env.FS_BASE_PATH || ''
 
 const MIME_OVERRIDES: Record<string, string> = {

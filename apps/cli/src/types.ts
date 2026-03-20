@@ -3,14 +3,12 @@ export enum ContentNavItemType {
   Directory = 'directory',
 }
 
-// --- Статистика и SEO ---
 export interface FileMetaData {
   words: number
-  readingTime: number // в минутах
-  lastModified: string // ISO date
+  readingTime: number
+  lastModified: string
 }
 
-// --- Элемент дерева ---
 export interface ContentNavItem {
   sysname: string
   title: string
@@ -19,26 +17,24 @@ export interface ContentNavItem {
   meta?: FileMetaData
 }
 
-// --- Поиск ---
 export interface SearchIndexItem {
   id: string
   title: string
   url: string
-  content: string // Очищенный текст для поиска
+  content: string
   tags?: string[]
 }
 
-// --- Граф знаний ---
 export interface GraphNode {
-  id: string // URL страницы
-  label: string // Заголовок
-  val: number // "Вес" узла
-  group?: string // Группа
+  id: string
+  label: string
+  val: number
+  group?: string
 }
 
 export interface GraphLink {
-  source: string // URL откуда
-  target: string // URL куда
+  source: string 
+  target: string 
 }
 
 export interface GraphData {
@@ -46,34 +42,37 @@ export interface GraphData {
   links: GraphLink[]
 }
 
-// --- Обратные ссылки ---
-// Ключ: URL целевой страницы. Значение: список страниц, ссылающихся на неё
-export type BacklinksMap = Record<string, Array<{ title: string; url: string }>>
+export type BacklinksMap = Record<string, Array<{ title: string, url: string }>>
 
-// --- Контейнер для сбора всех данных ---
 export interface ProcessingContext {
   searchIndex: SearchIndexItem[]
   graphData: GraphData
   backlinks: BacklinksMap
 }
 
-// --- Конфигурация проекта (config.json) ---
 export interface DeployConfig {
   host?: string
   user?: string
   path?: string
 }
 
+export interface VaultConfig {
+  sourcePath: string
+  exportPath?: string
+}
+
 export interface ProjectConfig {
   paths: {
     sourceNotesRoot: string
-    sourceDataFile: string
     metaSource: string
+    pluginsSource?: string
     outputContentRoot: string
     outputMetaRoot: string
+    outputPluginsRoot?: string
   }
   ignore: {
     folders: string[]
   }
+  vaults: VaultConfig[]
   deploy?: DeployConfig
 }

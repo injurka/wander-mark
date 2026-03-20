@@ -11,6 +11,7 @@ defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'openSearch'): void
+  (e: 'openPlugins'): void
 }>()
 const menu = defineModel('menu', { required: true })
 
@@ -79,6 +80,8 @@ const currentVault = computed(() => route.params.vault as string)
     </div>
 
     <div class="header-right flex-shrink-0">
+      <slot name="toolbar-extra" />
+
       <KitBtn
         variant="text"
         size="sm"
@@ -87,7 +90,10 @@ const currentVault = computed(() => route.params.vault as string)
         @click="emit('openSearch')"
       />
 
-      <ViewerSettingsMenu :vault="currentVault" />
+      <ViewerSettingsMenu 
+        :vault="currentVault" 
+        @open-plugins="emit('openPlugins')" 
+      />
     </div>
   </header>
 </template>

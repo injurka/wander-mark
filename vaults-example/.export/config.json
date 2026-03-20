@@ -1,0 +1,19 @@
+{
+  "paths": {
+    "sourceNotesRoot": "/root/my/wander-mark/vaults-example/",
+    "sourceDataFile": "/root/my/wander-mark/vaults-example/.export/output-md.json",
+    "metaSource": "/root/my/wander-mark/vaults-example/.export/meta",
+    "outputContentRoot": "/root/my/wander-mark/vaults-example/.output/content",
+    "outputMetaRoot": "/root/my/wander-mark/vaults-example/.output/meta",
+    "outputPluginsRoot": "/root/my/wander-mark/vaults-example/.output/plugins"
+  },
+  "ignore": {
+    "folders": []
+  },
+  "vaults": [
+    {
+      "sourcePath": "Korean",
+      "exportPath": "Korean"
+    }
+  ]
+}

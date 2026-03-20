@@ -13,10 +13,18 @@
 			"path": "apps/cli"
 		},
 		{
+			"path": "apps/plugin-ai-assistant"
+		},
+		{
+			"path": "vaults-example"
+		},
+		{
 			"path": "docker"
-		}
+		},
 	],
 	"settings": {
 		"explorer.fileNesting.expand": false
 	}
 }
+
+

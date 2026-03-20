@@ -46,7 +46,6 @@ const {
           <div v-for="vault in vaults" :key="vault.id" class="vault-item">
             <div class="vault-info" @click="openVault(vault.id)">
               
-              <!-- Отображение кастомной иконки или дефолтной -->
               <div class="vault-icon-wrapper">
                 <img 
                   v-if="iconUrls[vault.id] && !iconErrors[vault.id]" 
@@ -63,22 +62,41 @@ const {
                 />
               </div>
 
-              <div>
-                <!-- Отображение названия и описания -->
-                <h3 class="vault-name">{{ vault.title || vault.name }}</h3>
-                <p class="vault-url">{{ vault.description || vault.url }}</p>
+              <div class="vault-text-content">
+                <h3 class="vault-name" :title="vault.title || vault.name">
+                  {{ vault.title || vault.name }}
+                </h3>
+                <p class="vault-url" :title="vault.description || vault.url">
+                  {{ vault.description || vault.url }}
+                </p>
               </div>
             </div>
 
-            <div v-if="installingMap[vault.id]" class="install-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: `${progressMap[vault.id]}%` }" />
-              </div>
-              <span class="progress-text">{{ progressMap[vault.id] }}%</span>
+            <div v-if="installingMap[vault.id]" class="install-progress-circle">
+              <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle"
+                  :stroke-dasharray="`${progressMap[vault.id] || 0}, 100`"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <span class="percentage">{{ progressMap[vault.id] || 0 }}</span>
             </div>
 
             <div v-else class="vault-actions">
-              <KitBtn v-if="!vault.isDownloaded" variant="tonal" size="sm" @click="handleInstall(vault.id)">Скачать</KitBtn>
+              <template v-if="!vault.isDownloaded">
+                <KitBtn class="btn-download-desktop" variant="tonal" size="sm" @click="handleInstall(vault.id)">
+                  Скачать
+                </KitBtn>
+                <KitBtn class="btn-download-mobile" variant="tonal" size="sm" icon="mdi:download" title="Скачать" @click="handleInstall(vault.id)" />
+              </template>
+
               <KitBtn v-else variant="text" size="sm" icon="mdi:refresh" title="Переустановить" @click="handleInstall(vault.id)" />
               <KitBtn variant="text" color="secondary" size="sm" icon="mdi:delete-outline" title="Удалить" @click="confirmDelete(vault.id)" />
             </div>
@@ -195,10 +213,19 @@ const {
   &:hover {
     border-color: var(--fg-accent-color);
   }
+
+  @include media-down(sm) {
+    padding: 12px;
+    gap: 10px;
+  }
 }
 .vault-info {
   display: flex; align-items: center; gap: 16px;
   flex: 1; min-width: 0; cursor: pointer;
+  
+  @include media-down(sm) {
+    gap: 10px;
+  }
 }
 
 .vault-icon-wrapper {
@@ -208,6 +235,11 @@ const {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  
+  @include media-down(sm) {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .vault-image-icon {
@@ -220,32 +252,90 @@ const {
 .vault-icon {
   font-size: 2.2rem; color: var(--fg-muted-color);
   &.ready { color: var(--fg-accent-color); }
+  
+  @include media-down(sm) {
+    font-size: 1.8rem;
+  }
+}
+
+.vault-text-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .vault-name {
   font-size: 1.15rem; font-weight: 600; color: var(--fg-primary-color); margin: 0 0 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  
+  @include media-down(sm) {
+    font-size: 1rem;
+    margin: 0 0 2px;
+  }
 }
 .vault-url {
   font-size: 0.85rem; color: var(--fg-secondary-color); margin: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  
+  @include media-down(sm) {
+    font-size: 0.75rem;
+  }
 }
+
+.install-progress-circle {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.circular-chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: var(--bg-tertiary-color);
+  stroke-width: 3.5;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke: var(--fg-accent-color);
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.percentage {
+  position: absolute;
+  font-size: 0.65rem;
+  font-family: 'Maple Mono CN', monospace;
+  font-weight: 600;
+  color: var(--fg-primary-color);
+}
+
 .vault-actions {
   display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
-.install-progress {
-  display: flex; align-items: center; gap: 12px; width: 150px;
+
+.btn-download-mobile {
+  display: none !important;
 }
-.progress-bar {
-  flex: 1; height: 6px; background-color: var(--bg-primary-color);
-  border-radius: 3px; overflow: hidden;
+
+@include media-down(sm) {
+  .btn-download-desktop { display: none !important; }
+  .btn-download-mobile { display: inline-flex !important; }
 }
-.progress-fill {
-  height: 100%; background-color: var(--fg-accent-color);
-  transition: width 0.3s ease;
-}
-.progress-text {
-  font-size: 0.8rem; font-weight: 600; color: var(--fg-accent-color);
-}
+
 .mr-2 { margin-right: 8px; }
 .custom-scrollbar {
   &::-webkit-scrollbar { width: 6px; }

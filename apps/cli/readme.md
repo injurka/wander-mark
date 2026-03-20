@@ -40,23 +40,26 @@ bun run dev
 bun run build
 ```
 
----
-
 ## ⚙️ Конфигурация (`config.json`)
 
-По умолчанию CLI ищет файл `config.json` в директории запуска. Вы можете настроить пути к исходникам Obsidian, папкам для билда и данные сервера.
+По умолчанию CLI ищет файл `config.json` в директории запуска. Вы можете настроить пути к исходникам Obsidian, папки для билда и перечень обрабатываемых хранилищ (vaults).
 
 Пример `config.json`:
 
-```json
+````json
 {
   "paths": {
     "sourceNotesRoot": ".",
-    "sourceDataFile": ".obsidian/export/output-md.json",
-    "metaSource": ".obsidian/export/meta",
+    "metaSource": ".export/meta",
     "outputContentRoot": ".output/content",
     "outputMetaRoot": ".output/meta"
   },
+  "vaults": [
+    {
+      "sourcePath": "Korean",
+      "exportPath": "Korean"
+    }
+  ],
   "ignore": {
     "folders": [
       "Frame Forge",
@@ -71,8 +74,6 @@ bun run build
 }
 ```
 
----
-
 ## 🛠 Использование CLI
 
 Запускайте скрипт с помощью `bun start`. Инструмент поддерживает передачу аргументов для гибкого управления сборкой и деплоем.
@@ -83,7 +84,7 @@ bun run build
 
 ```bash
 bun start
-```
+````
 
 ### Указать кастомный путь к конфигу
 
@@ -151,5 +152,8 @@ bun start --help
 
 <!--
 Пример частой команды локального использования:
+
 bun start -c /mnt/c/Users/evai/Documents/obsidian-mark/.obsidian/export/config.json --deploy
+
+bun start -c /root/my/wander-mark/vaults-example/.export/config.json
  -->

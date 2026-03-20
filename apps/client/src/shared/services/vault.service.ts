@@ -89,6 +89,15 @@ export const useVaultService = () => {
         if (settings.styles) {
           filesToSync.push(...settings.styles.map((s: string) => `meta/${vaultId}/${s}`))
         }
+
+        if (settings.plugins && Array.isArray(settings.plugins)) {
+          for (const p of settings.plugins) {
+            const pUrl = typeof p === 'string' ? p : p.url;
+            if (pUrl && !pUrl.startsWith('http') && !pUrl.startsWith('data:')) {
+              filesToSync.push(pUrl.replace(/^\//, ''));
+            }
+          }
+        }
       }
     } catch (e) { }
 

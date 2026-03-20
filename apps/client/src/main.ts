@@ -1,3 +1,4 @@
+import * as Vue from 'vue' 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createHead } from '@vueuse/head'
@@ -10,6 +11,9 @@ import { vRipple } from '~/shared/directives/ripple'
 
 import '~/assets/scss/global.scss'
 import '~/assets/scss/normalize.scss'
+
+
+; (window as any).Vue = Vue
 
 const app = createApp(App)
 const pinia = createPinia()

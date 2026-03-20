@@ -279,7 +279,7 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
 
 .search-modal {
   width: 100%;
-  max-width: 650px;
+  max-width: 800px;
   background-color: var(--bg-secondary-color);
   border: 1px solid var(--border-secondary-color);
   border-radius: 16px;

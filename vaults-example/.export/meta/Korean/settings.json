@@ -1,0 +1,15 @@
+{
+  "info": {
+    "sysname": "Korean",
+    "title": "Korean",
+    "description": "Korean Korean Korean"
+  },
+  "plugins": [
+    {
+      "id": "search-bar",
+      "url": "plugins/search-bar.js",
+      "version": "1.0.0",
+      "enabledByDefault": true
+    }
+  ]
+}

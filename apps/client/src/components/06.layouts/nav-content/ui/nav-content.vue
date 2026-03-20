@@ -1,10 +1,9 @@
---- File: src/components/06.layouts/nav-content/ui/nav-content.vue ---
-
 <script lang="ts" setup>
 import { ref, watchEffect, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { useEventListener, useSwipe } from '@vueuse/core'
+import { Icon } from '@iconify/vue'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
@@ -12,10 +11,17 @@ import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { useVaultService } from '~/shared/services/vault.service'
 import { isNative } from '~/shared/services/fs.client'
 
+import { PluginSlot, PluginManagerDialog } from '~/components/02.shared/plugins'
+import { usePluginStore } from '~/components/02.shared/plugins/store'
+
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
 const vaultService = useVaultService()
 const route = useRoute()
+const router = useRouter()
+
+const pluginStore = usePluginStore()
+const pluginsDialogOpen = ref(false)
 
 const menu = ref(true)
 const searchOpen = ref(false)
@@ -85,43 +91,45 @@ watchEffect(() => {
 const localScripts = ref<any[]>([])
 const localStyles = ref<any[]>([])
 
+const resolveAppUrl = async (vaultConfig: any, path: string) => {
+  if (path.startsWith('http') || path.startsWith('data:')) return path
+  
+  const cleanPath = path.replace(/^\//, '')
+
+  if (vaultConfig.type === 'local' && vaultConfig.localPath) {
+    return await vaultService.getMediaUrl(`${vaultConfig.localPath}/${cleanPath}`, true)
+  }
+
+  if (vaultConfig.isDownloaded) {
+    if (isNative) {
+      return await vaultService.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
+    } else {
+      const content = await vaultService.getFileContent(vaultConfig.id, cleanPath)
+      if (content) {
+        const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
+        const blob = new Blob([content], { type: mimeType })
+        return URL.createObjectURL(blob)
+      }
+    }
+  }
+
+  return `${vaultConfig.url}/${cleanPath}`
+}
+
 watch(() => data.value.settings, async (settings) => {
   if (!settings) {
     localScripts.value = []
-    localStyles.value =[]
+    localStyles.value = []
     return
   }
   const vault = vaultService.getVault(params.value.vault)
   if (!vault) return
 
-  const resolveUrl = async (path: string) => {
-    if (path.startsWith('http') || path.startsWith('data:')) return path
-    
-    if (vault.type === 'local' && vault.localPath) {
-      return await vaultService.getMediaUrl(`${vault.localPath}/meta/${params.value.vault}/${path}`, true)
-    }
-
-    if (vault.isDownloaded) {
-      if (isNative) {
-        return await vaultService.getMediaUrl(`vaults/${params.value.vault}/meta/${params.value.vault}/${path}`)
-      } else {
-        const content = await vaultService.getFileContent(vault.id, `meta/${params.value.vault}/${path}`)
-        if (content) {
-          const mimeType = path.endsWith('.css') ? 'text/css' : 'application/javascript'
-          const blob = new Blob([content], { type: mimeType })
-          return URL.createObjectURL(blob)
-        }
-      }
-    }
-
-    return `${vault.url}/meta/${params.value.vault}/${path}`
-  }
-
-  localScripts.value = await Promise.all((settings.scripts ||[]).map(async (src: string) => ({
-    src: await resolveUrl(src), defer: true
+  localScripts.value = await Promise.all((settings.scripts || []).map(async (src: string) => ({
+    src: await resolveAppUrl(vault, `meta/${params.value.vault}/${src}`), defer: true
   })))
-  localStyles.value = await Promise.all((settings.styles ||[]).map(async (href: string) => ({
-    rel: 'stylesheet', href: await resolveUrl(href)
+  localStyles.value = await Promise.all((settings.styles || []).map(async (href: string) => ({
+    rel: 'stylesheet', href: await resolveAppUrl(vault, `meta/${params.value.vault}/${href}`)
   })))
 }, { immediate: true })
 
@@ -131,6 +139,46 @@ useHead(() => ({
 }))
 
 watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
+
+watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
+  if (!vault || status.value === 'pending') return
+
+  const vaultConfig = vaultService.getVault(vault)
+  if (!vaultConfig) return
+
+  await pluginStore.init(vault, {
+    vaultId: vault,
+    vaultUrl: vaultConfig.url || '',
+    searchIndex: data.value.searchIndex,
+    navItems: data.value.nav,
+    router,
+    getFileContent: (path: string) => vaultService.getFileContent(vault, path),
+  })
+
+  if (settings?.plugins && Array.isArray(settings.plugins)) {
+    for (const p of settings.plugins) {
+      const pId = typeof p === 'string' ? p : p.id;
+      const pUrl = typeof p === 'string' ? p : p.url;
+      const enabledByDefault = typeof p === 'string' ? true : (p.enabledByDefault ?? true);
+
+      if (!pUrl) continue;
+
+      const pluginUrl = await resolveAppUrl(vaultConfig, pUrl);
+
+      const alreadyInstalled = pluginStore.plugins.some(
+        installed => installed.id === pId || installed.sourceUrl === pluginUrl
+      );
+
+      if (!alreadyInstalled) {
+        try {
+          await pluginStore.install(pluginUrl, enabledByDefault);
+        } catch (e) {
+          console.warn(`[nav-content] Failed to auto-install plugin "${pId || pUrl}":`, e);
+        }
+      }
+    }
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -139,12 +187,28 @@ watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 
     <div v-else class="layout-content">
       <ContentViewerNavigation v-model:menu="menu" :items="data.nav" />
       <main ref="mainAreaRef" class="main-area">
-        <ContentViewerHeader :menu="menu" :visible="isHeaderVisible" @update:menu="menu = $event" @open-search="searchOpen = true" />
+        <ContentViewerHeader 
+          :menu="menu" 
+          :visible="isHeaderVisible" 
+          @update:menu="menu = $event" 
+          @open-search="searchOpen = true"
+          @open-plugins="pluginsDialogOpen = true"
+        >
+          <template #toolbar-extra>
+            <PluginSlot name="toolbar" />
+          </template>
+        </ContentViewerHeader>
         <div ref="scrollableRef" class="content-scrollable" :class="{ borderless: contentViewerStore.borderlessViewEnabled }">
+          <PluginSlot name="content-before" />
           <router-view />
+          <PluginSlot name="content-after" />
         </div>
       </main>
       <SearchModal v-model="searchOpen" />
+
+      <PluginSlot name="overlay" />
+
+      <PluginManagerDialog v-model:visible="pluginsDialogOpen" />
     </div>
   </div>
 </template>

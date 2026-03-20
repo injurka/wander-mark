@@ -8,42 +8,72 @@ async function copyMetaFiles(config: ProjectConfig) {
   const destMetaDir = path.resolve(process.cwd(), config.paths.outputMetaRoot)
 
   try {
-    // Рекурсивно копируем заранее заготовленную структуру meta (включая images/icon.png)
     await fs.access(sourceMetaDir)
     await fs.cp(sourceMetaDir, destMetaDir, { recursive: true, force: true })
     console.log(`📁 Предварительные Meta-данные и иконки скопированы.`)
   }
-  catch (e: any) { /* ignore */ }
+  catch { /* ignore */ }
+}
+
+async function copyPluginsFiles(config: ProjectConfig) {
+  if (!config.paths.pluginsSource || !config.paths.outputPluginsRoot)
+    return
+
+  const sourceDir = path.resolve(process.cwd(), config.paths.pluginsSource)
+  const destDir = path.resolve(process.cwd(), config.paths.outputPluginsRoot)
+
+  try {
+    await fs.access(sourceDir)
+    await fs.cp(sourceDir, destDir, { recursive: true, force: true })
+    console.log(`🧩 Глобальные плагины скопированы.`)
+  }
+  catch { /* ignore */ }
 }
 
 export async function runAutoGeneration(config: ProjectConfig) {
   console.log('🚀 Starting Auto Generation process...')
 
-  const sourceDataFilePath = path.resolve(process.cwd(), config.paths.sourceDataFile)
-  const outputMdJsonRaw = await fs.readFile(sourceDataFilePath, 'utf-8')
-  const outputMdJson = JSON.parse(outputMdJsonRaw)
-
-  const ignoredFolderNames = config.ignore.folders
+  const ignoredFolderNames = config.ignore?.folders || []
   const exportPathRoot = path.resolve(process.cwd(), config.paths.outputContentRoot)
   const metaPathRoot = path.resolve(process.cwd(), config.paths.outputMetaRoot)
   const sourceNotesRoot = path.resolve(process.cwd(), config.paths.sourceNotesRoot)
 
-  const filteredOutputMdJson = outputMdJson.filter((item: any) => {
-    return !ignoredFolderNames.includes(path.basename(item.sourcePath))
-  })
-
-  // 1. Создаем папку контента и копируем заранее подготовленные файлы метаданных (в т.ч. иконки)
+  // 1. Создаем папку контента и копируем статику
   await fs.mkdir(exportPathRoot, { recursive: true })
   await fs.mkdir(metaPathRoot, { recursive: true })
+
+  // 2. Копируем meta-исходники (вместе с вашим оригинальным settings.json)
   await copyMetaFiles(config)
+  await copyPluginsFiles(config)
 
-  for await (const item of filteredOutputMdJson) {
-    const currentSourcePath = path.join(sourceNotesRoot, item.sourcePath)
-    const currentExportPath = path.join(exportPathRoot, item.exportPath)
-    const currentNavSysname = item.navigation.sysname
+  if (!config.vaults || config.vaults.length === 0) {
+    console.log('⚠️ В config.json не указан массив "vaults". Сборка остановлена.')
+    return
+  }
 
+  for await (const vault of config.vaults) {
+    const currentSourcePath = path.join(sourceNotesRoot, vault.sourcePath)
+    const exportDirName = vault.exportPath || vault.sourcePath
+    const currentExportPath = path.join(exportPathRoot, exportDirName)
+
+    let currentNavSysname = exportDirName
+
+    // 3. Читаем settings.json из уже скопированной папки meta, чтобы достать sysname
     try {
-      // 2. Обработка Markdown и генерация graph.json, tree.json и т.д.
+      const settingsPath = path.join(metaPathRoot, exportDirName, 'settings.json')
+      const settingsRaw = await fs.readFile(settingsPath, 'utf-8')
+      const settings = JSON.parse(settingsRaw)
+
+      if (settings?.info?.sysname) {
+        currentNavSysname = settings.info.sysname
+      }
+    }
+    catch {
+      console.log(`ℹ️ Файл settings.json для "${exportDirName}" не найден или пуст, используется системное имя папки.`)
+    }
+
+    // 4. Запуск мигратора для хранилища
+    try {
       await runMigrator(
         currentSourcePath,
         currentExportPath,
@@ -51,19 +81,6 @@ export async function runAutoGeneration(config: ProjectConfig) {
         ignoredFolderNames,
         metaPathRoot,
       )
-
-      const vaultMetaDir = path.join(metaPathRoot, currentNavSysname)
-      await fs.mkdir(vaultMetaDir, { recursive: true })
-
-      // 3. Формируем settings.json, удаляя устаревшее поле icon
-      const navInfo = { ...item.navigation }
-      if ('icon' in navInfo) {
-        delete navInfo.icon
-      }
-
-      const settingsPath = path.join(vaultMetaDir, 'settings.json')
-      await fs.writeFile(settingsPath, JSON.stringify({ info: navInfo }, null, 2))
-      console.log(`📝 Settings saved: meta/${currentNavSysname}/settings.json`)
     }
     catch (e: any) {
       console.warn(`⚠️ SKIP "${currentNavSysname}": ${e.message}\n`)
