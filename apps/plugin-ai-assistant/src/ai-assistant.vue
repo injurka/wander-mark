@@ -8,6 +8,13 @@ import { aiActions, aiState, initAiStore } from './store/ai.store'
 defineOptions({ name: 'AiAssistantWidget', inheritAttrs: false })
 
 onMounted(() => initAiStore())
+
+function openPage() {
+  aiActions.close()
+  if (aiState.router && aiState.vaultId) {
+    aiState.router.push(`/${aiState.vaultId}/plugin/ai-assistant`)
+  }
+}
 </script>
 
 <template>
@@ -32,7 +39,10 @@ onMounted(() => initAiStore())
               AI Assistant
             </div>
             <div class="ai-header-actions">
-              <!-- Кнопка "На весь экран" -->
+              <!-- Кнопка "Открыть на отдельной странице" -->
+              <button class="ai-icon-btn" title="Открыть на отдельной странице" type="button" @click.stop="openPage">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              </button>
               <button class="ai-icon-btn" :title="aiState.isFullscreen ? 'Оконный режим' : 'На весь экран'" type="button" @click.stop="aiActions.toggleFullscreen()">
                 <svg v-if="!aiState.isFullscreen" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M16 3h3a2 2 0 0 1 2 2v3" /><path d="M8 21H5a2 2 0 0 1-2-2v-3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M16 3v3a2 2 0 0 0 2 2h3" /><path d="M8 21v-3a2 2 0 0 0-2-2H3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>

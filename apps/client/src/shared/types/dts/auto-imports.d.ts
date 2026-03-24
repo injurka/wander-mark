@@ -157,6 +157,7 @@ declare global {
   const useClipboardItems: typeof import('@vueuse/core').useClipboardItems
   const useCloned: typeof import('@vueuse/core').useCloned
   const useColorMode: typeof import('@vueuse/core').useColorMode
+  const useConfirm: typeof import('../../composables/use-confirm').useConfirm
   const useConfirmDialog: typeof import('@vueuse/core').useConfirmDialog
   const useCountdown: typeof import('@vueuse/core').useCountdown
   const useCounter: typeof import('@vueuse/core').useCounter
@@ -282,6 +283,7 @@ declare global {
   const useTitle: typeof import('@vueuse/core').useTitle
   const useToNumber: typeof import('@vueuse/core').useToNumber
   const useToString: typeof import('@vueuse/core').useToString
+  const useToast: typeof import('../../composables/use-toast').useToast
   const useToggle: typeof import('@vueuse/core').useToggle
   const useTransition: typeof import('@vueuse/core').useTransition
   const useTypedRouteParams: typeof import('../../composables/use-typed-route').useTypedRouteParams
@@ -325,6 +327,12 @@ declare global {
   // @ts-ignore
   export type { ThemesVariant } from '../../composables/use-change-theme'
   import('../../composables/use-change-theme')
+  // @ts-ignore
+  export type { ConfirmOptions } from '../../composables/use-confirm'
+  import('../../composables/use-confirm')
+  // @ts-ignore
+  export type { ToastType, ToastOptions, Toast } from '../../composables/use-toast'
+  import('../../composables/use-toast')
   // @ts-ignore
   export type { VaultRouteParams } from '../../composables/use-typed-route'
   import('../../composables/use-typed-route')
@@ -489,6 +497,7 @@ declare module 'vue' {
     readonly useClipboardItems: UnwrapRef<typeof import('@vueuse/core')['useClipboardItems']>
     readonly useCloned: UnwrapRef<typeof import('@vueuse/core')['useCloned']>
     readonly useColorMode: UnwrapRef<typeof import('@vueuse/core')['useColorMode']>
+    readonly useConfirm: UnwrapRef<typeof import('../../composables/use-confirm')['useConfirm']>
     readonly useConfirmDialog: UnwrapRef<typeof import('@vueuse/core')['useConfirmDialog']>
     readonly useCountdown: UnwrapRef<typeof import('@vueuse/core')['useCountdown']>
     readonly useCounter: UnwrapRef<typeof import('@vueuse/core')['useCounter']>
@@ -614,6 +623,7 @@ declare module 'vue' {
     readonly useTitle: UnwrapRef<typeof import('@vueuse/core')['useTitle']>
     readonly useToNumber: UnwrapRef<typeof import('@vueuse/core')['useToNumber']>
     readonly useToString: UnwrapRef<typeof import('@vueuse/core')['useToString']>
+    readonly useToast: UnwrapRef<typeof import('../../composables/use-toast')['useToast']>
     readonly useToggle: UnwrapRef<typeof import('@vueuse/core')['useToggle']>
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useTypedRouteParams: UnwrapRef<typeof import('../../composables/use-typed-route')['useTypedRouteParams']>

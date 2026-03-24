@@ -1,5 +1,7 @@
 import { markRaw } from 'vue'
 import AiAssistant from './ai-assistant.vue'
+import AiPage from './ai-page.vue'
+import { aiActions } from './store/ai.store'
 
 import styles from './styles/ai-assistant.css?raw'
 
@@ -14,9 +16,14 @@ export default {
     toolbar: markRaw(AiAssistant),
   },
 
+  pages: {
+    index: markRaw(AiPage),
+  },
+
   styles,
 
-  activate() {
+  activate(ctx: any) {
+    aiActions.setContext(ctx)
     // eslint-disable-next-line no-console
     console.log('[AI Assistant] Activated')
   },

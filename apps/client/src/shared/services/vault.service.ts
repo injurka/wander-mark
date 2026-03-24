@@ -10,11 +10,57 @@ export interface VaultConfig {
   url: string
   localPath?: string
   isDownloaded: boolean
-  name?: string // Для обратной совместимости со старыми сохранениями
+  name?: string
 }
 
 export const useVaultService = () => {
   const vaults = useLocalStorage<VaultConfig[]>('app-vaults', [])
+
+  const initPredefinedVaults = async () => {
+    try {
+      const basePath = import.meta.env.BASE_URL || '/'
+      const res = await fetch(`${basePath}config.json`)
+      if (res.ok) {
+        const config = await res.json()
+        const serverUrl = config.url || config.serverUrl
+        if (serverUrl && Array.isArray(config.vaults)) {
+          let updated = false
+          for (const vaultId of config.vaults) {
+            if (!vaults.value.find(v => v.id === vaultId)) {
+              const cleanServerUrl = serverUrl.replace(/\/$/, '')
+              const vaultUrl = `${cleanServerUrl}/${vaultId}`
+              vaults.value.push({
+                id: vaultId,
+                title: vaultId,
+                description: '',
+                type: 'remote',
+                url: vaultUrl,
+                isDownloaded: false
+              })
+              updated = true
+            }
+          }
+          if (updated) {
+            // Фоновая подгрузка метаданных для новых хранилищ
+            config.vaults.forEach((vaultId: string) => {
+              const vault = vaults.value.find(v => v.id === vaultId)
+              if (vault && vault.title === vaultId) {
+                fetch(`${vault.url}/meta/${vaultId}/settings.json`)
+                  .then(r => r.json())
+                  .then(settings => {
+                    if (settings.info?.title) vault.title = settings.info.title
+                    if (settings.info?.description) vault.description = settings.info.description
+                  })
+                  .catch(e => console.warn(`Failed to fetch metadata for predefined vault ${vaultId}:`, e))
+              }
+            })
+          }
+        }
+      }
+    } catch (e) {
+      console.log('No config.json found or failed to parse, skipping predefined vaults.')
+    }
+  }
 
   const addRemoteVault = async (id: string, rawUrl: string) => {
     const cleanUrl = rawUrl.replace(/\/$/, '')
@@ -159,7 +205,6 @@ export const useVaultService = () => {
       onProgress(Math.floor((loaded / (filesToSync.length + mediaArray.length)) * 100))
     }
 
-    // Безопасная попытка загрузить иконку хранилища (не падает, если её нет)
     try {
       const iconPath = `meta/${vaultId}/images/icon.png`
       const iconRes = await fetch(`${vault.url}/${iconPath}`)
@@ -167,8 +212,7 @@ export const useVaultService = () => {
         const blob = await iconRes.blob()
         await writeBinaryFile(`vaults/${vaultId}/${iconPath}`, blob)
       }
-    } catch (e) {
-      // Игнорируем отсутствие иконки
+    } catch {
     }
 
     if (failedFiles.length > 0) {
@@ -248,6 +292,7 @@ export const useVaultService = () => {
 
   return {
     vaults,
+    initPredefinedVaults,
     addRemoteVault,
     installVault,
     deleteVault,

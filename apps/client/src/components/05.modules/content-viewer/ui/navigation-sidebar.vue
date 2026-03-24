@@ -33,7 +33,7 @@ useSwipe(sidebarRef, {
 })
 
 async function selectItem(item: ContentNavItem) {
-  const path = findPathBySysname(props.items || [], item.sysname)
+  const path = findPathBySysname(props.items ||[], item.sysname)
   if (path) {
     if (window.innerWidth < 768) {
       menu.value = false
@@ -105,6 +105,10 @@ function stopResize() {
       </div>
 
       <div class="sidebar-footer">
+        <button class="home-link" @click="router.push(`/${params.vault}`)">
+          <Icon icon="mdi:book-open-page-variant-outline" class="home-icon" />
+          <span>Главная хранилища</span>
+        </button>
         <button class="home-link" @click="router.push(AppRoutePaths.Root)">
           <Icon icon="mdi:home-outline" class="home-icon" />
           <span>Все хранилища</span>
@@ -195,6 +199,9 @@ function stopResize() {
   padding: 6px;
   border-top: 1px solid var(--border-secondary-color);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .home-link {

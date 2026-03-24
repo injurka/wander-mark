@@ -1,4 +1,4 @@
-import type { AiSystemPrompt, AiTopic } from '../types'
+import type { AiSystemPrompt, AiTopic, PluginContext } from '../types'
 import { reactive, watch } from 'vue'
 
 export const MODELS = [
@@ -24,9 +24,17 @@ export const aiState = reactive({
   systemPrompts: [] as AiSystemPrompt[],
   selectedPromptId: 'default',
   selectedModel: MODELS[0],
+
+  router: null as any,
+  vaultId: '',
 })
 
 export const aiActions = {
+  setContext(ctx: PluginContext) {
+    aiState.router = ctx.router
+    aiState.vaultId = ctx.vaultId
+  },
+
   open() {
     aiState.isOpen = true
     aiState.isMinimized = false
@@ -99,17 +107,14 @@ export function initAiStore() {
   if (aiState.isInitialized)
     return
 
-  // 1. Восстанавливаем API ключ и Модель
   aiState.apiKey = localStorage.getItem('wm-ai-apikey') || ''
   aiState.selectedModel = localStorage.getItem('wm-ai-model') || MODELS[0]
 
-  // 2. Восстанавливаем или создаем дефолтные промпты
   const savedPrompts = localStorage.getItem('wm-ai-prompts')
   if (savedPrompts) {
     aiState.systemPrompts = JSON.parse(savedPrompts)
   }
   else {
-    // Миграция старого промпта, если был
     const oldPrompt = localStorage.getItem('wm-ai-sysprompt')
     aiState.systemPrompts = [{
       id: 'default',
@@ -119,13 +124,11 @@ export function initAiStore() {
   }
   aiState.selectedPromptId = localStorage.getItem('wm-ai-selected-prompt') || aiState.systemPrompts[0].id
 
-  // 3. Восстанавливаем топики
   const savedTopics = localStorage.getItem('wm-ai-topics')
   if (savedTopics) {
     aiState.topics = JSON.parse(savedTopics)
   }
   else {
-    // Миграция старой истории в первый топик
     const oldHistory = localStorage.getItem('wm-ai-history')
     if (oldHistory) {
       aiState.topics = [{
@@ -137,7 +140,6 @@ export function initAiStore() {
     }
   }
 
-  // Устанавливаем активный топик
   const lastTopicId = localStorage.getItem('wm-ai-current-topic')
   if (lastTopicId && aiState.topics.some(t => t.id === lastTopicId)) {
     aiState.currentTopicId = lastTopicId
@@ -148,7 +150,6 @@ export function initAiStore() {
 
   aiState.isInitialized = true
 
-  // Синхронизация
   watch(() => aiState.apiKey, val => localStorage.setItem('wm-ai-apikey', val))
   watch(() => aiState.selectedModel, val => localStorage.setItem('wm-ai-model', val))
   watch(() => aiState.selectedPromptId, val => localStorage.setItem('wm-ai-selected-prompt', val))

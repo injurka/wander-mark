@@ -3,7 +3,6 @@ import { ref, watchEffect, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { useEventListener, useSwipe } from '@vueuse/core'
-import { Icon } from '@iconify/vue'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
@@ -13,6 +12,8 @@ import { isNative } from '~/shared/services/fs.client'
 
 import { PluginSlot, PluginManagerDialog } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
+import { useToast } from '~/shared/composables/use-toast'
+import { useConfirm } from '~/shared/composables/use-confirm'
 
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
@@ -23,17 +24,30 @@ const router = useRouter()
 const pluginStore = usePluginStore()
 const pluginsDialogOpen = ref(false)
 
-const menu = ref(true)
+const { showToast } = useToast()
+const { confirm } = useConfirm()
+
+// Если мы заходим сразу на страницу хранилища, скрываем меню
+const menu = ref(route.name !== 'VaultIndex')
 const searchOpen = ref(false)
 const scrollableRef = ref<HTMLElement | null>(null)
 const mainAreaRef = ref<HTMLElement | null>(null)
 const isSwipingOnScrollable = ref(false)
 
+// Следим за роутом: скрываем на главной, раскрываем при переходе в документы (на десктопах)
+watch(() => route.name, (newName, oldName) => {
+  if (newName === 'VaultIndex') {
+    menu.value = false
+  } else if (oldName === 'VaultIndex' && typeof window !== 'undefined' && window.innerWidth >= 768) {
+    menu.value = true
+  }
+})
+
 const isHeaderVisible = ref(true)
 const lastScrollTop = ref(0)
 const scrollThreshold = 50
 const status = ref<'pending' | 'success'>('pending')
-const data = ref<{nav: any, settings: any, backlinks: any, searchIndex: any}>({ nav: [], settings: null, backlinks: null, searchIndex:[] })
+const data = ref<{nav: any, settings: any, backlinks: any, searchIndex: any}>({ nav:[], settings: null, backlinks: null, searchIndex:[] })
 
 function handleScroll() {
   if (!scrollableRef.value) return
@@ -61,7 +75,7 @@ watch(() => params.value.vault, async (vault) => {
         return content ? JSON.parse(content) : null
     }
 
-    const [navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
+    const[navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
         parseJson(`content/${vault}/nav.json`),
         parseJson(`meta/${vault}/settings.json`),
         parseJson(`meta/${vault}/backlinks.json`),
@@ -118,17 +132,17 @@ const resolveAppUrl = async (vaultConfig: any, path: string) => {
 
 watch(() => data.value.settings, async (settings) => {
   if (!settings) {
-    localScripts.value = []
-    localStyles.value = []
+    localScripts.value =[]
+    localStyles.value =[]
     return
   }
   const vault = vaultService.getVault(params.value.vault)
   if (!vault) return
 
-  localScripts.value = await Promise.all((settings.scripts || []).map(async (src: string) => ({
+  localScripts.value = await Promise.all((settings.scripts ||[]).map(async (src: string) => ({
     src: await resolveAppUrl(vault, `meta/${params.value.vault}/${src}`), defer: true
   })))
-  localStyles.value = await Promise.all((settings.styles || []).map(async (href: string) => ({
+  localStyles.value = await Promise.all((settings.styles ||[]).map(async (href: string) => ({
     rel: 'stylesheet', href: await resolveAppUrl(vault, `meta/${params.value.vault}/${href}`)
   })))
 }, { immediate: true })
@@ -140,7 +154,7 @@ useHead(() => ({
 
 watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
 
-watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
+watch(() =>[params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
   if (!vault || status.value === 'pending') return
 
   const vaultConfig = vaultService.getVault(vault)
@@ -153,6 +167,8 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     navItems: data.value.nav,
     router,
     getFileContent: (path: string) => vaultService.getFileContent(vault, path),
+    showToast,
+    confirm,
   })
 
   if (settings?.plugins && Array.isArray(settings.plugins)) {
@@ -236,6 +252,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
   height: 100%;
   overflow-y: auto;
   padding: 50px 0 0 0;
+  
   &.borderless :deep(.content-viewer) {
     width: 100% !important;
     max-width: 100% !important;

@@ -17,6 +17,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('~/pages/[vault]/index.vue'),
       },
       {
+        path: 'plugin/:pluginId/:pluginPath(.*)*',
+        name: 'PluginPage',
+        component: () => import('~/pages/[vault]/plugin/[pluginId].vue'),
+      },
+      {
         path: ':pwd(.*)*',
         name: 'ContentViewer',
         component: () => import('~/pages/[vault]/[...pwd].vue'),
@@ -32,7 +37,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(), 
+  history: createWebHashHistory(),
   routes,
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) return savedPosition

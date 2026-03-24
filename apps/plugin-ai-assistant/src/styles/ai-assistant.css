@@ -160,3 +160,46 @@
 .ai-fade-enter-active .ai-modal, .ai-fade-leave-active .ai-modal { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 .ai-fade-enter-from, .ai-fade-leave-to { opacity: 0; }
 .ai-fade-enter-from .ai-modal, .ai-fade-leave-to .ai-modal { transform: scale(0.96) translateY(10px); }
+
+.ai-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  gap: 16px;
+}
+.ai-page-header {
+  flex-shrink: 0;
+}
+.ai-page-header h2 {
+  margin: 0 0 4px 0;
+  color: var(--fg-primary-color);
+}
+.ai-page-header p {
+  margin: 0;
+  color: var(--fg-secondary-color);
+  font-size: 0.9rem;
+}
+.ai-page-chat-wrapper {
+  flex: 1;
+  border: 1px solid var(--border-secondary-color);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary-color);
+}
+.ai-page {
+  .ai-tab-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .ai-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .ai-input-area {
+    flex-shrink: 0;
+  }
+}

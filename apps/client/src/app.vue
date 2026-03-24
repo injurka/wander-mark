@@ -6,6 +6,7 @@ import { useHead } from '@vueuse/head'
 import { useChangeTheme } from '~/shared/composables/use-change-theme'
 
 import { DefaultLayout } from '~/components/06.layouts/default'
+import { GlobalToasts, GlobalConfirm } from '~/components/02.shared/global-dialogs'
 
 useChangeTheme()
 
@@ -36,4 +37,7 @@ useHead({
       <component :is="Component" />
     </transition>
   </router-view>
+
+  <GlobalToasts />
+  <GlobalConfirm />
 </template>

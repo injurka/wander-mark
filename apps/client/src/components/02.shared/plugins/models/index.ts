@@ -9,6 +9,7 @@ export type PluginSlotName =
   | 'content-after'   // После контента заметки (перед backlinks)
   | 'footer'          // Нижняя часть страницы
   | 'overlay'         // Оверлей поверх всего (модалки, панели)
+  | 'vault-index'     // Слот на главной странице хранилища (для кнопок плагинов и т.д.)
 
 // ─── Контекст, который хост передаёт плагину ───
 export interface PluginContext {
@@ -24,6 +25,10 @@ export interface PluginContext {
   router: any
   /** Прочитать файл из vault */
   getFileContent: (path: string) => Promise<string | null>
+  /** Вызвать всплывающее уведомление */
+  showToast: (message: string, options?: { title?: string, type?: 'info' | 'success' | 'warning' | 'error', duration?: number }) => void
+  /** Вызвать модальное окно подтверждения */
+  confirm: (options: string | { title?: string, message: string, confirmText?: string, cancelText?: string, persistent?: boolean }) => Promise<boolean>
 }
 
 // ─── Манифест плагина (то, что экспортирует ES-модуль) ───
@@ -44,6 +49,13 @@ export interface WanderMarkPlugin {
    * Один плагин может рендериться в нескольких слотах.
    */
   slots: Partial<Record<PluginSlotName, Component>>
+
+  /**
+   * Страницы плагина.
+   * Ключ — путь относительно /:vault/plugin/:pluginId/ (по умолчанию 'index').
+   * Значение — Vue-компонент страницы.
+   */
+  pages?: Record<string, Component>
 
   /**
    * CSS-строка, которую плагин хочет внедрить глобально.
