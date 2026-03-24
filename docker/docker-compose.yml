@@ -17,7 +17,7 @@ services:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-server:${V_SERVER:-latest}
     restart: unless-stopped
     environment:
-      PORT: "8080"
+      PORT: "4444"
       FS_BASE_PATH: /data
     volumes:
       - ${VAULT_PATH:-./vault}:/data:ro
@@ -29,7 +29,7 @@ services:
       - "traefik.http.routers.wander-server.rule=Host(`wander-api.trip-scheduler.ru`)"
       - "traefik.http.routers.wander-server.entrypoints=websecure"
       - "traefik.http.routers.wander-server.tls.certresolver=letsencrypt"
-      - "traefik.http.services.wander-server.loadbalancer.server.port=8080"
+      - "traefik.http.services.wander-server.loadbalancer.server.port=4444"
       - "traefik.docker.network=trip-net"
 
 networks:
