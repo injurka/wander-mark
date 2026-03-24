@@ -10,21 +10,31 @@ const pluginId = computed(() => route.params.pluginId as string)
 
 const pluginPathArray = computed(() => {
   const path = route.params.pluginPath
-  if (Array.isArray(path)) return path
-  if (path) return [path]
+
+  if (Array.isArray(path)) 
+    return path
+  
+  if (path) 
+    return [path]
+  
   return[]
 })
 
 const pluginPageKey = computed(() => {
   const pathArr = pluginPathArray.value
-  if (!pathArr || pathArr.length === 0) return 'index'
+  
+  if (!pathArr || pathArr.length === 0) 
+    return 'index'
+  
   return pathArr.join('/')
 })
 
-// Нам нужно использовать computed, чтобы реагировать на асинхронную инициализацию плагинов
 const pluginComponent = computed(() => {
   const loadedPlugin = pluginStore.loaded.get(pluginId.value)
-  if (!loadedPlugin) return null
+
+  if (!loadedPlugin) 
+    return null
+
   return loadedPlugin.module.pages?.[pluginPageKey.value] || null
 })
 </script>

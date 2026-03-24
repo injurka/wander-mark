@@ -19,29 +19,31 @@ export const useVaultService = () => {
   const initPredefinedVaults = async () => {
     try {
       const basePath = import.meta.env.BASE_URL || '/'
-      const res = await fetch(`${basePath}config.json`)
+
+      const res = await fetch(`${basePath}configs/server.json`)
+
       if (res.ok) {
         const config = await res.json()
         const serverUrl = config.url || config.serverUrl
+
         if (serverUrl && Array.isArray(config.vaults)) {
           let updated = false
+
           for (const vaultId of config.vaults) {
             if (!vaults.value.find(v => v.id === vaultId)) {
-              const cleanServerUrl = serverUrl.replace(/\/$/, '')
-              const vaultUrl = `${cleanServerUrl}/${vaultId}`
               vaults.value.push({
                 id: vaultId,
                 title: vaultId,
                 description: '',
                 type: 'remote',
-                url: vaultUrl,
+                url: serverUrl.replace(/\/$/, ''),
                 isDownloaded: false
               })
+
               updated = true
             }
           }
           if (updated) {
-            // Фоновая подгрузка метаданных для новых хранилищ
             config.vaults.forEach((vaultId: string) => {
               const vault = vaults.value.find(v => v.id === vaultId)
               if (vault && vault.title === vaultId) {

@@ -12,31 +12,15 @@ function storageKey(vaultId: string) {
 }
 
 export const usePluginStore = defineStore('plugins', () => {
-  // ─── State ───────────────────────────────────────────────
-  /** Текущий vault, для которого загружены плагины */
   const currentVaultId = ref<string>('')
-
-  /** Персистентный список установленных плагинов (per-vault) */
   const registry = ref<PluginRecord[]>([])
-
-  /** Загруженные в runtime модули */
   const loaded = ref<Map<string, LoadedPlugin>>(new Map())
-
-  /** Текущий контекст хоста */
   const context = ref<PluginContext | null>(null)
-
-  /** Ошибки загрузки */
   const errors = ref<Map<string, string>>(new Map())
 
-  // ─── Getters ─────────────────────────────────────────────
-
-  /** Все записи плагинов */
   const plugins = computed(() => registry.value)
-
-  /** Только включённые плагины */
   const enabledPlugins = computed(() => registry.value.filter(p => p.enabled))
 
-  /** Компоненты для конкретного слота */
   const getSlotComponents = (slot: PluginSlotName) => {
     return computed(() => {
       const result: Array<{ pluginId: string; component: any }> = []
@@ -53,28 +37,18 @@ export const usePluginStore = defineStore('plugins', () => {
     })
   }
 
-  /** Ошибка загрузки конкретного плагина */
   const getError = (pluginId: string) => errors.value.get(pluginId)
 
-  // ─── Actions ─────────────────────────────────────────────
-
-  /**
-   * Инициализация: загружает registry из localStorage и грузит enabled плагины.
-   * Вызывается при смене vault.
-   */
   async function init(vaultId: string, ctx: PluginContext) {
-    // Деактивируем все текущие
     await deactivateAll()
 
     currentVaultId.value = vaultId
     context.value = ctx
     errors.value.clear()
 
-    // Загружаем из localStorage
     const stored = localStorage.getItem(storageKey(vaultId))
     registry.value = stored ? JSON.parse(stored) : []
 
-    // Загружаем enabled плагины
     for (const record of registry.value) {
       if (record.enabled) {
         await loadAndActivate(record)
@@ -82,14 +56,9 @@ export const usePluginStore = defineStore('plugins', () => {
     }
   }
 
-  /**
-   * Установить плагин по URL.
-   * Загружает модуль, валидирует, сохраняет в registry.
-   */
   async function install(sourceUrl: string, autoEnable = true): Promise<WanderMarkPlugin> {
     const module = await loadPluginModule(sourceUrl)
 
-    // Проверяем дубликаты
     if (registry.value.some(r => r.id === module.id)) {
       throw new Error(`Плагин "${module.name}" (${module.id}) уже установлен.`)
     }
@@ -114,9 +83,6 @@ export const usePluginStore = defineStore('plugins', () => {
     return module
   }
 
-  /**
-   * Удалить плагин полностью.
-   */
   async function uninstall(pluginId: string) {
     await disable(pluginId)
     registry.value = registry.value.filter(r => r.id !== pluginId)
@@ -124,9 +90,6 @@ export const usePluginStore = defineStore('plugins', () => {
     persist()
   }
 
-  /**
-   * Включить плагин.
-   */
   async function enable(pluginId: string) {
     const record = registry.value.find(r => r.id === pluginId)
     if (!record) return
@@ -137,9 +100,6 @@ export const usePluginStore = defineStore('plugins', () => {
     await loadAndActivate(record)
   }
 
-  /**
-   * Выключить плагин.
-   */
   async function disable(pluginId: string) {
     const record = registry.value.find(r => r.id === pluginId)
     if (!record) return
@@ -163,8 +123,6 @@ export const usePluginStore = defineStore('plugins', () => {
       loaded.value.delete(pluginId)
     }
   }
-
-  // ─── Internal ────────────────────────────────────────────
 
   async function loadAndActivate(record: PluginRecord, existingModule?: WanderMarkPlugin) {
     try {
