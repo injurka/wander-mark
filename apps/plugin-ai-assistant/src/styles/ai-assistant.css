@@ -149,45 +149,98 @@
 .ai-minimized-widget { position: fixed; bottom: 24px; right: 24px; background: var(--bg-secondary-color); border: 1px solid var(--border-secondary-color); border-radius: 12px; padding: 12px 20px; box-shadow: 0 12px 24px rgba(0,0,0,0.15); z-index: 99999; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; color: var(--fg-primary-color); font-weight: 500; }
 .ai-minimized-widget:hover { transform: translateY(-4px); border-color: var(--fg-accent-color); }
 
-/* === MARKDOWN СТИЛИ === */
-.ai-md-content p { margin-top: 0; margin-bottom: 12px; }
-.ai-md-content p:last-child { margin-bottom: 0; }
-.ai-md-content pre { background: var(--bg-tertiary-color); padding: 12px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-secondary-color); margin: 12px 0; }
-.ai-md-content code { font-family: monospace; background: var(--bg-tertiary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.9em; }
-
 /* === АНИМАЦИИ === */
 .ai-fade-enter-active, .ai-fade-leave-active { transition: opacity 0.2s ease; }
 .ai-fade-enter-active .ai-modal, .ai-fade-leave-active .ai-modal { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 .ai-fade-enter-from, .ai-fade-leave-to { opacity: 0; }
 .ai-fade-enter-from .ai-modal, .ai-fade-leave-to .ai-modal { transform: scale(0.96) translateY(10px); }
 
+/* === СТРАНИЦА ПЛАГИНА (PAGE) === */
 .ai-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 120px);
-  gap: 16px;
+  height: calc(100vh - 50px);
+  gap: 8px;
+  padding: 8px 0 0 0;
 }
+@media (min-width: 768px) {
+  .ai-page {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
 .ai-page-header {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Возвращаем отступы для заголовка на мобильных */
+  padding: 0 16px;
 }
+@media (min-width: 768px) {
+  .ai-page-header {
+    padding: 0;
+  }
+}
+
 .ai-page-header h2 {
-  margin: 0 0 4px 0;
+  margin: 0;
   color: var(--fg-primary-color);
 }
-.ai-page-header p {
-  margin: 0;
-  color: var(--fg-secondary-color);
-  font-size: 0.9rem;
+.ai-page-header-actions {
+  display: flex;
+  gap: 8px;
 }
+.ai-page-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary-color);
+  border: 1px solid var(--border-secondary-color);
+  color: var(--fg-secondary-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.ai-page-btn:hover {
+  background: var(--bg-hover-color);
+  color: var(--fg-primary-color);
+}
+.ai-page-btn.is-active {
+  color: var(--fg-accent-color);
+  border-color: var(--border-accent-color);
+  background: var(--bg-accent-overlay-color);
+}
+@media (max-width: 600px) {
+  .ai-page-btn .btn-text {
+    display: none;
+  }
+  .ai-page-btn {
+    padding: 8px;
+  }
+}
+
 .ai-page-chat-wrapper {
   flex: 1;
-  border: 1px solid var(--border-secondary-color);
-  border-radius: 8px;
+  /* Для мобильных экранов убираем рамки и скругления, кроме верхнего бордера */
+  border: none;
+  border-top: 1px solid var(--border-secondary-color);
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary-color);
 }
+@media (min-width: 768px) {
+  .ai-page-chat-wrapper {
+    border: 1px solid var(--border-secondary-color);
+    border-radius: 8px;
+  }
+}
+
 .ai-page {
   .ai-tab-view {
     flex: 1;
@@ -198,8 +251,20 @@
   .ai-body {
     flex: 1;
     overflow-y: auto;
+    /* Увеличим внутренний отступ для чата, так как внешний контейнер прижат к краям */
+    padding: 16px 8px;
+  }
+  .ai-input-box {
+    border: none;
+    border-radius: 0;
   }
   .ai-input-area {
     flex-shrink: 0;
+    padding: 0;
+  }
+}
+@media (min-width: 768px) {
+  .ai-page .ai-body {
+    padding: 16px;
   }
 }

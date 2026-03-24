@@ -69,7 +69,7 @@ function closeMenus() {
           <div v-if="item.status === 'loading'" class="ai-status loading">
             Генерация ответа...
           </div>
-          <div v-else class="ai-response-bubble ai-md-content" v-html="renderMarkdown(item.response)" />
+          <div v-else class="ai-response-bubble ai-md-content markdown-body" v-html="renderMarkdown(item.response)" />
           <div class="ai-status" :class="item.status">
             {{ item.status === 'error' ? 'Ошибка' : item.status === 'aborted' ? 'Отменено' : new Date(item.date).toLocaleTimeString() }}
           </div>

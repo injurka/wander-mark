@@ -58,11 +58,10 @@ const pluginComponent = computed(() => {
 
 <style scoped>
 .plugin-page-wrapper {
-  padding: 20px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 80vh;
+  min-height: calc(100vh - 50px);
 }
 .plugin-page-not-found {
   padding: 40px;

@@ -1,11 +1,11 @@
-var Ee = Object.defineProperty;
+var Ne = Object.defineProperty;
 var oe = (l) => {
   throw TypeError(l);
 };
-var $e = (l, n, t) => n in l ? Ee(l, n, { enumerable: !0, configurable: !0, writable: !0, value: t }) : l[n] = t;
-var x = (l, n, t) => $e(l, typeof n != "symbol" ? n + "" : n, t), Ne = (l, n, t) => n.has(l) || oe("Cannot " + t);
+var Te = (l, n, t) => n in l ? Ne(l, n, { enumerable: !0, configurable: !0, writable: !0, value: t }) : l[n] = t;
+var x = (l, n, t) => Te(l, typeof n != "symbol" ? n + "" : n, t), Ce = (l, n, t) => n.has(l) || oe("Cannot " + t);
 var ie = (l, n, t) => n.has(l) ? oe("Cannot add the same private member more than once") : n instanceof WeakSet ? n.add(l) : n.set(l, t);
-var M = (l, n, t) => (Ne(l, n, "access private method"), t);
+var A = (l, n, t) => (Ce(l, n, "access private method"), t);
 function Q() {
   return {
     async: !1,
@@ -24,33 +24,33 @@ let T = Q();
 function ue(l) {
   T = l;
 }
-const pe = /[&<>"']/, Te = new RegExp(pe.source, "g"), we = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/, ze = new RegExp(we.source, "g"), _e = {
+const pe = /[&<>"']/, ze = new RegExp(pe.source, "g"), we = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/, _e = new RegExp(we.source, "g"), Be = {
   "&": "&amp;",
   "<": "&lt;",
   ">": "&gt;",
   '"': "&quot;",
   "'": "&#39;"
-}, re = (l) => _e[l];
+}, re = (l) => Be[l];
 function V(l, n) {
   if (n) {
     if (pe.test(l))
-      return l.replace(Te, re);
+      return l.replace(ze, re);
   } else if (we.test(l))
-    return l.replace(ze, re);
+    return l.replace(_e, re);
   return l;
 }
-const Ce = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
-function Be(l) {
-  return l.replace(Ce, (n, t) => (t = t.toLowerCase(), t === "colon" ? ":" : t.charAt(0) === "#" ? t.charAt(1) === "x" ? String.fromCharCode(parseInt(t.substring(2), 16)) : String.fromCharCode(+t.substring(1)) : ""));
+const Ie = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
+function Se(l) {
+  return l.replace(Ie, (n, t) => (t = t.toLowerCase(), t === "colon" ? ":" : t.charAt(0) === "#" ? t.charAt(1) === "x" ? String.fromCharCode(parseInt(t.substring(2), 16)) : String.fromCharCode(+t.substring(1)) : ""));
 }
-const Ie = /(^|[^\[])\^/g;
+const Ae = /(^|[^\[])\^/g;
 function m(l, n) {
   let t = typeof l == "string" ? l : l.source;
   n = n || "";
   const e = {
-    replace: (i, r) => {
-      let o = typeof r == "string" ? r : r.source;
-      return o = o.replace(Ie, "$1"), t = t.replace(i, o), e;
+    replace: (o, r) => {
+      let i = typeof r == "string" ? r : r.source;
+      return i = i.replace(Ae, "$1"), t = t.replace(o, i), e;
     },
     getRegex: () => new RegExp(t, n)
   };
@@ -64,35 +64,35 @@ function se(l) {
   }
   return l;
 }
-const _ = { exec: () => null };
+const z = { exec: () => null };
 function le(l, n) {
-  const t = l.replace(/\|/g, (r, o, a) => {
-    let s = !1, p = o;
-    for (; --p >= 0 && a[p] === "\\"; )
-      s = !s;
-    return s ? "|" : " |";
+  const t = l.replace(/\|/g, (r, i, a) => {
+    let c = !1, h = i;
+    for (; --h >= 0 && a[h] === "\\"; )
+      c = !c;
+    return c ? "|" : " |";
   }), e = t.split(/ \|/);
-  let i = 0;
+  let o = 0;
   if (e[0].trim() || e.shift(), e.length > 0 && !e[e.length - 1].trim() && e.pop(), n)
     if (e.length > n)
       e.splice(n);
     else
       for (; e.length < n; )
         e.push("");
-  for (; i < e.length; i++)
-    e[i] = e[i].trim().replace(/\\\|/g, "|");
+  for (; o < e.length; o++)
+    e[o] = e[o].trim().replace(/\\\|/g, "|");
   return e;
 }
-function A(l, n, t) {
+function M(l, n, t) {
   const e = l.length;
   if (e === 0)
     return "";
-  let i = 0;
-  for (; i < e && l.charAt(e - i - 1) === n; )
-    i++;
-  return l.slice(0, e - i);
+  let o = 0;
+  for (; o < e && l.charAt(e - o - 1) === n; )
+    o++;
+  return l.slice(0, e - o);
 }
-function Se(l, n) {
+function Me(l, n) {
   if (l.indexOf(n[1]) === -1)
     return -1;
   let t = 0;
@@ -106,39 +106,39 @@ function Se(l, n) {
   return -1;
 }
 function ae(l, n, t, e) {
-  const i = n.href, r = n.title ? V(n.title) : null, o = l[1].replace(/\\([\[\]])/g, "$1");
+  const o = n.href, r = n.title ? V(n.title) : null, i = l[1].replace(/\\([\[\]])/g, "$1");
   if (l[0].charAt(0) !== "!") {
     e.state.inLink = !0;
     const a = {
       type: "link",
       raw: t,
-      href: i,
+      href: o,
       title: r,
-      text: o,
-      tokens: e.inlineTokens(o)
+      text: i,
+      tokens: e.inlineTokens(i)
     };
     return e.state.inLink = !1, a;
   }
   return {
     type: "image",
     raw: t,
-    href: i,
+    href: o,
     title: r,
-    text: V(o)
+    text: V(i)
   };
 }
-function Me(l, n) {
+function Re(l, n) {
   const t = l.match(/^(\s+)(?:```)/);
   if (t === null)
     return n;
   const e = t[1];
   return n.split(`
-`).map((i) => {
-    const r = i.match(/^\s+/);
+`).map((o) => {
+    const r = o.match(/^\s+/);
     if (r === null)
-      return i;
-    const [o] = r;
-    return o.length >= e.length ? i.slice(e.length) : i;
+      return o;
+    const [i] = r;
+    return i.length >= e.length ? o.slice(e.length) : o;
   }).join(`
 `);
 }
@@ -167,7 +167,7 @@ class P {
         type: "code",
         raw: t[0],
         codeBlockStyle: "indented",
-        text: this.options.pedantic ? e : A(e, `
+        text: this.options.pedantic ? e : M(e, `
 `)
       };
     }
@@ -175,12 +175,12 @@ class P {
   fences(n) {
     const t = this.rules.block.fences.exec(n);
     if (t) {
-      const e = t[0], i = Me(e, t[3] || "");
+      const e = t[0], o = Re(e, t[3] || "");
       return {
         type: "code",
         raw: e,
         lang: t[2] ? t[2].trim().replace(this.rules.inline.anyPunctuation, "$1") : t[2],
-        text: i
+        text: o
       };
     }
   }
@@ -189,8 +189,8 @@ class P {
     if (t) {
       let e = t[2].trim();
       if (/#$/.test(e)) {
-        const i = A(e, "#");
-        (this.options.pedantic || !i || / $/.test(i)) && (e = i.trim());
+        const o = M(e, "#");
+        (this.options.pedantic || !o || / $/.test(o)) && (e = o.trim());
       }
       return {
         type: "heading",
@@ -214,12 +214,12 @@ class P {
     if (t) {
       let e = t[0].replace(/\n {0,3}((?:=+|-+) *)(?=\n|$)/g, `
     $1`);
-      e = A(e.replace(/^ *>[ \t]?/gm, ""), `
+      e = M(e.replace(/^ *>[ \t]?/gm, ""), `
 `);
-      const i = this.lexer.state.top;
+      const o = this.lexer.state.top;
       this.lexer.state.top = !0;
       const r = this.lexer.blockTokens(e);
-      return this.lexer.state.top = i, {
+      return this.lexer.state.top = o, {
         type: "blockquote",
         raw: t[0],
         tokens: r,
@@ -231,69 +231,69 @@ class P {
     let t = this.rules.block.list.exec(n);
     if (t) {
       let e = t[1].trim();
-      const i = e.length > 1, r = {
+      const o = e.length > 1, r = {
         type: "list",
         raw: "",
-        ordered: i,
-        start: i ? +e.slice(0, -1) : "",
+        ordered: o,
+        start: o ? +e.slice(0, -1) : "",
         loose: !1,
         items: []
       };
-      e = i ? `\\d{1,9}\\${e.slice(-1)}` : `\\${e}`, this.options.pedantic && (e = i ? e : "[*+-]");
-      const o = new RegExp(`^( {0,3}${e})((?:[	 ][^\\n]*)?(?:\\n|$))`);
-      let a = "", s = "", p = !1;
+      e = o ? `\\d{1,9}\\${e.slice(-1)}` : `\\${e}`, this.options.pedantic && (e = o ? e : "[*+-]");
+      const i = new RegExp(`^( {0,3}${e})((?:[	 ][^\\n]*)?(?:\\n|$))`);
+      let a = "", c = "", h = !1;
       for (; n; ) {
-        let u = !1;
-        if (!(t = o.exec(n)) || this.rules.block.hr.test(n))
+        let d = !1;
+        if (!(t = i.exec(n)) || this.rules.block.hr.test(n))
           break;
         a = t[0], n = n.substring(a.length);
-        let h = t[2].split(`
-`, 1)[0].replace(/^\t+/, (q) => " ".repeat(3 * q.length)), d = n.split(`
-`, 1)[0], w = 0;
-        this.options.pedantic ? (w = 2, s = h.trimStart()) : (w = t[2].search(/[^ ]/), w = w > 4 ? 1 : w, s = h.slice(w), w += t[1].length);
+        let w = t[2].split(`
+`, 1)[0].replace(/^\t+/, (H) => " ".repeat(3 * H.length)), u = n.split(`
+`, 1)[0], p = 0;
+        this.options.pedantic ? (p = 2, c = w.trimStart()) : (p = t[2].search(/[^ ]/), p = p > 4 ? 1 : p, c = w.slice(p), p += t[1].length);
         let g = !1;
-        if (!h && /^ *$/.test(d) && (a += d + `
-`, n = n.substring(d.length + 1), u = !0), !u) {
-          const q = new RegExp(`^ {0,${Math.min(3, w - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ 	][^\\n]*)?(?:\\n|$))`), ee = new RegExp(`^ {0,${Math.min(3, w - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`), te = new RegExp(`^ {0,${Math.min(3, w - 1)}}(?:\`\`\`|~~~)`), ne = new RegExp(`^ {0,${Math.min(3, w - 1)}}#`);
+        if (!w && /^ *$/.test(u) && (a += u + `
+`, n = n.substring(u.length + 1), d = !0), !d) {
+          const H = new RegExp(`^ {0,${Math.min(3, p - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ 	][^\\n]*)?(?:\\n|$))`), ee = new RegExp(`^ {0,${Math.min(3, p - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`), te = new RegExp(`^ {0,${Math.min(3, p - 1)}}(?:\`\`\`|~~~)`), ne = new RegExp(`^ {0,${Math.min(3, p - 1)}}#`);
           for (; n; ) {
-            const j = n.split(`
+            const O = n.split(`
 `, 1)[0];
-            if (d = j, this.options.pedantic && (d = d.replace(/^ {1,4}(?=( {4})*[^ ])/g, "  ")), te.test(d) || ne.test(d) || q.test(d) || ee.test(n))
+            if (u = O, this.options.pedantic && (u = u.replace(/^ {1,4}(?=( {4})*[^ ])/g, "  ")), te.test(u) || ne.test(u) || H.test(u) || ee.test(n))
               break;
-            if (d.search(/[^ ]/) >= w || !d.trim())
-              s += `
-` + d.slice(w);
+            if (u.search(/[^ ]/) >= p || !u.trim())
+              c += `
+` + u.slice(p);
             else {
-              if (g || h.search(/[^ ]/) >= 4 || te.test(h) || ne.test(h) || ee.test(h))
+              if (g || w.search(/[^ ]/) >= 4 || te.test(w) || ne.test(w) || ee.test(w))
                 break;
-              s += `
-` + d;
+              c += `
+` + u;
             }
-            !g && !d.trim() && (g = !0), a += j + `
-`, n = n.substring(j.length + 1), h = d.slice(w);
+            !g && !u.trim() && (g = !0), a += O + `
+`, n = n.substring(O.length + 1), w = u.slice(p);
           }
         }
-        r.loose || (p ? r.loose = !0 : /\n *\n *$/.test(a) && (p = !0));
+        r.loose || (h ? r.loose = !0 : /\n *\n *$/.test(a) && (h = !0));
         let b = null, E;
-        this.options.gfm && (b = /^\[[ xX]\] /.exec(s), b && (E = b[0] !== "[ ] ", s = s.replace(/^\[[ xX]\] +/, ""))), r.items.push({
+        this.options.gfm && (b = /^\[[ xX]\] /.exec(c), b && (E = b[0] !== "[ ] ", c = c.replace(/^\[[ xX]\] +/, ""))), r.items.push({
           type: "list_item",
           raw: a,
           task: !!b,
           checked: E,
           loose: !1,
-          text: s,
+          text: c,
           tokens: []
         }), r.raw += a;
       }
-      r.items[r.items.length - 1].raw = a.trimEnd(), r.items[r.items.length - 1].text = s.trimEnd(), r.raw = r.raw.trimEnd();
-      for (let u = 0; u < r.items.length; u++)
-        if (this.lexer.state.top = !1, r.items[u].tokens = this.lexer.blockTokens(r.items[u].text, []), !r.loose) {
-          const h = r.items[u].tokens.filter((w) => w.type === "space"), d = h.length > 0 && h.some((w) => /\n.*\n/.test(w.raw));
-          r.loose = d;
+      r.items[r.items.length - 1].raw = a.trimEnd(), r.items[r.items.length - 1].text = c.trimEnd(), r.raw = r.raw.trimEnd();
+      for (let d = 0; d < r.items.length; d++)
+        if (this.lexer.state.top = !1, r.items[d].tokens = this.lexer.blockTokens(r.items[d].text, []), !r.loose) {
+          const w = r.items[d].tokens.filter((p) => p.type === "space"), u = w.length > 0 && w.some((p) => /\n.*\n/.test(p.raw));
+          r.loose = u;
         }
       if (r.loose)
-        for (let u = 0; u < r.items.length; u++)
-          r.items[u].loose = !0;
+        for (let d = 0; d < r.items.length; d++)
+          r.items[d].loose = !0;
       return r;
     }
   }
@@ -311,12 +311,12 @@ class P {
   def(n) {
     const t = this.rules.block.def.exec(n);
     if (t) {
-      const e = t[1].toLowerCase().replace(/\s+/g, " "), i = t[2] ? t[2].replace(/^<(.*)>$/, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "", r = t[3] ? t[3].substring(1, t[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : t[3];
+      const e = t[1].toLowerCase().replace(/\s+/g, " "), o = t[2] ? t[2].replace(/^<(.*)>$/, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "", r = t[3] ? t[3].substring(1, t[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : t[3];
       return {
         type: "def",
         tag: e,
         raw: t[0],
-        href: i,
+        href: o,
         title: r
       };
     }
@@ -325,28 +325,28 @@ class P {
     const t = this.rules.block.table.exec(n);
     if (!t || !/[:|]/.test(t[2]))
       return;
-    const e = le(t[1]), i = t[2].replace(/^\||\| *$/g, "").split("|"), r = t[3] && t[3].trim() ? t[3].replace(/\n[ \t]*$/, "").split(`
-`) : [], o = {
+    const e = le(t[1]), o = t[2].replace(/^\||\| *$/g, "").split("|"), r = t[3] && t[3].trim() ? t[3].replace(/\n[ \t]*$/, "").split(`
+`) : [], i = {
       type: "table",
       raw: t[0],
       header: [],
       align: [],
       rows: []
     };
-    if (e.length === i.length) {
-      for (const a of i)
-        /^ *-+: *$/.test(a) ? o.align.push("right") : /^ *:-+: *$/.test(a) ? o.align.push("center") : /^ *:-+ *$/.test(a) ? o.align.push("left") : o.align.push(null);
+    if (e.length === o.length) {
+      for (const a of o)
+        /^ *-+: *$/.test(a) ? i.align.push("right") : /^ *:-+: *$/.test(a) ? i.align.push("center") : /^ *:-+ *$/.test(a) ? i.align.push("left") : i.align.push(null);
       for (const a of e)
-        o.header.push({
+        i.header.push({
           text: a,
           tokens: this.lexer.inline(a)
         });
       for (const a of r)
-        o.rows.push(le(a, o.header.length).map((s) => ({
-          text: s,
-          tokens: this.lexer.inline(s)
+        i.rows.push(le(a, i.header.length).map((c) => ({
+          text: c,
+          tokens: this.lexer.inline(c)
         })));
-      return o;
+      return i;
     }
   }
   lheading(n) {
@@ -411,24 +411,24 @@ class P {
       if (!this.options.pedantic && /^</.test(e)) {
         if (!/>$/.test(e))
           return;
-        const o = A(e.slice(0, -1), "\\");
-        if ((e.length - o.length) % 2 === 0)
+        const i = M(e.slice(0, -1), "\\");
+        if ((e.length - i.length) % 2 === 0)
           return;
       } else {
-        const o = Se(t[2], "()");
-        if (o > -1) {
-          const s = (t[0].indexOf("!") === 0 ? 5 : 4) + t[1].length + o;
-          t[2] = t[2].substring(0, o), t[0] = t[0].substring(0, s).trim(), t[3] = "";
+        const i = Me(t[2], "()");
+        if (i > -1) {
+          const c = (t[0].indexOf("!") === 0 ? 5 : 4) + t[1].length + i;
+          t[2] = t[2].substring(0, i), t[0] = t[0].substring(0, c).trim(), t[3] = "";
         }
       }
-      let i = t[2], r = "";
+      let o = t[2], r = "";
       if (this.options.pedantic) {
-        const o = /^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(i);
-        o && (i = o[1], r = o[3]);
+        const i = /^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(o);
+        i && (o = i[1], r = i[3]);
       } else
         r = t[3] ? t[3].slice(1, -1) : "";
-      return i = i.trim(), /^</.test(i) && (this.options.pedantic && !/>$/.test(e) ? i = i.slice(1) : i = i.slice(1, -1)), ae(t, {
-        href: i && i.replace(this.rules.inline.anyPunctuation, "$1"),
+      return o = o.trim(), /^</.test(o) && (this.options.pedantic && !/>$/.test(e) ? o = o.slice(1) : o = o.slice(1, -1)), ae(t, {
+        href: o && o.replace(this.rules.inline.anyPunctuation, "$1"),
         title: r && r.replace(this.rules.inline.anyPunctuation, "$1")
       }, t[0], this.lexer);
     }
@@ -436,53 +436,53 @@ class P {
   reflink(n, t) {
     let e;
     if ((e = this.rules.inline.reflink.exec(n)) || (e = this.rules.inline.nolink.exec(n))) {
-      const i = (e[2] || e[1]).replace(/\s+/g, " "), r = t[i.toLowerCase()];
+      const o = (e[2] || e[1]).replace(/\s+/g, " "), r = t[o.toLowerCase()];
       if (!r) {
-        const o = e[0].charAt(0);
+        const i = e[0].charAt(0);
         return {
           type: "text",
-          raw: o,
-          text: o
+          raw: i,
+          text: i
         };
       }
       return ae(e, r, e[0], this.lexer);
     }
   }
   emStrong(n, t, e = "") {
-    let i = this.rules.inline.emStrongLDelim.exec(n);
-    if (!i || i[3] && e.match(/[\p{L}\p{N}]/u))
+    let o = this.rules.inline.emStrongLDelim.exec(n);
+    if (!o || o[3] && e.match(/[\p{L}\p{N}]/u))
       return;
-    if (!(i[1] || i[2] || "") || !e || this.rules.inline.punctuation.exec(e)) {
-      const o = [...i[0]].length - 1;
-      let a, s, p = o, u = 0;
-      const h = i[0][0] === "*" ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
-      for (h.lastIndex = 0, t = t.slice(-1 * n.length + o); (i = h.exec(t)) != null; ) {
-        if (a = i[1] || i[2] || i[3] || i[4] || i[5] || i[6], !a)
+    if (!(o[1] || o[2] || "") || !e || this.rules.inline.punctuation.exec(e)) {
+      const i = [...o[0]].length - 1;
+      let a, c, h = i, d = 0;
+      const w = o[0][0] === "*" ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
+      for (w.lastIndex = 0, t = t.slice(-1 * n.length + i); (o = w.exec(t)) != null; ) {
+        if (a = o[1] || o[2] || o[3] || o[4] || o[5] || o[6], !a)
           continue;
-        if (s = [...a].length, i[3] || i[4]) {
-          p += s;
+        if (c = [...a].length, o[3] || o[4]) {
+          h += c;
           continue;
-        } else if ((i[5] || i[6]) && o % 3 && !((o + s) % 3)) {
-          u += s;
+        } else if ((o[5] || o[6]) && i % 3 && !((i + c) % 3)) {
+          d += c;
           continue;
         }
-        if (p -= s, p > 0)
+        if (h -= c, h > 0)
           continue;
-        s = Math.min(s, s + p + u);
-        const d = [...i[0]][0].length, w = n.slice(0, o + i.index + d + s);
-        if (Math.min(o, s) % 2) {
-          const b = w.slice(1, -1);
+        c = Math.min(c, c + h + d);
+        const u = [...o[0]][0].length, p = n.slice(0, i + o.index + u + c);
+        if (Math.min(i, c) % 2) {
+          const b = p.slice(1, -1);
           return {
             type: "em",
-            raw: w,
+            raw: p,
             text: b,
             tokens: this.lexer.inlineTokens(b)
           };
         }
-        const g = w.slice(2, -2);
+        const g = p.slice(2, -2);
         return {
           type: "strong",
-          raw: w,
+          raw: p,
           text: g,
           tokens: this.lexer.inlineTokens(g)
         };
@@ -493,8 +493,8 @@ class P {
     const t = this.rules.inline.code.exec(n);
     if (t) {
       let e = t[2].replace(/\n/g, " ");
-      const i = /[^ ]/.test(e), r = /^ /.test(e) && / $/.test(e);
-      return i && r && (e = e.substring(1, e.length - 1)), e = V(e, !0), {
+      const o = /[^ ]/.test(e), r = /^ /.test(e) && / $/.test(e);
+      return o && r && (e = e.substring(1, e.length - 1)), e = V(e, !0), {
         type: "codespan",
         raw: t[0],
         text: e
@@ -522,12 +522,12 @@ class P {
   autolink(n) {
     const t = this.rules.inline.autolink.exec(n);
     if (t) {
-      let e, i;
-      return t[2] === "@" ? (e = V(t[1]), i = "mailto:" + e) : (e = V(t[1]), i = e), {
+      let e, o;
+      return t[2] === "@" ? (e = V(t[1]), o = "mailto:" + e) : (e = V(t[1]), o = e), {
         type: "link",
         raw: t[0],
         text: e,
-        href: i,
+        href: o,
         tokens: [
           {
             type: "text",
@@ -542,26 +542,26 @@ class P {
     var e;
     let t;
     if (t = this.rules.inline.url.exec(n)) {
-      let i, r;
+      let o, r;
       if (t[2] === "@")
-        i = V(t[0]), r = "mailto:" + i;
+        o = V(t[0]), r = "mailto:" + o;
       else {
-        let o;
+        let i;
         do
-          o = t[0], t[0] = ((e = this.rules.inline._backpedal.exec(t[0])) == null ? void 0 : e[0]) ?? "";
-        while (o !== t[0]);
-        i = V(t[0]), t[1] === "www." ? r = "http://" + t[0] : r = t[0];
+          i = t[0], t[0] = ((e = this.rules.inline._backpedal.exec(t[0])) == null ? void 0 : e[0]) ?? "";
+        while (i !== t[0]);
+        o = V(t[0]), t[1] === "www." ? r = "http://" + t[0] : r = t[0];
       }
       return {
         type: "link",
         raw: t[0],
-        text: i,
+        text: o,
         href: r,
         tokens: [
           {
             type: "text",
-            raw: i,
-            text: i
+            raw: o,
+            text: o
           }
         ]
       };
@@ -579,79 +579,79 @@ class P {
     }
   }
 }
-const Ae = /^(?: *(?:\n|$))+/, Re = /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/, Pe = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/, I = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/, Le = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/, he = /(?:[*+-]|\d{1,9}[.)])/, ge = m(/^(?!bull |blockCode|fences|blockquote|heading|html)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html))+?)\n {0,3}(=+|-+) *(?:\n+|$)/).replace(/bull/g, he).replace(/blockCode/g, / {4}/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).getRegex(), K = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/, De = /^[^\n]+/, U = /(?!\s*\])(?:\\.|[^\[\]\\])+/, Oe = m(/^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/).replace("label", U).replace("title", /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/).getRegex(), qe = m(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g, he).getRegex(), O = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul", J = /<!--(?:-?>|[\s\S]*?(?:-->|$))/, je = m("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$))", "i").replace("comment", J).replace("tag", O).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex(), fe = m(K).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", O).getRegex(), Ze = m(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph", fe).getRegex(), W = {
-  blockquote: Ze,
-  code: Re,
+const Pe = /^(?: *(?:\n|$))+/, Le = /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/, De = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/, I = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/, je = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/, he = /(?:[*+-]|\d{1,9}[.)])/, ge = m(/^(?!bull |blockCode|fences|blockquote|heading|html)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html))+?)\n {0,3}(=+|-+) *(?:\n+|$)/).replace(/bull/g, he).replace(/blockCode/g, / {4}/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).getRegex(), K = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/, He = /^[^\n]+/, U = /(?!\s*\])(?:\\.|[^\[\]\\])+/, Oe = m(/^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/).replace("label", U).replace("title", /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/).getRegex(), qe = m(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g, he).getRegex(), j = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul", J = /<!--(?:-?>|[\s\S]*?(?:-->|$))/, Ze = m("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$))", "i").replace("comment", J).replace("tag", j).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex(), fe = m(K).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", j).getRegex(), Fe = m(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph", fe).getRegex(), G = {
+  blockquote: Fe,
+  code: Le,
   def: Oe,
-  fences: Pe,
-  heading: Le,
+  fences: De,
+  heading: je,
   hr: I,
-  html: je,
+  html: Ze,
   lheading: ge,
   list: qe,
-  newline: Ae,
+  newline: Pe,
   paragraph: fe,
-  table: _,
-  text: De
-}, ce = m("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", " {4}[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", O).getRegex(), He = {
-  ...W,
+  table: z,
+  text: He
+}, ce = m("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", " {4}[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", j).getRegex(), Qe = {
+  ...G,
   table: ce,
-  paragraph: m(K).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("table", ce).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", O).getRegex()
-}, Fe = {
-  ...W,
+  paragraph: m(K).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("table", ce).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", j).getRegex()
+}, Ke = {
+  ...G,
   html: m(`^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:"[^"]*"|'[^']*'|\\s[^'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))`).replace("comment", J).replace(/tag/g, "(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(),
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
   heading: /^(#{1,6})(.*)(?:\n+|$)/,
-  fences: _,
+  fences: z,
   // fences not supported
   lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/,
   paragraph: m(K).replace("hr", I).replace("heading", ` *#{1,6} *[^
 ]`).replace("lheading", ge).replace("|table", "").replace("blockquote", " {0,3}>").replace("|fences", "").replace("|list", "").replace("|html", "").replace("|tag", "").getRegex()
-}, me = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/, Qe = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/, xe = /^( {2,}|\\)\n(?!\s*$)/, Ke = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/, S = "\\p{P}\\p{S}", Ue = m(/^((?![*_])[\spunctuation])/, "u").replace(/punctuation/g, S).getRegex(), Je = /\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g, We = m(/^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/, "u").replace(/punct/g, S).getRegex(), Xe = m("^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\*)[punct](\\*+)(?=[\\s]|$)|[^punct\\s](\\*+)(?!\\*)(?=[punct\\s]|$)|(?!\\*)[punct\\s](\\*+)(?=[^punct\\s])|[\\s](\\*+)(?!\\*)(?=[punct])|(?!\\*)[punct](\\*+)(?!\\*)(?=[punct])|[^punct\\s](\\*+)(?=[^punct\\s])", "gu").replace(/punct/g, S).getRegex(), Ge = m("^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)|[^_]+(?=[^_])|(?!_)[punct](_+)(?=[\\s]|$)|[^punct\\s](_+)(?!_)(?=[punct\\s]|$)|(?!_)[punct\\s](_+)(?=[^punct\\s])|[\\s](_+)(?!_)(?=[punct])|(?!_)[punct](_+)(?!_)(?=[punct])", "gu").replace(/punct/g, S).getRegex(), Ye = m(/\\([punct])/, "gu").replace(/punct/g, S).getRegex(), et = m(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/).replace("scheme", /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace("email", /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(), tt = m(J).replace("(?:-->|$)", "-->").getRegex(), nt = m("^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>").replace("comment", tt).replace("attribute", /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/).getRegex(), L = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/, ot = m(/^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/).replace("label", L).replace("href", /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/).replace("title", /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/).getRegex(), ke = m(/^!?\[(label)\]\[(ref)\]/).replace("label", L).replace("ref", U).getRegex(), be = m(/^!?\[(ref)\](?:\[\])?/).replace("ref", U).getRegex(), it = m("reflink|nolink(?!\\()", "g").replace("reflink", ke).replace("nolink", be).getRegex(), X = {
-  _backpedal: _,
+}, me = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/, Ue = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/, xe = /^( {2,}|\\)\n(?!\s*$)/, Je = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/, S = "\\p{P}\\p{S}", Ge = m(/^((?![*_])[\spunctuation])/, "u").replace(/punctuation/g, S).getRegex(), We = /\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g, Xe = m(/^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/, "u").replace(/punct/g, S).getRegex(), Ye = m("^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\*)[punct](\\*+)(?=[\\s]|$)|[^punct\\s](\\*+)(?!\\*)(?=[punct\\s]|$)|(?!\\*)[punct\\s](\\*+)(?=[^punct\\s])|[\\s](\\*+)(?!\\*)(?=[punct])|(?!\\*)[punct](\\*+)(?!\\*)(?=[punct])|[^punct\\s](\\*+)(?=[^punct\\s])", "gu").replace(/punct/g, S).getRegex(), et = m("^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)|[^_]+(?=[^_])|(?!_)[punct](_+)(?=[\\s]|$)|[^punct\\s](_+)(?!_)(?=[punct\\s]|$)|(?!_)[punct\\s](_+)(?=[^punct\\s])|[\\s](_+)(?!_)(?=[punct])|(?!_)[punct](_+)(?!_)(?=[punct])", "gu").replace(/punct/g, S).getRegex(), tt = m(/\\([punct])/, "gu").replace(/punct/g, S).getRegex(), nt = m(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/).replace("scheme", /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace("email", /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(), ot = m(J).replace("(?:-->|$)", "-->").getRegex(), it = m("^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>").replace("comment", ot).replace("attribute", /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/).getRegex(), L = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/, rt = m(/^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/).replace("label", L).replace("href", /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/).replace("title", /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/).getRegex(), ke = m(/^!?\[(label)\]\[(ref)\]/).replace("label", L).replace("ref", U).getRegex(), be = m(/^!?\[(ref)\](?:\[\])?/).replace("ref", U).getRegex(), st = m("reflink|nolink(?!\\()", "g").replace("reflink", ke).replace("nolink", be).getRegex(), W = {
+  _backpedal: z,
   // only used for GFM url
-  anyPunctuation: Ye,
-  autolink: et,
-  blockSkip: Je,
+  anyPunctuation: tt,
+  autolink: nt,
+  blockSkip: We,
   br: xe,
-  code: Qe,
-  del: _,
-  emStrongLDelim: We,
-  emStrongRDelimAst: Xe,
-  emStrongRDelimUnd: Ge,
+  code: Ue,
+  del: z,
+  emStrongLDelim: Xe,
+  emStrongRDelimAst: Ye,
+  emStrongRDelimUnd: et,
   escape: me,
-  link: ot,
+  link: rt,
   nolink: be,
-  punctuation: Ue,
+  punctuation: Ge,
   reflink: ke,
-  reflinkSearch: it,
-  tag: nt,
-  text: Ke,
-  url: _
-}, rt = {
-  ...X,
+  reflinkSearch: st,
+  tag: it,
+  text: Je,
+  url: z
+}, lt = {
+  ...W,
   link: m(/^!?\[(label)\]\((.*?)\)/).replace("label", L).getRegex(),
   reflink: m(/^!?\[(label)\]\s*\[([^\]]*)\]/).replace("label", L).getRegex()
-}, H = {
-  ...X,
+}, Z = {
+  ...W,
   escape: m(me).replace("])", "~|])").getRegex(),
   url: m(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/, "i").replace("email", /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(),
   _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,
   del: /^(~~?)(?=[^\s~])([\s\S]*?[^\s~])\1(?=[^~]|$)/,
   text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/
-}, st = {
-  ...H,
+}, at = {
+  ...Z,
   br: m(xe).replace("{2,}", "*").getRegex(),
-  text: m(H.text).replace("\\b_", "\\b_| {2,}\\n").replace(/\{2,\}/g, "*").getRegex()
+  text: m(Z.text).replace("\\b_", "\\b_| {2,}\\n").replace(/\{2,\}/g, "*").getRegex()
 }, R = {
+  normal: G,
+  gfm: Qe,
+  pedantic: Ke
+}, C = {
   normal: W,
-  gfm: He,
-  pedantic: Fe
-}, z = {
-  normal: X,
-  gfm: H,
-  breaks: st,
-  pedantic: rt
+  gfm: Z,
+  breaks: at,
+  pedantic: lt
 };
 class v {
   constructor(n) {
@@ -667,9 +667,9 @@ class v {
     };
     const t = {
       block: R.normal,
-      inline: z.normal
+      inline: C.normal
     };
-    this.options.pedantic ? (t.block = R.pedantic, t.inline = z.pedantic) : this.options.gfm && (t.block = R.gfm, this.options.breaks ? t.inline = z.breaks : t.inline = z.gfm), this.tokenizer.rules = t;
+    this.options.pedantic ? (t.block = R.pedantic, t.inline = C.pedantic) : this.options.gfm && (t.block = R.gfm, this.options.breaks ? t.inline = C.breaks : t.inline = C.gfm), this.tokenizer.rules = t;
   }
   /**
    * Expose Rules
@@ -677,7 +677,7 @@ class v {
   static get rules() {
     return {
       block: R,
-      inline: z
+      inline: C
     };
   }
   /**
@@ -705,8 +705,8 @@ class v {
     return this.inlineQueue = [], this.tokens;
   }
   blockTokens(n, t = []) {
-    this.options.pedantic ? n = n.replace(/\t/g, "    ").replace(/^ +$/gm, "") : n = n.replace(/^( *)(\t+)/gm, (a, s, p) => s + "    ".repeat(p.length));
-    let e, i, r, o;
+    this.options.pedantic ? n = n.replace(/\t/g, "    ").replace(/^ +$/gm, "") : n = n.replace(/^( *)(\t+)/gm, (a, c, h) => c + "    ".repeat(h.length));
+    let e, o, r, i;
     for (; n; )
       if (!(this.options.extensions && this.options.extensions.block && this.options.extensions.block.some((a) => (e = a.call({ lexer: this }, n, t)) ? (n = n.substring(e.raw.length), t.push(e), !0) : !1))) {
         if (e = this.tokenizer.space(n)) {
@@ -715,9 +715,9 @@ class v {
           continue;
         }
         if (e = this.tokenizer.code(n)) {
-          n = n.substring(e.raw.length), i = t[t.length - 1], i && (i.type === "paragraph" || i.type === "text") ? (i.raw += `
-` + e.raw, i.text += `
-` + e.text, this.inlineQueue[this.inlineQueue.length - 1].src = i.text) : t.push(e);
+          n = n.substring(e.raw.length), o = t[t.length - 1], o && (o.type === "paragraph" || o.type === "text") ? (o.raw += `
+` + e.raw, o.text += `
+` + e.text, this.inlineQueue[this.inlineQueue.length - 1].src = o.text) : t.push(e);
           continue;
         }
         if (e = this.tokenizer.fences(n)) {
@@ -745,9 +745,9 @@ class v {
           continue;
         }
         if (e = this.tokenizer.def(n)) {
-          n = n.substring(e.raw.length), i = t[t.length - 1], i && (i.type === "paragraph" || i.type === "text") ? (i.raw += `
-` + e.raw, i.text += `
-` + e.raw, this.inlineQueue[this.inlineQueue.length - 1].src = i.text) : this.tokens.links[e.tag] || (this.tokens.links[e.tag] = {
+          n = n.substring(e.raw.length), o = t[t.length - 1], o && (o.type === "paragraph" || o.type === "text") ? (o.raw += `
+` + e.raw, o.text += `
+` + e.raw, this.inlineQueue[this.inlineQueue.length - 1].src = o.text) : this.tokens.links[e.tag] || (this.tokens.links[e.tag] = {
             href: e.href,
             title: e.title
           });
@@ -763,22 +763,22 @@ class v {
         }
         if (r = n, this.options.extensions && this.options.extensions.startBlock) {
           let a = 1 / 0;
-          const s = n.slice(1);
-          let p;
-          this.options.extensions.startBlock.forEach((u) => {
-            p = u.call({ lexer: this }, s), typeof p == "number" && p >= 0 && (a = Math.min(a, p));
+          const c = n.slice(1);
+          let h;
+          this.options.extensions.startBlock.forEach((d) => {
+            h = d.call({ lexer: this }, c), typeof h == "number" && h >= 0 && (a = Math.min(a, h));
           }), a < 1 / 0 && a >= 0 && (r = n.substring(0, a + 1));
         }
         if (this.state.top && (e = this.tokenizer.paragraph(r))) {
-          i = t[t.length - 1], o && i.type === "paragraph" ? (i.raw += `
-` + e.raw, i.text += `
-` + e.text, this.inlineQueue.pop(), this.inlineQueue[this.inlineQueue.length - 1].src = i.text) : t.push(e), o = r.length !== n.length, n = n.substring(e.raw.length);
+          o = t[t.length - 1], i && o.type === "paragraph" ? (o.raw += `
+` + e.raw, o.text += `
+` + e.text, this.inlineQueue.pop(), this.inlineQueue[this.inlineQueue.length - 1].src = o.text) : t.push(e), i = r.length !== n.length, n = n.substring(e.raw.length);
           continue;
         }
         if (e = this.tokenizer.text(n)) {
-          n = n.substring(e.raw.length), i = t[t.length - 1], i && i.type === "text" ? (i.raw += `
-` + e.raw, i.text += `
-` + e.text, this.inlineQueue.pop(), this.inlineQueue[this.inlineQueue.length - 1].src = i.text) : t.push(e);
+          n = n.substring(e.raw.length), o = t[t.length - 1], o && o.type === "text" ? (o.raw += `
+` + e.raw, o.text += `
+` + e.text, this.inlineQueue.pop(), this.inlineQueue[this.inlineQueue.length - 1].src = o.text) : t.push(e);
           continue;
         }
         if (n) {
@@ -799,25 +799,25 @@ class v {
    * Lexing/Compiling
    */
   inlineTokens(n, t = []) {
-    let e, i, r, o = n, a, s, p;
+    let e, o, r, i = n, a, c, h;
     if (this.tokens.links) {
-      const u = Object.keys(this.tokens.links);
-      if (u.length > 0)
-        for (; (a = this.tokenizer.rules.inline.reflinkSearch.exec(o)) != null; )
-          u.includes(a[0].slice(a[0].lastIndexOf("[") + 1, -1)) && (o = o.slice(0, a.index) + "[" + "a".repeat(a[0].length - 2) + "]" + o.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex));
+      const d = Object.keys(this.tokens.links);
+      if (d.length > 0)
+        for (; (a = this.tokenizer.rules.inline.reflinkSearch.exec(i)) != null; )
+          d.includes(a[0].slice(a[0].lastIndexOf("[") + 1, -1)) && (i = i.slice(0, a.index) + "[" + "a".repeat(a[0].length - 2) + "]" + i.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex));
     }
-    for (; (a = this.tokenizer.rules.inline.blockSkip.exec(o)) != null; )
-      o = o.slice(0, a.index) + "[" + "a".repeat(a[0].length - 2) + "]" + o.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);
-    for (; (a = this.tokenizer.rules.inline.anyPunctuation.exec(o)) != null; )
-      o = o.slice(0, a.index) + "++" + o.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);
+    for (; (a = this.tokenizer.rules.inline.blockSkip.exec(i)) != null; )
+      i = i.slice(0, a.index) + "[" + "a".repeat(a[0].length - 2) + "]" + i.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);
+    for (; (a = this.tokenizer.rules.inline.anyPunctuation.exec(i)) != null; )
+      i = i.slice(0, a.index) + "++" + i.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);
     for (; n; )
-      if (s || (p = ""), s = !1, !(this.options.extensions && this.options.extensions.inline && this.options.extensions.inline.some((u) => (e = u.call({ lexer: this }, n, t)) ? (n = n.substring(e.raw.length), t.push(e), !0) : !1))) {
+      if (c || (h = ""), c = !1, !(this.options.extensions && this.options.extensions.inline && this.options.extensions.inline.some((d) => (e = d.call({ lexer: this }, n, t)) ? (n = n.substring(e.raw.length), t.push(e), !0) : !1))) {
         if (e = this.tokenizer.escape(n)) {
           n = n.substring(e.raw.length), t.push(e);
           continue;
         }
         if (e = this.tokenizer.tag(n)) {
-          n = n.substring(e.raw.length), i = t[t.length - 1], i && e.type === "text" && i.type === "text" ? (i.raw += e.raw, i.text += e.text) : t.push(e);
+          n = n.substring(e.raw.length), o = t[t.length - 1], o && e.type === "text" && o.type === "text" ? (o.raw += e.raw, o.text += e.text) : t.push(e);
           continue;
         }
         if (e = this.tokenizer.link(n)) {
@@ -825,10 +825,10 @@ class v {
           continue;
         }
         if (e = this.tokenizer.reflink(n, this.tokens.links)) {
-          n = n.substring(e.raw.length), i = t[t.length - 1], i && e.type === "text" && i.type === "text" ? (i.raw += e.raw, i.text += e.text) : t.push(e);
+          n = n.substring(e.raw.length), o = t[t.length - 1], o && e.type === "text" && o.type === "text" ? (o.raw += e.raw, o.text += e.text) : t.push(e);
           continue;
         }
-        if (e = this.tokenizer.emStrong(n, o, p)) {
+        if (e = this.tokenizer.emStrong(n, i, h)) {
           n = n.substring(e.raw.length), t.push(e);
           continue;
         }
@@ -853,24 +853,24 @@ class v {
           continue;
         }
         if (r = n, this.options.extensions && this.options.extensions.startInline) {
-          let u = 1 / 0;
-          const h = n.slice(1);
-          let d;
-          this.options.extensions.startInline.forEach((w) => {
-            d = w.call({ lexer: this }, h), typeof d == "number" && d >= 0 && (u = Math.min(u, d));
-          }), u < 1 / 0 && u >= 0 && (r = n.substring(0, u + 1));
+          let d = 1 / 0;
+          const w = n.slice(1);
+          let u;
+          this.options.extensions.startInline.forEach((p) => {
+            u = p.call({ lexer: this }, w), typeof u == "number" && u >= 0 && (d = Math.min(d, u));
+          }), d < 1 / 0 && d >= 0 && (r = n.substring(0, d + 1));
         }
         if (e = this.tokenizer.inlineText(r)) {
-          n = n.substring(e.raw.length), e.raw.slice(-1) !== "_" && (p = e.raw.slice(-1)), s = !0, i = t[t.length - 1], i && i.type === "text" ? (i.raw += e.raw, i.text += e.text) : t.push(e);
+          n = n.substring(e.raw.length), e.raw.slice(-1) !== "_" && (h = e.raw.slice(-1)), c = !0, o = t[t.length - 1], o && o.type === "text" ? (o.raw += e.raw, o.text += e.text) : t.push(e);
           continue;
         }
         if (n) {
-          const u = "Infinite loop on byte: " + n.charCodeAt(0);
+          const d = "Infinite loop on byte: " + n.charCodeAt(0);
           if (this.options.silent) {
-            console.error(u);
+            console.error(d);
             break;
           } else
-            throw new Error(u);
+            throw new Error(d);
         }
       }
     return t;
@@ -883,9 +883,9 @@ class D {
   }
   code(n, t, e) {
     var r;
-    const i = (r = (t || "").match(/^\S*/)) == null ? void 0 : r[0];
+    const o = (r = (t || "").match(/^\S*/)) == null ? void 0 : r[0];
     return n = n.replace(/\n$/, "") + `
-`, i ? '<pre><code class="language-' + V(i) + '">' + (e ? n : V(n, !0)) + `</code></pre>
+`, o ? '<pre><code class="language-' + V(o) + '">' + (e ? n : V(n, !0)) + `</code></pre>
 ` : "<pre><code>" + (e ? n : V(n, !0)) + `</code></pre>
 `;
   }
@@ -906,9 +906,9 @@ ${n}</blockquote>
 `;
   }
   list(n, t, e) {
-    const i = t ? "ol" : "ul", r = t && e !== 1 ? ' start="' + e + '"' : "";
-    return "<" + i + r + `>
-` + n + "</" + i + `>
+    const o = t ? "ol" : "ul", r = t && e !== 1 ? ' start="' + e + '"' : "";
+    return "<" + o + r + `>
+` + n + "</" + o + `>
 `;
   }
   listitem(n, t, e) {
@@ -958,18 +958,18 @@ ${n}</tr>
     return `<del>${n}</del>`;
   }
   link(n, t, e) {
-    const i = se(n);
-    if (i === null)
+    const o = se(n);
+    if (o === null)
       return e;
-    n = i;
+    n = o;
     let r = '<a href="' + n + '"';
     return t && (r += ' title="' + t + '"'), r += ">" + e + "</a>", r;
   }
   image(n, t, e) {
-    const i = se(n);
-    if (i === null)
+    const o = se(n);
+    if (o === null)
       return e;
-    n = i;
+    n = o;
     let r = `<img src="${n}" alt="${e}"`;
     return t && (r += ` title="${t}"`), r += ">", r;
   }
@@ -977,7 +977,7 @@ ${n}</tr>
     return n;
   }
 }
-class G {
+class X {
   // no need for block level renderers
   strong(n) {
     return n;
@@ -1012,7 +1012,7 @@ class y {
     x(this, "options");
     x(this, "renderer");
     x(this, "textRenderer");
-    this.options = n || T, this.options.renderer = this.options.renderer || new D(), this.renderer = this.options.renderer, this.renderer.options = this.options, this.textRenderer = new G();
+    this.options = n || T, this.options.renderer = this.options.renderer || new D(), this.renderer = this.options.renderer, this.renderer.options = this.options, this.textRenderer = new X();
   }
   /**
    * Static Parse Method
@@ -1031,11 +1031,11 @@ class y {
    */
   parse(n, t = !0) {
     let e = "";
-    for (let i = 0; i < n.length; i++) {
-      const r = n[i];
+    for (let o = 0; o < n.length; o++) {
+      const r = n[o];
       if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[r.type]) {
-        const o = r, a = this.options.extensions.renderers[o.type].call({ parser: this }, o);
-        if (a !== !1 || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "paragraph", "text"].includes(o.type)) {
+        const i = r, a = this.options.extensions.renderers[i.type].call({ parser: this }, i);
+        if (a !== !1 || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "paragraph", "text"].includes(i.type)) {
           e += a || "";
           continue;
         }
@@ -1048,78 +1048,78 @@ class y {
           continue;
         }
         case "heading": {
-          const o = r;
-          e += this.renderer.heading(this.parseInline(o.tokens), o.depth, Be(this.parseInline(o.tokens, this.textRenderer)));
+          const i = r;
+          e += this.renderer.heading(this.parseInline(i.tokens), i.depth, Se(this.parseInline(i.tokens, this.textRenderer)));
           continue;
         }
         case "code": {
-          const o = r;
-          e += this.renderer.code(o.text, o.lang, !!o.escaped);
+          const i = r;
+          e += this.renderer.code(i.text, i.lang, !!i.escaped);
           continue;
         }
         case "table": {
-          const o = r;
-          let a = "", s = "";
-          for (let u = 0; u < o.header.length; u++)
-            s += this.renderer.tablecell(this.parseInline(o.header[u].tokens), { header: !0, align: o.align[u] });
-          a += this.renderer.tablerow(s);
-          let p = "";
-          for (let u = 0; u < o.rows.length; u++) {
-            const h = o.rows[u];
-            s = "";
-            for (let d = 0; d < h.length; d++)
-              s += this.renderer.tablecell(this.parseInline(h[d].tokens), { header: !1, align: o.align[d] });
-            p += this.renderer.tablerow(s);
+          const i = r;
+          let a = "", c = "";
+          for (let d = 0; d < i.header.length; d++)
+            c += this.renderer.tablecell(this.parseInline(i.header[d].tokens), { header: !0, align: i.align[d] });
+          a += this.renderer.tablerow(c);
+          let h = "";
+          for (let d = 0; d < i.rows.length; d++) {
+            const w = i.rows[d];
+            c = "";
+            for (let u = 0; u < w.length; u++)
+              c += this.renderer.tablecell(this.parseInline(w[u].tokens), { header: !1, align: i.align[u] });
+            h += this.renderer.tablerow(c);
           }
-          e += this.renderer.table(a, p);
+          e += this.renderer.table(a, h);
           continue;
         }
         case "blockquote": {
-          const o = r, a = this.parse(o.tokens);
+          const i = r, a = this.parse(i.tokens);
           e += this.renderer.blockquote(a);
           continue;
         }
         case "list": {
-          const o = r, a = o.ordered, s = o.start, p = o.loose;
-          let u = "";
-          for (let h = 0; h < o.items.length; h++) {
-            const d = o.items[h], w = d.checked, g = d.task;
+          const i = r, a = i.ordered, c = i.start, h = i.loose;
+          let d = "";
+          for (let w = 0; w < i.items.length; w++) {
+            const u = i.items[w], p = u.checked, g = u.task;
             let b = "";
-            if (d.task) {
-              const E = this.renderer.checkbox(!!w);
-              p ? d.tokens.length > 0 && d.tokens[0].type === "paragraph" ? (d.tokens[0].text = E + " " + d.tokens[0].text, d.tokens[0].tokens && d.tokens[0].tokens.length > 0 && d.tokens[0].tokens[0].type === "text" && (d.tokens[0].tokens[0].text = E + " " + d.tokens[0].tokens[0].text)) : d.tokens.unshift({
+            if (u.task) {
+              const E = this.renderer.checkbox(!!p);
+              h ? u.tokens.length > 0 && u.tokens[0].type === "paragraph" ? (u.tokens[0].text = E + " " + u.tokens[0].text, u.tokens[0].tokens && u.tokens[0].tokens.length > 0 && u.tokens[0].tokens[0].type === "text" && (u.tokens[0].tokens[0].text = E + " " + u.tokens[0].tokens[0].text)) : u.tokens.unshift({
                 type: "text",
                 text: E + " "
               }) : b += E + " ";
             }
-            b += this.parse(d.tokens, p), u += this.renderer.listitem(b, g, !!w);
+            b += this.parse(u.tokens, h), d += this.renderer.listitem(b, g, !!p);
           }
-          e += this.renderer.list(u, a, s);
+          e += this.renderer.list(d, a, c);
           continue;
         }
         case "html": {
-          const o = r;
-          e += this.renderer.html(o.text, o.block);
+          const i = r;
+          e += this.renderer.html(i.text, i.block);
           continue;
         }
         case "paragraph": {
-          const o = r;
-          e += this.renderer.paragraph(this.parseInline(o.tokens));
+          const i = r;
+          e += this.renderer.paragraph(this.parseInline(i.tokens));
           continue;
         }
         case "text": {
-          let o = r, a = o.tokens ? this.parseInline(o.tokens) : o.text;
-          for (; i + 1 < n.length && n[i + 1].type === "text"; )
-            o = n[++i], a += `
-` + (o.tokens ? this.parseInline(o.tokens) : o.text);
+          let i = r, a = i.tokens ? this.parseInline(i.tokens) : i.text;
+          for (; o + 1 < n.length && n[o + 1].type === "text"; )
+            i = n[++o], a += `
+` + (i.tokens ? this.parseInline(i.tokens) : i.text);
           e += t ? this.renderer.paragraph(a) : a;
           continue;
         }
         default: {
-          const o = 'Token with "' + r.type + '" type was not found.';
+          const i = 'Token with "' + r.type + '" type was not found.';
           if (this.options.silent)
-            return console.error(o), "";
-          throw new Error(o);
+            return console.error(i), "";
+          throw new Error(i);
         }
       }
     }
@@ -1131,49 +1131,49 @@ class y {
   parseInline(n, t) {
     t = t || this.renderer;
     let e = "";
-    for (let i = 0; i < n.length; i++) {
-      const r = n[i];
+    for (let o = 0; o < n.length; o++) {
+      const r = n[o];
       if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[r.type]) {
-        const o = this.options.extensions.renderers[r.type].call({ parser: this }, r);
-        if (o !== !1 || !["escape", "html", "link", "image", "strong", "em", "codespan", "br", "del", "text"].includes(r.type)) {
-          e += o || "";
+        const i = this.options.extensions.renderers[r.type].call({ parser: this }, r);
+        if (i !== !1 || !["escape", "html", "link", "image", "strong", "em", "codespan", "br", "del", "text"].includes(r.type)) {
+          e += i || "";
           continue;
         }
       }
       switch (r.type) {
         case "escape": {
-          const o = r;
-          e += t.text(o.text);
+          const i = r;
+          e += t.text(i.text);
           break;
         }
         case "html": {
-          const o = r;
-          e += t.html(o.text);
+          const i = r;
+          e += t.html(i.text);
           break;
         }
         case "link": {
-          const o = r;
-          e += t.link(o.href, o.title, this.parseInline(o.tokens, t));
+          const i = r;
+          e += t.link(i.href, i.title, this.parseInline(i.tokens, t));
           break;
         }
         case "image": {
-          const o = r;
-          e += t.image(o.href, o.title, o.text);
+          const i = r;
+          e += t.image(i.href, i.title, i.text);
           break;
         }
         case "strong": {
-          const o = r;
-          e += t.strong(this.parseInline(o.tokens, t));
+          const i = r;
+          e += t.strong(this.parseInline(i.tokens, t));
           break;
         }
         case "em": {
-          const o = r;
-          e += t.em(this.parseInline(o.tokens, t));
+          const i = r;
+          e += t.em(this.parseInline(i.tokens, t));
           break;
         }
         case "codespan": {
-          const o = r;
-          e += t.codespan(o.text);
+          const i = r;
+          e += t.codespan(i.text);
           break;
         }
         case "br": {
@@ -1181,27 +1181,27 @@ class y {
           break;
         }
         case "del": {
-          const o = r;
-          e += t.del(this.parseInline(o.tokens, t));
+          const i = r;
+          e += t.del(this.parseInline(i.tokens, t));
           break;
         }
         case "text": {
-          const o = r;
-          e += t.text(o.text);
+          const i = r;
+          e += t.text(i.text);
           break;
         }
         default: {
-          const o = 'Token with "' + r.type + '" type was not found.';
+          const i = 'Token with "' + r.type + '" type was not found.';
           if (this.options.silent)
-            return console.error(o), "";
-          throw new Error(o);
+            return console.error(i), "";
+          throw new Error(i);
         }
       }
     }
     return e;
   }
 }
-class C {
+class _ {
   constructor(n) {
     x(this, "options");
     this.options = n || T;
@@ -1225,54 +1225,54 @@ class C {
     return n;
   }
 }
-x(C, "passThroughHooks", /* @__PURE__ */ new Set([
+x(_, "passThroughHooks", /* @__PURE__ */ new Set([
   "preprocess",
   "postprocess",
   "processAllTokens"
 ]));
 var N, F, Ve;
-class lt {
+class ct {
   constructor(...n) {
     ie(this, N);
     x(this, "defaults", Q());
     x(this, "options", this.setOptions);
-    x(this, "parse", M(this, N, F).call(this, v.lex, y.parse));
-    x(this, "parseInline", M(this, N, F).call(this, v.lexInline, y.parseInline));
+    x(this, "parse", A(this, N, F).call(this, v.lex, y.parse));
+    x(this, "parseInline", A(this, N, F).call(this, v.lexInline, y.parseInline));
     x(this, "Parser", y);
     x(this, "Renderer", D);
-    x(this, "TextRenderer", G);
+    x(this, "TextRenderer", X);
     x(this, "Lexer", v);
     x(this, "Tokenizer", P);
-    x(this, "Hooks", C);
+    x(this, "Hooks", _);
     this.use(...n);
   }
   /**
    * Run callback for every token
    */
   walkTokens(n, t) {
-    var i, r;
+    var o, r;
     let e = [];
-    for (const o of n)
-      switch (e = e.concat(t.call(this, o)), o.type) {
+    for (const i of n)
+      switch (e = e.concat(t.call(this, i)), i.type) {
         case "table": {
-          const a = o;
-          for (const s of a.header)
-            e = e.concat(this.walkTokens(s.tokens, t));
-          for (const s of a.rows)
-            for (const p of s)
-              e = e.concat(this.walkTokens(p.tokens, t));
+          const a = i;
+          for (const c of a.header)
+            e = e.concat(this.walkTokens(c.tokens, t));
+          for (const c of a.rows)
+            for (const h of c)
+              e = e.concat(this.walkTokens(h.tokens, t));
           break;
         }
         case "list": {
-          const a = o;
+          const a = i;
           e = e.concat(this.walkTokens(a.items, t));
           break;
         }
         default: {
-          const a = o;
-          (r = (i = this.defaults.extensions) == null ? void 0 : i.childTokens) != null && r[a.type] ? this.defaults.extensions.childTokens[a.type].forEach((s) => {
-            const p = a[s].flat(1 / 0);
-            e = e.concat(this.walkTokens(p, t));
+          const a = i;
+          (r = (o = this.defaults.extensions) == null ? void 0 : o.childTokens) != null && r[a.type] ? this.defaults.extensions.childTokens[a.type].forEach((c) => {
+            const h = a[c].flat(1 / 0);
+            e = e.concat(this.walkTokens(h, t));
           }) : a.tokens && (e = e.concat(this.walkTokens(a.tokens, t)));
         }
       }
@@ -1281,82 +1281,82 @@ class lt {
   use(...n) {
     const t = this.defaults.extensions || { renderers: {}, childTokens: {} };
     return n.forEach((e) => {
-      const i = { ...e };
-      if (i.async = this.defaults.async || i.async || !1, e.extensions && (e.extensions.forEach((r) => {
+      const o = { ...e };
+      if (o.async = this.defaults.async || o.async || !1, e.extensions && (e.extensions.forEach((r) => {
         if (!r.name)
           throw new Error("extension name required");
         if ("renderer" in r) {
-          const o = t.renderers[r.name];
-          o ? t.renderers[r.name] = function(...a) {
-            let s = r.renderer.apply(this, a);
-            return s === !1 && (s = o.apply(this, a)), s;
+          const i = t.renderers[r.name];
+          i ? t.renderers[r.name] = function(...a) {
+            let c = r.renderer.apply(this, a);
+            return c === !1 && (c = i.apply(this, a)), c;
           } : t.renderers[r.name] = r.renderer;
         }
         if ("tokenizer" in r) {
           if (!r.level || r.level !== "block" && r.level !== "inline")
             throw new Error("extension level must be 'block' or 'inline'");
-          const o = t[r.level];
-          o ? o.unshift(r.tokenizer) : t[r.level] = [r.tokenizer], r.start && (r.level === "block" ? t.startBlock ? t.startBlock.push(r.start) : t.startBlock = [r.start] : r.level === "inline" && (t.startInline ? t.startInline.push(r.start) : t.startInline = [r.start]));
+          const i = t[r.level];
+          i ? i.unshift(r.tokenizer) : t[r.level] = [r.tokenizer], r.start && (r.level === "block" ? t.startBlock ? t.startBlock.push(r.start) : t.startBlock = [r.start] : r.level === "inline" && (t.startInline ? t.startInline.push(r.start) : t.startInline = [r.start]));
         }
         "childTokens" in r && r.childTokens && (t.childTokens[r.name] = r.childTokens);
-      }), i.extensions = t), e.renderer) {
+      }), o.extensions = t), e.renderer) {
         const r = this.defaults.renderer || new D(this.defaults);
-        for (const o in e.renderer) {
-          if (!(o in r))
-            throw new Error(`renderer '${o}' does not exist`);
-          if (o === "options")
+        for (const i in e.renderer) {
+          if (!(i in r))
+            throw new Error(`renderer '${i}' does not exist`);
+          if (i === "options")
             continue;
-          const a = o, s = e.renderer[a], p = r[a];
-          r[a] = (...u) => {
-            let h = s.apply(r, u);
-            return h === !1 && (h = p.apply(r, u)), h || "";
+          const a = i, c = e.renderer[a], h = r[a];
+          r[a] = (...d) => {
+            let w = c.apply(r, d);
+            return w === !1 && (w = h.apply(r, d)), w || "";
           };
         }
-        i.renderer = r;
+        o.renderer = r;
       }
       if (e.tokenizer) {
         const r = this.defaults.tokenizer || new P(this.defaults);
-        for (const o in e.tokenizer) {
-          if (!(o in r))
-            throw new Error(`tokenizer '${o}' does not exist`);
-          if (["options", "rules", "lexer"].includes(o))
+        for (const i in e.tokenizer) {
+          if (!(i in r))
+            throw new Error(`tokenizer '${i}' does not exist`);
+          if (["options", "rules", "lexer"].includes(i))
             continue;
-          const a = o, s = e.tokenizer[a], p = r[a];
-          r[a] = (...u) => {
-            let h = s.apply(r, u);
-            return h === !1 && (h = p.apply(r, u)), h;
+          const a = i, c = e.tokenizer[a], h = r[a];
+          r[a] = (...d) => {
+            let w = c.apply(r, d);
+            return w === !1 && (w = h.apply(r, d)), w;
           };
         }
-        i.tokenizer = r;
+        o.tokenizer = r;
       }
       if (e.hooks) {
-        const r = this.defaults.hooks || new C();
-        for (const o in e.hooks) {
-          if (!(o in r))
-            throw new Error(`hook '${o}' does not exist`);
-          if (o === "options")
+        const r = this.defaults.hooks || new _();
+        for (const i in e.hooks) {
+          if (!(i in r))
+            throw new Error(`hook '${i}' does not exist`);
+          if (i === "options")
             continue;
-          const a = o, s = e.hooks[a], p = r[a];
-          C.passThroughHooks.has(o) ? r[a] = (u) => {
+          const a = i, c = e.hooks[a], h = r[a];
+          _.passThroughHooks.has(i) ? r[a] = (d) => {
             if (this.defaults.async)
-              return Promise.resolve(s.call(r, u)).then((d) => p.call(r, d));
-            const h = s.call(r, u);
-            return p.call(r, h);
-          } : r[a] = (...u) => {
-            let h = s.apply(r, u);
-            return h === !1 && (h = p.apply(r, u)), h;
+              return Promise.resolve(c.call(r, d)).then((u) => h.call(r, u));
+            const w = c.call(r, d);
+            return h.call(r, w);
+          } : r[a] = (...d) => {
+            let w = c.apply(r, d);
+            return w === !1 && (w = h.apply(r, d)), w;
           };
         }
-        i.hooks = r;
+        o.hooks = r;
       }
       if (e.walkTokens) {
-        const r = this.defaults.walkTokens, o = e.walkTokens;
-        i.walkTokens = function(a) {
-          let s = [];
-          return s.push(o.call(this, a)), r && (s = s.concat(r.call(this, a))), s;
+        const r = this.defaults.walkTokens, i = e.walkTokens;
+        o.walkTokens = function(a) {
+          let c = [];
+          return c.push(i.call(this, a)), r && (c = c.concat(r.call(this, a))), c;
         };
       }
-      this.defaults = { ...this.defaults, ...i };
+      this.defaults = { ...this.defaults, ...o };
     }), this;
   }
   setOptions(n) {
@@ -1370,39 +1370,39 @@ class lt {
   }
 }
 N = new WeakSet(), F = function(n, t) {
-  return (e, i) => {
-    const r = { ...i }, o = { ...this.defaults, ...r };
-    this.defaults.async === !0 && r.async === !1 && (o.silent || console.warn("marked(): The async option was set to true by an extension. The async: false option sent to parse will be ignored."), o.async = !0);
-    const a = M(this, N, Ve).call(this, !!o.silent, !!o.async);
+  return (e, o) => {
+    const r = { ...o }, i = { ...this.defaults, ...r };
+    this.defaults.async === !0 && r.async === !1 && (i.silent || console.warn("marked(): The async option was set to true by an extension. The async: false option sent to parse will be ignored."), i.async = !0);
+    const a = A(this, N, Ve).call(this, !!i.silent, !!i.async);
     if (typeof e > "u" || e === null)
       return a(new Error("marked(): input parameter is undefined or null"));
     if (typeof e != "string")
       return a(new Error("marked(): input parameter is of type " + Object.prototype.toString.call(e) + ", string expected"));
-    if (o.hooks && (o.hooks.options = o), o.async)
-      return Promise.resolve(o.hooks ? o.hooks.preprocess(e) : e).then((s) => n(s, o)).then((s) => o.hooks ? o.hooks.processAllTokens(s) : s).then((s) => o.walkTokens ? Promise.all(this.walkTokens(s, o.walkTokens)).then(() => s) : s).then((s) => t(s, o)).then((s) => o.hooks ? o.hooks.postprocess(s) : s).catch(a);
+    if (i.hooks && (i.hooks.options = i), i.async)
+      return Promise.resolve(i.hooks ? i.hooks.preprocess(e) : e).then((c) => n(c, i)).then((c) => i.hooks ? i.hooks.processAllTokens(c) : c).then((c) => i.walkTokens ? Promise.all(this.walkTokens(c, i.walkTokens)).then(() => c) : c).then((c) => t(c, i)).then((c) => i.hooks ? i.hooks.postprocess(c) : c).catch(a);
     try {
-      o.hooks && (e = o.hooks.preprocess(e));
-      let s = n(e, o);
-      o.hooks && (s = o.hooks.processAllTokens(s)), o.walkTokens && this.walkTokens(s, o.walkTokens);
-      let p = t(s, o);
-      return o.hooks && (p = o.hooks.postprocess(p)), p;
-    } catch (s) {
-      return a(s);
+      i.hooks && (e = i.hooks.preprocess(e));
+      let c = n(e, i);
+      i.hooks && (c = i.hooks.processAllTokens(c)), i.walkTokens && this.walkTokens(c, i.walkTokens);
+      let h = t(c, i);
+      return i.hooks && (h = i.hooks.postprocess(h)), h;
+    } catch (c) {
+      return a(c);
     }
   };
 }, Ve = function(n, t) {
   return (e) => {
     if (e.message += `
 Please report this to https://github.com/markedjs/marked.`, n) {
-      const i = "<p>An error occurred:</p><pre>" + V(e.message + "", !0) + "</pre>";
-      return t ? Promise.resolve(i) : i;
+      const o = "<p>An error occurred:</p><pre>" + V(e.message + "", !0) + "</pre>";
+      return t ? Promise.resolve(o) : o;
     }
     if (t)
       return Promise.reject(e);
     throw e;
   };
 };
-const $ = new lt();
+const $ = new ct();
 function f(l, n) {
   return $.parse(l, n);
 }
@@ -1421,11 +1421,11 @@ f.parseInline = $.parseInline;
 f.Parser = y;
 f.parser = y.parse;
 f.Renderer = D;
-f.TextRenderer = G;
+f.TextRenderer = X;
 f.Lexer = v;
 f.lexer = v.lex;
 f.Tokenizer = P;
-f.Hooks = C;
+f.Hooks = _;
 f.parse = f;
 f.options;
 f.setOptions;
@@ -1439,7 +1439,7 @@ const Y = [
   "gemini-3-flash-preview",
   "gpt-5.4-nano",
   "qwen3.5-397b-a17b"
-], c = window.Vue.reactive({
+], s = window.Vue.reactive({
   isOpen: !1,
   isMinimized: !1,
   isFullscreen: !1,
@@ -1454,25 +1454,28 @@ const Y = [
   selectedPromptId: "default",
   selectedModel: Y[0],
   router: null,
-  vaultId: ""
+  vaultId: "",
+  vaultUrl: "",
+  showToast: null,
+  confirm: null
 }), k = {
   setContext(l) {
-    c.router = l.router, c.vaultId = l.vaultId;
+    s.router = l.router, s.vaultId = l.vaultId, s.vaultUrl = l.vaultUrl, s.showToast = l.showToast, s.confirm = l.confirm;
   },
   open() {
-    c.isOpen = !0, c.isMinimized = !1;
+    s.isOpen = !0, s.isMinimized = !1;
   },
   close() {
-    c.isOpen = !1, c.isMinimized = !1;
+    s.isOpen = !1, s.isMinimized = !1;
   },
   minimize() {
-    c.isMinimized = !0, c.isOpen = !1;
+    s.isMinimized = !0, s.isOpen = !1;
   },
   toggle() {
-    c.isOpen ? this.close() : this.open();
+    s.isOpen ? this.close() : this.open();
   },
   toggleFullscreen() {
-    c.isFullscreen = !c.isFullscreen;
+    s.isFullscreen = !s.isFullscreen;
   },
   createNewTopic() {
     const l = {
@@ -1481,54 +1484,54 @@ const Y = [
       history: [],
       updatedAt: Date.now()
     };
-    c.topics.unshift(l), c.currentTopicId = l.id, c.activeTab = "chat";
+    s.topics.unshift(l), s.currentTopicId = l.id, s.activeTab = "chat";
   },
   selectTopic(l) {
-    c.currentTopicId = l, c.activeTab = "chat";
+    s.currentTopicId = l, s.activeTab = "chat";
   },
   deleteTopic(l) {
-    c.topics = c.topics.filter((n) => n.id !== l), c.currentTopicId === l && (c.currentTopicId = c.topics.length > 0 ? c.topics[0].id : null);
+    s.topics = s.topics.filter((n) => n.id !== l), s.currentTopicId === l && (s.currentTopicId = s.topics.length > 0 ? s.topics[0].id : null);
   },
   clearCurrentTopic() {
     const l = this.getCurrentTopic();
     l && confirm("Очистить текущий чат?") && (l.history = [], l.updatedAt = Date.now());
   },
   getCurrentTopic() {
-    return c.topics.find((l) => l.id === c.currentTopicId);
+    return s.topics.find((l) => l.id === s.currentTopicId);
   },
   addPrompt(l, n) {
-    c.systemPrompts.push({ id: Date.now().toString(), name: l, content: n });
+    s.systemPrompts.push({ id: Date.now().toString(), name: l, content: n });
   },
   updatePrompt(l, n, t) {
-    const e = c.systemPrompts.find((i) => i.id === l);
+    const e = s.systemPrompts.find((o) => o.id === l);
     e && (e.name = n, e.content = t);
   },
   deletePrompt(l) {
-    l !== "default" && (c.systemPrompts = c.systemPrompts.filter((n) => n.id !== l), c.selectedPromptId === l && (c.selectedPromptId = "default"));
+    l !== "default" && (s.systemPrompts = s.systemPrompts.filter((n) => n.id !== l), s.selectedPromptId === l && (s.selectedPromptId = "default"));
   }
 };
 function ve() {
-  if (c.isInitialized)
+  if (s.isInitialized)
     return;
-  c.apiKey = localStorage.getItem("wm-ai-apikey") || "", c.selectedModel = localStorage.getItem("wm-ai-model") || Y[0];
+  s.apiKey = localStorage.getItem("wm-ai-apikey") || "", s.selectedModel = localStorage.getItem("wm-ai-model") || Y[0];
   const l = localStorage.getItem("wm-ai-prompts");
   if (l)
-    c.systemPrompts = JSON.parse(l);
+    s.systemPrompts = JSON.parse(l);
   else {
     const e = localStorage.getItem("wm-ai-sysprompt");
-    c.systemPrompts = [{
+    s.systemPrompts = [{
       id: "default",
       name: "Стандартный",
       content: e || "Ты полезный AI-ассистент. Отвечай кратко и по делу. Форматируй код и текст в Markdown."
     }];
   }
-  c.selectedPromptId = localStorage.getItem("wm-ai-selected-prompt") || c.systemPrompts[0].id;
+  s.selectedPromptId = localStorage.getItem("wm-ai-selected-prompt") || s.systemPrompts[0].id;
   const n = localStorage.getItem("wm-ai-topics");
   if (n)
-    c.topics = JSON.parse(n);
+    s.topics = JSON.parse(n);
   else {
     const e = localStorage.getItem("wm-ai-history");
-    e && (c.topics = [{
+    e && (s.topics = [{
       id: Date.now().toString(),
       title: "Старый чат",
       history: JSON.parse(e),
@@ -1536,157 +1539,157 @@ function ve() {
     }]);
   }
   const t = localStorage.getItem("wm-ai-current-topic");
-  t && c.topics.some((e) => e.id === t) ? c.currentTopicId = t : c.topics.length > 0 && (c.currentTopicId = c.topics[0].id), c.isInitialized = !0, window.Vue.watch(() => c.apiKey, (e) => localStorage.setItem("wm-ai-apikey", e)), window.Vue.watch(() => c.selectedModel, (e) => localStorage.setItem("wm-ai-model", e)), window.Vue.watch(() => c.selectedPromptId, (e) => localStorage.setItem("wm-ai-selected-prompt", e)), window.Vue.watch(() => c.systemPrompts, (e) => localStorage.setItem("wm-ai-prompts", JSON.stringify(e)), { deep: !0 }), window.Vue.watch(() => c.topics, (e) => localStorage.setItem("wm-ai-topics", JSON.stringify(e)), { deep: !0 }), window.Vue.watch(() => c.currentTopicId, (e) => {
+  t && s.topics.some((e) => e.id === t) ? s.currentTopicId = t : s.topics.length > 0 && (s.currentTopicId = s.topics[0].id), s.isInitialized = !0, window.Vue.watch(() => s.apiKey, (e) => localStorage.setItem("wm-ai-apikey", e)), window.Vue.watch(() => s.selectedModel, (e) => localStorage.setItem("wm-ai-model", e)), window.Vue.watch(() => s.selectedPromptId, (e) => localStorage.setItem("wm-ai-selected-prompt", e)), window.Vue.watch(() => s.systemPrompts, (e) => localStorage.setItem("wm-ai-prompts", JSON.stringify(e)), { deep: !0 }), window.Vue.watch(() => s.topics, (e) => localStorage.setItem("wm-ai-topics", JSON.stringify(e)), { deep: !0 }), window.Vue.watch(() => s.currentTopicId, (e) => {
     e && localStorage.setItem("wm-ai-current-topic", e);
   });
 }
 let B = null;
-async function at(l, n) {
-  var r, o, a;
-  if (!l.trim() || c.isLoading)
+async function dt(l, n) {
+  var r, i, a;
+  if (!l.trim() || s.isLoading)
     return;
-  if (!c.apiKey) {
-    c.activeTab = "settings", alert('Пожалуйста, укажите API ключ на вкладке "Настройки".');
+  if (!s.apiKey) {
+    s.activeTab = "settings", alert('Пожалуйста, укажите API ключ на вкладке "Настройки".');
     return;
   }
-  c.currentTopicId || k.createNewTopic();
+  s.currentTopicId || k.createNewTopic();
   const t = k.getCurrentTopic();
   if (!t)
     return;
   (t.title === "Новый чат" || t.title === "Старый чат") && (t.title = l.length > 30 ? `${l.slice(0, 30)}...` : l);
-  const e = Date.now().toString(), i = c.systemPrompts.find((s) => s.id === c.selectedPromptId) || c.systemPrompts[0];
+  const e = Date.now().toString(), o = s.systemPrompts.find((c) => c.id === s.selectedPromptId) || s.systemPrompts[0];
   t.history.push({
     id: e,
     prompt: l,
     response: "",
     status: "loading",
     date: Date.now()
-  }), t.updatedAt = Date.now(), c.isLoading = !0, B = new AbortController(), n();
+  }), t.updatedAt = Date.now(), s.isLoading = !0, B = new AbortController(), n();
   try {
-    const s = await fetch("https://api.aihubmix.com/v1/chat/completions", {
+    const c = await fetch("https://api.aihubmix.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${c.apiKey}`
+        Authorization: `Bearer ${s.apiKey}`
       },
       body: JSON.stringify({
-        model: c.selectedModel,
+        model: s.selectedModel,
         messages: [
-          { role: "system", content: i.content },
+          { role: "system", content: o.content },
           { role: "user", content: l }
         ]
       }),
       signal: B.signal
     });
-    if (!s.ok)
-      throw new Error(`Ошибка API: ${s.status}`);
-    const u = ((a = (o = (r = (await s.json()).choices) == null ? void 0 : r[0]) == null ? void 0 : o.message) == null ? void 0 : a.content) || "Пустой ответ";
-    Z(e, { response: u, status: "success" });
-  } catch (s) {
-    s.name === "AbortError" ? Z(e, { response: "Запрос отменен.", status: "aborted" }) : Z(e, { response: `Ошибка: ${s.message}`, status: "error" });
+    if (!c.ok)
+      throw new Error(`Ошибка API: ${c.status}`);
+    const d = ((a = (i = (r = (await c.json()).choices) == null ? void 0 : r[0]) == null ? void 0 : i.message) == null ? void 0 : a.content) || "Пустой ответ";
+    q(e, { response: d, status: "success" });
+  } catch (c) {
+    c.name === "AbortError" ? q(e, { response: "Запрос отменен.", status: "aborted" }) : q(e, { response: `Ошибка: ${c.message}`, status: "error" });
   } finally {
-    c.isLoading = !1, B = null, t.updatedAt = Date.now(), n();
+    s.isLoading = !1, B = null, t.updatedAt = Date.now(), n();
   }
 }
-function Z(l, n) {
+function q(l, n) {
   const t = k.getCurrentTopic();
   if (!t)
     return;
-  const e = t.history.findIndex((i) => i.id === l);
+  const e = t.history.findIndex((o) => o.id === l);
   e !== -1 && (t.history[e] = { ...t.history[e], ...n });
 }
 function de() {
   B && B.abort();
 }
-const ct = {
+const ut = {
   key: 0,
   style: { "text-align": "center", color: "var(--fg-muted-color)", "margin-top": "40px" }
-}, dt = { class: "ai-prompt-bubble" }, ut = {
+}, pt = { class: "ai-prompt-bubble" }, wt = {
   key: 0,
   class: "ai-status loading"
-}, pt = ["innerHTML"], wt = { class: "ai-input-area" }, ht = { class: "ai-input-box" }, gt = ["onKeydown"], ft = { class: "ai-input-bottom" }, mt = { class: "ai-tools-left" }, xt = { class: "ai-dropdown-wrap" }, kt = { class: "tool-text" }, bt = {
+}, ht = ["innerHTML"], gt = { class: "ai-input-area" }, ft = { class: "ai-input-box" }, mt = ["onKeydown"], xt = { class: "ai-input-bottom" }, kt = { class: "ai-tools-left" }, bt = { class: "ai-dropdown-wrap" }, Vt = { class: "tool-text" }, vt = {
   key: 0,
   class: "ai-dropdown"
-}, Vt = ["onClick"], vt = { class: "ai-dropdown-wrap" }, yt = { class: "tool-text" }, Et = {
+}, yt = ["onClick"], Et = { class: "ai-dropdown-wrap" }, $t = { class: "tool-text" }, Nt = {
   key: 0,
   class: "ai-dropdown"
-}, $t = ["onClick"], Nt = { class: "ai-tools-right" }, ye = /* @__PURE__ */ window.Vue.defineComponent({
+}, Tt = ["onClick"], Ct = { class: "ai-tools-right" }, ye = /* @__PURE__ */ window.Vue.defineComponent({
   __name: "ai-chat",
   setup(l) {
-    const n = window.Vue.ref(null), t = window.Vue.ref(!1), e = window.Vue.ref(!1), i = window.Vue.computed(() => k.getCurrentTopic()), r = window.Vue.computed(() => {
-      var d;
-      return ((d = c.systemPrompts.find((w) => w.id === c.selectedPromptId)) == null ? void 0 : d.name) || "Неизвестно";
+    const n = window.Vue.ref(null), t = window.Vue.ref(!1), e = window.Vue.ref(!1), o = window.Vue.computed(() => k.getCurrentTopic()), r = window.Vue.computed(() => {
+      var u;
+      return ((u = s.systemPrompts.find((p) => p.id === s.selectedPromptId)) == null ? void 0 : u.name) || "Неизвестно";
     });
-    function o() {
+    function i() {
       window.Vue.nextTick(() => {
         n.value && (n.value.scrollTop = n.value.scrollHeight);
       });
     }
-    window.Vue.watch(() => c.isOpen, (d) => {
-      d && c.activeTab === "chat" && o();
-    }), window.Vue.watch(() => c.currentTopicId, () => o());
-    function a(d) {
+    window.Vue.watch(() => s.isOpen, (u) => {
+      u && s.activeTab === "chat" && i();
+    }), window.Vue.watch(() => s.currentTopicId, () => i());
+    function a(u) {
       try {
-        return f.parse(d);
+        return f.parse(u);
       } catch {
-        return d;
+        return u;
       }
     }
-    function s() {
-      const d = c.userPrompt.trim();
-      d && (c.userPrompt = "", at(d, o));
+    function c() {
+      const u = s.userPrompt.trim();
+      u && (s.userPrompt = "", dt(u, i));
     }
-    function p(d) {
-      c.selectedModel = d, e.value = !1;
+    function h(u) {
+      s.selectedModel = u, e.value = !1;
     }
-    function u(d) {
-      c.selectedPromptId = d, t.value = !1;
+    function d(u) {
+      s.selectedPromptId = u, t.value = !1;
     }
-    function h() {
+    function w() {
       t.value = !1, e.value = !1;
     }
-    return (d, w) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+    return (u, p) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
       class: "ai-tab-view",
-      onClick: h
+      onClick: w
     }, [
       window.Vue.createElementVNode("div", {
         ref_key: "chatBodyRef",
         ref: n,
         class: "ai-body"
       }, [
-        !i.value || i.value.history.length === 0 ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", ct, " Новый диалог начат. Напишите первый запрос! ")) : window.Vue.createCommentVNode("", !0),
-        i.value ? (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, { key: 1 }, window.Vue.renderList(i.value.history, (g) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+        !o.value || o.value.history.length === 0 ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", ut, " Новый диалог начат. Напишите первый запрос! ")) : window.Vue.createCommentVNode("", !0),
+        o.value ? (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, { key: 1 }, window.Vue.renderList(o.value.history, (g) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
           key: g.id,
           class: "ai-history-item"
         }, [
-          window.Vue.createElementVNode("div", dt, window.Vue.toDisplayString(g.prompt), 1),
-          g.status === "loading" ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", ut, " Генерация ответа... ")) : (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+          window.Vue.createElementVNode("div", pt, window.Vue.toDisplayString(g.prompt), 1),
+          g.status === "loading" ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", wt, " Генерация ответа... ")) : (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
             key: 1,
-            class: "ai-response-bubble ai-md-content",
+            class: "ai-response-bubble ai-md-content markdown-body",
             innerHTML: a(g.response)
-          }, null, 8, pt)),
+          }, null, 8, ht)),
           window.Vue.createElementVNode("div", {
             class: window.Vue.normalizeClass(["ai-status", g.status])
           }, window.Vue.toDisplayString(g.status === "error" ? "Ошибка" : g.status === "aborted" ? "Отменено" : new Date(g.date).toLocaleTimeString()), 3)
         ]))), 128)) : window.Vue.createCommentVNode("", !0)
       ], 512),
-      window.Vue.createElementVNode("div", wt, [
-        window.Vue.createElementVNode("div", ht, [
+      window.Vue.createElementVNode("div", gt, [
+        window.Vue.createElementVNode("div", ft, [
           window.Vue.withDirectives(window.Vue.createElementVNode("textarea", {
-            "onUpdate:modelValue": w[0] || (w[0] = (g) => window.Vue.unref(c).userPrompt = g),
+            "onUpdate:modelValue": p[0] || (p[0] = (g) => window.Vue.unref(s).userPrompt = g),
             class: "ai-textarea custom-scrollbar",
             placeholder: "Напишите сообщение...",
-            onKeydown: window.Vue.withKeys(window.Vue.withModifiers(s, ["ctrl", "prevent"]), ["enter"])
-          }, null, 40, gt), [
-            [window.Vue.vModelText, window.Vue.unref(c).userPrompt]
+            onKeydown: window.Vue.withKeys(window.Vue.withModifiers(c, ["ctrl", "prevent"]), ["enter"])
+          }, null, 40, mt), [
+            [window.Vue.vModelText, window.Vue.unref(s).userPrompt]
           ]),
-          window.Vue.createElementVNode("div", ft, [
-            window.Vue.createElementVNode("div", mt, [
+          window.Vue.createElementVNode("div", xt, [
+            window.Vue.createElementVNode("div", kt, [
               window.Vue.createElementVNode("button", {
                 class: "ai-tool-btn shrink-none",
                 title: "Очистить чат",
-                onClick: w[1] || (w[1] = window.Vue.withModifiers((g) => window.Vue.unref(k).clearCurrentTopic(), ["stop"]))
-              }, [...w[6] || (w[6] = [
+                onClick: p[1] || (p[1] = window.Vue.withModifiers((g) => window.Vue.unref(k).clearCurrentTopic(), ["stop"]))
+              }, [...p[6] || (p[6] = [
                 window.Vue.createElementVNode("svg", {
                   xmlns: "http://www.w3.org/2000/svg",
                   width: "16",
@@ -1703,8 +1706,8 @@ const ct = {
               window.Vue.createElementVNode("button", {
                 class: "ai-tool-btn shrink-none",
                 title: "Новый топик",
-                onClick: w[2] || (w[2] = window.Vue.withModifiers((g) => window.Vue.unref(k).createNewTopic(), ["stop"]))
-              }, [...w[7] || (w[7] = [
+                onClick: p[2] || (p[2] = window.Vue.withModifiers((g) => window.Vue.unref(k).createNewTopic(), ["stop"]))
+              }, [...p[7] || (p[7] = [
                 window.Vue.createElementVNode("svg", {
                   xmlns: "http://www.w3.org/2000/svg",
                   width: "16",
@@ -1736,15 +1739,15 @@ const ct = {
                   })
                 ], -1)
               ])]),
-              window.Vue.createElementVNode("div", xt, [
+              window.Vue.createElementVNode("div", bt, [
                 window.Vue.createElementVNode("button", {
                   class: "ai-tool-btn",
                   title: "Выбор промпта",
-                  onClick: w[3] || (w[3] = window.Vue.withModifiers((g) => {
+                  onClick: p[3] || (p[3] = window.Vue.withModifiers((g) => {
                     t.value = !t.value, e.value = !1;
                   }, ["stop"]))
                 }, [
-                  w[8] || (w[8] = window.Vue.createElementVNode("svg", {
+                  p[8] || (p[8] = window.Vue.createElementVNode("svg", {
                     xmlns: "http://www.w3.org/2000/svg",
                     width: "16",
                     height: "16",
@@ -1756,49 +1759,49 @@ const ct = {
                   }, [
                     window.Vue.createElementVNode("path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" })
                   ], -1)),
-                  window.Vue.createElementVNode("span", kt, window.Vue.toDisplayString(r.value), 1)
+                  window.Vue.createElementVNode("span", Vt, window.Vue.toDisplayString(r.value), 1)
                 ]),
-                t.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", bt, [
-                  w[9] || (w[9] = window.Vue.createElementVNode("div", { class: "dropdown-title" }, " Промпт ", -1)),
-                  (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(c).systemPrompts, (g) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+                t.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", vt, [
+                  p[9] || (p[9] = window.Vue.createElementVNode("div", { class: "dropdown-title" }, " Промпт ", -1)),
+                  (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(s).systemPrompts, (g) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
                     key: g.id,
-                    class: window.Vue.normalizeClass(["dropdown-item", { "is-active": g.id === window.Vue.unref(c).selectedPromptId }]),
-                    onClick: window.Vue.withModifiers((b) => u(g.id), ["stop"])
-                  }, window.Vue.toDisplayString(g.name), 11, Vt))), 128))
+                    class: window.Vue.normalizeClass(["dropdown-item", { "is-active": g.id === window.Vue.unref(s).selectedPromptId }]),
+                    onClick: window.Vue.withModifiers((b) => d(g.id), ["stop"])
+                  }, window.Vue.toDisplayString(g.name), 11, yt))), 128))
                 ])) : window.Vue.createCommentVNode("", !0)
               ]),
-              window.Vue.createElementVNode("div", vt, [
+              window.Vue.createElementVNode("div", Et, [
                 window.Vue.createElementVNode("button", {
                   class: "ai-tool-btn",
                   title: "Выбор модели",
-                  onClick: w[4] || (w[4] = window.Vue.withModifiers((g) => {
+                  onClick: p[4] || (p[4] = window.Vue.withModifiers((g) => {
                     e.value = !e.value, t.value = !1;
                   }, ["stop"]))
                 }, [
-                  w[10] || (w[10] = window.Vue.createStaticVNode('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>', 1)),
-                  window.Vue.createElementVNode("span", yt, window.Vue.toDisplayString(window.Vue.unref(c).selectedModel), 1)
+                  p[10] || (p[10] = window.Vue.createStaticVNode('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>', 1)),
+                  window.Vue.createElementVNode("span", $t, window.Vue.toDisplayString(window.Vue.unref(s).selectedModel), 1)
                 ]),
-                e.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", Et, [
-                  w[11] || (w[11] = window.Vue.createElementVNode("div", { class: "dropdown-title" }, " Модель ", -1)),
+                e.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", Nt, [
+                  p[11] || (p[11] = window.Vue.createElementVNode("div", { class: "dropdown-title" }, " Модель ", -1)),
                   (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(Y), (g) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
                     key: g,
-                    class: window.Vue.normalizeClass(["dropdown-item", { "is-active": g === window.Vue.unref(c).selectedModel }]),
-                    onClick: window.Vue.withModifiers((b) => p(g), ["stop"])
-                  }, window.Vue.toDisplayString(g), 11, $t))), 128))
+                    class: window.Vue.normalizeClass(["dropdown-item", { "is-active": g === window.Vue.unref(s).selectedModel }]),
+                    onClick: window.Vue.withModifiers((b) => h(g), ["stop"])
+                  }, window.Vue.toDisplayString(g), 11, Tt))), 128))
                 ])) : window.Vue.createCommentVNode("", !0)
               ])
             ]),
-            window.Vue.createElementVNode("div", Nt, [
-              window.Vue.unref(c).isLoading ? (window.Vue.openBlock(), window.Vue.createElementBlock("button", {
+            window.Vue.createElementVNode("div", Ct, [
+              window.Vue.unref(s).isLoading ? (window.Vue.openBlock(), window.Vue.createElementBlock("button", {
                 key: 0,
                 class: "ai-send-btn is-stop",
                 title: "Отменить",
-                onClick: w[5] || (w[5] = window.Vue.withModifiers(
+                onClick: p[5] || (p[5] = window.Vue.withModifiers(
                   //@ts-ignore
                   (...g) => window.Vue.unref(de) && window.Vue.unref(de)(...g),
                   ["stop"]
                 ))
-              }, [...w[12] || (w[12] = [
+              }, [...p[12] || (p[12] = [
                 window.Vue.createElementVNode("svg", {
                   xmlns: "http://www.w3.org/2000/svg",
                   width: "16",
@@ -1816,10 +1819,10 @@ const ct = {
                 ], -1)
               ])])) : (window.Vue.openBlock(), window.Vue.createElementBlock("button", {
                 key: 1,
-                class: window.Vue.normalizeClass(["ai-send-btn", { "is-ready": window.Vue.unref(c).userPrompt.trim() }]),
+                class: window.Vue.normalizeClass(["ai-send-btn", { "is-ready": window.Vue.unref(s).userPrompt.trim() }]),
                 title: "Отправить",
-                onClick: window.Vue.withModifiers(s, ["stop"])
-              }, [...w[13] || (w[13] = [
+                onClick: window.Vue.withModifiers(c, ["stop"])
+              }, [...p[13] || (p[13] = [
                 window.Vue.createElementVNode("svg", {
                   xmlns: "http://www.w3.org/2000/svg",
                   width: "16",
@@ -1846,87 +1849,109 @@ const ct = {
       ])
     ]));
   }
-}), Tt = { class: "ai-tab-view" }, zt = { class: "ai-body custom-scrollbar" }, _t = { class: "ai-settings" }, Ct = { class: "settings-block" }, Bt = { class: "settings-block" }, It = {
+}), zt = { class: "ai-tab-view" }, _t = { class: "ai-body custom-scrollbar" }, Bt = { class: "ai-settings" }, It = { class: "settings-block" }, St = { class: "topics-header" }, At = ["disabled"], Mt = { class: "settings-block" }, Rt = {
   key: 0,
   class: "prompt-editor"
-}, St = { class: "editor-actions" }, Mt = { class: "prompts-list" }, At = { class: "prompt-info" }, Rt = { class: "prompt-name" }, Pt = { class: "prompt-preview" }, Lt = { class: "prompt-actions" }, Dt = ["onClick"], Ot = ["onClick"], qt = /* @__PURE__ */ window.Vue.defineComponent({
+}, Pt = { class: "editor-actions" }, Lt = { class: "prompts-list" }, Dt = { class: "prompt-info" }, jt = { class: "prompt-name" }, Ht = { class: "prompt-preview" }, Ot = { class: "prompt-actions" }, qt = ["onClick"], Zt = ["onClick"], Ee = /* @__PURE__ */ window.Vue.defineComponent({
   __name: "ai-settings",
   setup(l) {
-    const n = window.Vue.ref(null), t = window.Vue.ref(""), e = window.Vue.ref("");
-    function i() {
+    const n = window.Vue.ref(null), t = window.Vue.ref(""), e = window.Vue.ref(""), o = window.Vue.ref(!1);
+    function r() {
       n.value = "new", t.value = "Новый промпт", e.value = "";
     }
-    function r(a) {
-      n.value = a.id, t.value = a.name, e.value = a.content;
+    function i(h) {
+      n.value = h.id, t.value = h.name, e.value = h.content;
     }
-    function o() {
+    function a() {
       !t.value.trim() || !e.value.trim() || (n.value === "new" ? k.addPrompt(t.value, e.value) : n.value && k.updatePrompt(n.value, t.value, e.value), n.value = null);
     }
-    return (a, s) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", Tt, [
-      window.Vue.createElementVNode("div", zt, [
-        window.Vue.createElementVNode("div", _t, [
-          window.Vue.createElementVNode("div", Ct, [
-            window.Vue.createElementVNode("label", null, [
-              s[4] || (s[4] = window.Vue.createTextVNode(" API Key (AiHubMix) ", -1)),
-              window.Vue.withDirectives(window.Vue.createElementVNode("input", {
-                "onUpdate:modelValue": s[0] || (s[0] = (p) => window.Vue.unref(c).apiKey = p),
-                type: "password",
-                placeholder: "sk-...",
-                class: "editor-input"
-              }, null, 512), [
-                [window.Vue.vModelText, window.Vue.unref(c).apiKey]
-              ])
+    async function c() {
+      o.value = !0;
+      try {
+        const h = `${s.vaultUrl}/configs/plugins/configs/ai-assistant.json`, d = await fetch(h);
+        if (!d.ok)
+          throw new Error(`Ошибка HTTP: ${d.status}`);
+        const w = await d.json();
+        let u = !1;
+        w.apiKey && (s.apiKey = w.apiKey, u = !0), w.prompts && Array.isArray(w.prompts) && (w.prompts.forEach((p) => {
+          s.systemPrompts.some((g) => g.name === p.name) || k.addPrompt(p.name || "Без названия", p.content || "");
+        }), u = !0), u ? s.showToast ? s.showToast("Конфиг успешно загружен!", { type: "success" }) : alert("Конфиг успешно загружен!") : s.showToast ? s.showToast("Конфиг пуст или имеет неверный формат", { type: "warning" }) : alert("Конфиг пуст или имеет неверный формат");
+      } catch (h) {
+        s.showToast ? s.showToast(`Не удалось загрузить конфиг: ${h.message}`, { type: "error" }) : alert(`Не удалось загрузить конфиг: ${h.message}`);
+      } finally {
+        o.value = !1;
+      }
+    }
+    return (h, d) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", zt, [
+      window.Vue.createElementVNode("div", _t, [
+        window.Vue.createElementVNode("div", Bt, [
+          window.Vue.createElementVNode("div", It, [
+            window.Vue.createElementVNode("div", St, [
+              d[4] || (d[4] = window.Vue.createElementVNode("label", { style: { margin: "0" } }, "API Key (AiHubMix)", -1)),
+              window.Vue.createElementVNode("button", {
+                class: "ai-btn ai-btn-sm",
+                disabled: o.value,
+                onClick: c
+              }, window.Vue.toDisplayString(o.value ? "Загрузка..." : "Загрузить конфиг"), 9, At)
+            ]),
+            window.Vue.withDirectives(window.Vue.createElementVNode("input", {
+              "onUpdate:modelValue": d[0] || (d[0] = (w) => window.Vue.unref(s).apiKey = w),
+              type: "password",
+              placeholder: "sk-...",
+              class: "editor-input"
+            }, null, 512), [
+              [window.Vue.vModelText, window.Vue.unref(s).apiKey]
             ])
           ]),
-          window.Vue.createElementVNode("div", Bt, [
+          window.Vue.createElementVNode("div", Mt, [
             window.Vue.createElementVNode("div", { class: "topics-header" }, [
-              s[5] || (s[5] = window.Vue.createElementVNode("label", { style: { margin: "0" } }, "Ваши системные промпты", -1)),
+              d[5] || (d[5] = window.Vue.createElementVNode("label", { style: { margin: "0" } }, "Ваши системные промпты", -1)),
               window.Vue.createElementVNode("button", {
                 class: "ai-btn ai-btn-primary ai-btn-sm",
-                onClick: i
+                onClick: r
               }, " + Добавить ")
             ]),
-            n.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", It, [
+            n.value ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", Rt, [
               window.Vue.withDirectives(window.Vue.createElementVNode("input", {
-                "onUpdate:modelValue": s[1] || (s[1] = (p) => t.value = p),
+                "onUpdate:modelValue": d[1] || (d[1] = (w) => t.value = w),
                 placeholder: "Название промпта",
                 class: "editor-input"
               }, null, 512), [
                 [window.Vue.vModelText, t.value]
               ]),
               window.Vue.withDirectives(window.Vue.createElementVNode("textarea", {
-                "onUpdate:modelValue": s[2] || (s[2] = (p) => e.value = p),
+                "onUpdate:modelValue": d[2] || (d[2] = (w) => e.value = w),
                 rows: "4",
                 placeholder: "Ты профессиональный переводчик...",
                 class: "editor-input custom-scrollbar"
               }, null, 512), [
                 [window.Vue.vModelText, e.value]
               ]),
-              window.Vue.createElementVNode("div", St, [
+              window.Vue.createElementVNode("div", Pt, [
                 window.Vue.createElementVNode("button", {
                   class: "ai-btn ai-btn-sm",
-                  onClick: s[3] || (s[3] = (p) => n.value = null)
+                  onClick: d[3] || (d[3] = (w) => n.value = null)
                 }, " Отмена "),
                 window.Vue.createElementVNode("button", {
                   class: "ai-btn ai-btn-primary ai-btn-sm",
-                  onClick: o
+                  onClick: a
                 }, " Сохранить ")
               ])
             ])) : window.Vue.createCommentVNode("", !0),
-            window.Vue.createElementVNode("div", Mt, [
-              (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(c).systemPrompts, (p) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
-                key: p.id,
+            window.Vue.createElementVNode("div", Lt, [
+              (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(s).systemPrompts, (w) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+                key: w.id,
                 class: "prompt-card"
               }, [
-                window.Vue.createElementVNode("div", At, [
-                  window.Vue.createElementVNode("div", Rt, window.Vue.toDisplayString(p.name), 1),
-                  window.Vue.createElementVNode("div", Pt, window.Vue.toDisplayString(p.content), 1)
+                window.Vue.createElementVNode("div", Dt, [
+                  window.Vue.createElementVNode("div", jt, window.Vue.toDisplayString(w.name), 1),
+                  window.Vue.createElementVNode("div", Ht, window.Vue.toDisplayString(w.content), 1)
                 ]),
-                window.Vue.createElementVNode("div", Lt, [
+                window.Vue.createElementVNode("div", Ot, [
                   window.Vue.createElementVNode("button", {
                     class: "ai-icon-btn",
-                    onClick: (u) => r(p)
-                  }, [...s[6] || (s[6] = [
+                    onClick: (u) => i(w)
+                  }, [...d[6] || (d[6] = [
                     window.Vue.createElementVNode("svg", {
                       xmlns: "http://www.w3.org/2000/svg",
                       width: "16",
@@ -1939,12 +1964,12 @@ const ct = {
                       window.Vue.createElementVNode("path", { d: "M12 20h9" }),
                       window.Vue.createElementVNode("path", { d: "M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" })
                     ], -1)
-                  ])], 8, Dt),
-                  p.id !== "default" ? (window.Vue.openBlock(), window.Vue.createElementBlock("button", {
+                  ])], 8, qt),
+                  w.id !== "default" ? (window.Vue.openBlock(), window.Vue.createElementBlock("button", {
                     key: 0,
                     class: "ai-icon-btn danger",
-                    onClick: (u) => window.Vue.unref(k).deletePrompt(p.id)
-                  }, [...s[7] || (s[7] = [
+                    onClick: (u) => window.Vue.unref(k).deletePrompt(w.id)
+                  }, [...d[7] || (d[7] = [
                     window.Vue.createElementVNode("svg", {
                       xmlns: "http://www.w3.org/2000/svg",
                       width: "16",
@@ -1967,7 +1992,7 @@ const ct = {
                         y2: "18"
                       })
                     ], -1)
-                  ])], 8, Ot)) : window.Vue.createCommentVNode("", !0)
+                  ])], 8, Zt)) : window.Vue.createCommentVNode("", !0)
                 ])
               ]))), 128))
             ])
@@ -1976,10 +2001,10 @@ const ct = {
       ])
     ]));
   }
-}), jt = { class: "ai-tab-view" }, Zt = { class: "ai-body custom-scrollbar" }, Ht = { class: "ai-topics" }, Ft = { class: "topics-header" }, Qt = {
+}), Ft = { class: "ai-tab-view" }, Qt = { class: "ai-body custom-scrollbar" }, Kt = { class: "ai-topics" }, Ut = { class: "topics-header" }, Jt = {
   key: 0,
   class: "topics-empty"
-}, Kt = { class: "topics-list" }, Ut = ["onClick"], Jt = { class: "topic-info" }, Wt = { class: "topic-title" }, Xt = { class: "topic-meta" }, Gt = ["onClick"], Yt = /* @__PURE__ */ window.Vue.defineComponent({
+}, Gt = { class: "topics-list" }, Wt = ["onClick"], Xt = { class: "topic-info" }, Yt = { class: "topic-title" }, en = { class: "topic-meta" }, tn = ["onClick"], $e = /* @__PURE__ */ window.Vue.defineComponent({
   __name: "ai-topics",
   setup(l) {
     function n(t) {
@@ -1990,35 +2015,35 @@ const ct = {
         minute: "2-digit"
       });
     }
-    return (t, e) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", jt, [
-      window.Vue.createElementVNode("div", Zt, [
-        window.Vue.createElementVNode("div", Ht, [
-          window.Vue.createElementVNode("div", Ft, [
+    return (t, e) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", Ft, [
+      window.Vue.createElementVNode("div", Qt, [
+        window.Vue.createElementVNode("div", Kt, [
+          window.Vue.createElementVNode("div", Ut, [
             e[1] || (e[1] = window.Vue.createElementVNode("h3", null, "Ваши диалоги", -1)),
             window.Vue.createElementVNode("button", {
               class: "ai-btn ai-btn-primary ai-btn-sm",
-              onClick: e[0] || (e[0] = (i) => window.Vue.unref(k).createNewTopic())
+              onClick: e[0] || (e[0] = (o) => window.Vue.unref(k).createNewTopic())
             }, " + Новый чат ")
           ]),
-          window.Vue.unref(c).topics.length === 0 ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", Qt, " У вас еще нет сохраненных чатов. ")) : window.Vue.createCommentVNode("", !0),
-          window.Vue.createElementVNode("div", Kt, [
-            (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(c).topics, (i) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
-              key: i.id,
-              class: window.Vue.normalizeClass(["topic-card", { "is-active": i.id === window.Vue.unref(c).currentTopicId }]),
-              onClick: (r) => window.Vue.unref(k).selectTopic(i.id)
+          window.Vue.unref(s).topics.length === 0 ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", Jt, " У вас еще нет сохраненных чатов. ")) : window.Vue.createCommentVNode("", !0),
+          window.Vue.createElementVNode("div", Gt, [
+            (window.Vue.openBlock(!0), window.Vue.createElementBlock(window.Vue.Fragment, null, window.Vue.renderList(window.Vue.unref(s).topics, (o) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+              key: o.id,
+              class: window.Vue.normalizeClass(["topic-card", { "is-active": o.id === window.Vue.unref(s).currentTopicId }]),
+              onClick: (r) => window.Vue.unref(k).selectTopic(o.id)
             }, [
-              window.Vue.createElementVNode("div", Jt, [
-                window.Vue.createElementVNode("div", Wt, window.Vue.toDisplayString(i.title), 1),
-                window.Vue.createElementVNode("div", Xt, [
-                  window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(i.history.length) + " сообщений", 1),
+              window.Vue.createElementVNode("div", Xt, [
+                window.Vue.createElementVNode("div", Yt, window.Vue.toDisplayString(o.title), 1),
+                window.Vue.createElementVNode("div", en, [
+                  window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(o.history.length) + " сообщений", 1),
                   e[2] || (e[2] = window.Vue.createElementVNode("span", null, "•", -1)),
-                  window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(n(i.updatedAt)), 1)
+                  window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(n(o.updatedAt)), 1)
                 ])
               ]),
               window.Vue.createElementVNode("button", {
                 class: "topic-delete-btn",
                 title: "Удалить",
-                onClick: window.Vue.withModifiers((r) => window.Vue.unref(k).deleteTopic(i.id), ["stop"])
+                onClick: window.Vue.withModifiers((r) => window.Vue.unref(k).deleteTopic(o.id), ["stop"])
               }, [...e[3] || (e[3] = [
                 window.Vue.createElementVNode("svg", {
                   xmlns: "http://www.w3.org/2000/svg",
@@ -2032,21 +2057,21 @@ const ct = {
                   window.Vue.createElementVNode("polyline", { points: "3 6 5 6 21 6" }),
                   window.Vue.createElementVNode("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
                 ], -1)
-              ])], 8, Gt)
-            ], 10, Ut))), 128))
+              ])], 8, tn)
+            ], 10, Wt))), 128))
           ])
         ])
       ])
     ]));
   }
-}), en = {
+}), nn = {
   key: 0,
   class: "ai-indicator"
-}, tn = {
+}, on = {
   key: 0,
   class: "ai-indicator",
   style: { position: "static" }
-}, nn = {
+}, rn = {
   key: 1,
   xmlns: "http://www.w3.org/2000/svg",
   width: "18",
@@ -2055,7 +2080,7 @@ const ct = {
   fill: "none",
   stroke: "currentColor",
   "stroke-width": "2"
-}, on = { class: "ai-header" }, rn = { class: "ai-header-actions" }, sn = ["title"], ln = {
+}, sn = { class: "ai-header" }, ln = { class: "ai-header-actions" }, an = ["title"], cn = {
   key: 0,
   xmlns: "http://www.w3.org/2000/svg",
   width: "16",
@@ -2066,7 +2091,7 @@ const ct = {
   "stroke-width": "2",
   "stroke-linecap": "round",
   "stroke-linejoin": "round"
-}, an = {
+}, dn = {
   key: 1,
   xmlns: "http://www.w3.org/2000/svg",
   width: "16",
@@ -2077,32 +2102,32 @@ const ct = {
   "stroke-width": "2",
   "stroke-linecap": "round",
   "stroke-linejoin": "round"
-}, cn = { class: "ai-tabs" }, dn = { class: "ai-tabs-content" }, un = /* @__PURE__ */ window.Vue.defineComponent({
+}, un = { class: "ai-tabs" }, pn = { class: "ai-tabs-content" }, wn = /* @__PURE__ */ window.Vue.defineComponent({
   name: "AiAssistantWidget",
   inheritAttrs: !1,
   __name: "ai-assistant",
   setup(l) {
     window.Vue.onMounted(() => ve());
     function n() {
-      k.close(), c.router && c.vaultId && c.router.push(`/${c.vaultId}/plugin/ai-assistant`);
+      k.close(), s.router && s.vaultId && s.router.push(`/${s.vaultId}/plugin/ai-assistant`);
     }
     return (t, e) => (window.Vue.openBlock(), window.Vue.createElementBlock(window.Vue.Fragment, null, [
       window.Vue.createElementVNode("button", window.Vue.mergeProps(t.$attrs, {
         type: "button",
         class: "ai-trigger",
         title: "AI Assistant",
-        onClick: e[0] || (e[0] = window.Vue.withModifiers((i) => window.Vue.unref(k).toggle(), ["stop", "prevent"]))
+        onClick: e[0] || (e[0] = window.Vue.withModifiers((o) => window.Vue.unref(k).toggle(), ["stop", "prevent"]))
       }), [
         e[9] || (e[9] = window.Vue.createStaticVNode('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>', 1)),
-        window.Vue.unref(c).isLoading && !window.Vue.unref(c).isOpen ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", en)) : window.Vue.createCommentVNode("", !0)
+        window.Vue.unref(s).isLoading && !window.Vue.unref(s).isOpen ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", nn)) : window.Vue.createCommentVNode("", !0)
       ], 16),
       (window.Vue.openBlock(), window.Vue.createBlock(window.Vue.Teleport, { to: "body" }, [
-        window.Vue.unref(c).isMinimized ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+        window.Vue.unref(s).isMinimized ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
           key: 0,
           class: "ai-minimized-widget",
-          onClick: e[1] || (e[1] = window.Vue.withModifiers((i) => window.Vue.unref(k).open(), ["stop"]))
+          onClick: e[1] || (e[1] = window.Vue.withModifiers((o) => window.Vue.unref(k).open(), ["stop"]))
         }, [
-          window.Vue.unref(c).isLoading ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", tn)) : (window.Vue.openBlock(), window.Vue.createElementBlock("svg", nn, [...e[10] || (e[10] = [
+          window.Vue.unref(s).isLoading ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", on)) : (window.Vue.openBlock(), window.Vue.createElementBlock("svg", rn, [...e[10] || (e[10] = [
             window.Vue.createElementVNode("path", { d: "M12 8V4H8" }, null, -1),
             window.Vue.createElementVNode("rect", {
               x: "4",
@@ -2112,19 +2137,19 @@ const ct = {
               rx: "2"
             }, null, -1)
           ])])),
-          window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(window.Vue.unref(c).isLoading ? "AI думает..." : "AI Assistant"), 1)
+          window.Vue.createElementVNode("span", null, window.Vue.toDisplayString(window.Vue.unref(s).isLoading ? "AI думает..." : "AI Assistant"), 1)
         ])) : window.Vue.createCommentVNode("", !0),
         window.Vue.createVNode(window.Vue.Transition, { name: "ai-fade" }, {
           default: window.Vue.withCtx(() => [
-            window.Vue.unref(c).isOpen ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
+            window.Vue.unref(s).isOpen ? (window.Vue.openBlock(), window.Vue.createElementBlock("div", {
               key: 0,
               class: "ai-backdrop",
-              onMousedown: e[8] || (e[8] = window.Vue.withModifiers((i) => window.Vue.unref(k).close(), ["self"]))
+              onMousedown: e[8] || (e[8] = window.Vue.withModifiers((o) => window.Vue.unref(k).close(), ["self"]))
             }, [
               window.Vue.createElementVNode("div", {
-                class: window.Vue.normalizeClass(["ai-modal", { "is-fullscreen": window.Vue.unref(c).isFullscreen }])
+                class: window.Vue.normalizeClass(["ai-modal", { "is-fullscreen": window.Vue.unref(s).isFullscreen }])
               }, [
-                window.Vue.createElementVNode("div", on, [
+                window.Vue.createElementVNode("div", sn, [
                   e[16] || (e[16] = window.Vue.createElementVNode("div", { class: "ai-title" }, [
                     window.Vue.createElementVNode("svg", {
                       xmlns: "http://www.w3.org/2000/svg",
@@ -2146,7 +2171,7 @@ const ct = {
                     ]),
                     window.Vue.createTextVNode(" AI Assistant ")
                   ], -1)),
-                  window.Vue.createElementVNode("div", rn, [
+                  window.Vue.createElementVNode("div", ln, [
                     window.Vue.createElementVNode("button", {
                       class: "ai-icon-btn",
                       title: "Открыть на отдельной странице",
@@ -2176,27 +2201,27 @@ const ct = {
                     ])]),
                     window.Vue.createElementVNode("button", {
                       class: "ai-icon-btn",
-                      title: window.Vue.unref(c).isFullscreen ? "Оконный режим" : "На весь экран",
+                      title: window.Vue.unref(s).isFullscreen ? "Оконный режим" : "На весь экран",
                       type: "button",
-                      onClick: e[2] || (e[2] = window.Vue.withModifiers((i) => window.Vue.unref(k).toggleFullscreen(), ["stop"]))
+                      onClick: e[2] || (e[2] = window.Vue.withModifiers((o) => window.Vue.unref(k).toggleFullscreen(), ["stop"]))
                     }, [
-                      window.Vue.unref(c).isFullscreen ? (window.Vue.openBlock(), window.Vue.createElementBlock("svg", an, [...e[13] || (e[13] = [
+                      window.Vue.unref(s).isFullscreen ? (window.Vue.openBlock(), window.Vue.createElementBlock("svg", dn, [...e[13] || (e[13] = [
                         window.Vue.createElementVNode("path", { d: "M8 3v3a2 2 0 0 1-2 2H3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M16 3v3a2 2 0 0 0 2 2h3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M8 21v-3a2 2 0 0 0-2-2H3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M16 21v-3a2 2 0 0 1 2-2h3" }, null, -1)
-                      ])])) : (window.Vue.openBlock(), window.Vue.createElementBlock("svg", ln, [...e[12] || (e[12] = [
+                      ])])) : (window.Vue.openBlock(), window.Vue.createElementBlock("svg", cn, [...e[12] || (e[12] = [
                         window.Vue.createElementVNode("path", { d: "M8 3H5a2 2 0 0 0-2 2v3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M16 3h3a2 2 0 0 1 2 2v3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M8 21H5a2 2 0 0 1-2-2v-3" }, null, -1),
                         window.Vue.createElementVNode("path", { d: "M16 21h3a2 2 0 0 0 2-2v-3" }, null, -1)
                       ])]))
-                    ], 8, sn),
+                    ], 8, an),
                     window.Vue.createElementVNode("button", {
                       class: "ai-icon-btn",
                       title: "Свернуть в фон",
                       type: "button",
-                      onClick: e[3] || (e[3] = window.Vue.withModifiers((i) => window.Vue.unref(k).minimize(), ["stop"]))
+                      onClick: e[3] || (e[3] = window.Vue.withModifiers((o) => window.Vue.unref(k).minimize(), ["stop"]))
                     }, [...e[14] || (e[14] = [
                       window.Vue.createElementVNode("svg", {
                         xmlns: "http://www.w3.org/2000/svg",
@@ -2227,7 +2252,7 @@ const ct = {
                       class: "ai-icon-btn",
                       title: "Закрыть",
                       type: "button",
-                      onClick: e[4] || (e[4] = window.Vue.withModifiers((i) => window.Vue.unref(k).close(), ["stop"]))
+                      onClick: e[4] || (e[4] = window.Vue.withModifiers((o) => window.Vue.unref(k).close(), ["stop"]))
                     }, [...e[15] || (e[15] = [
                       window.Vue.createElementVNode("svg", {
                         xmlns: "http://www.w3.org/2000/svg",
@@ -2254,26 +2279,26 @@ const ct = {
                     ])])
                   ])
                 ]),
-                window.Vue.createElementVNode("div", cn, [
+                window.Vue.createElementVNode("div", un, [
                   window.Vue.createElementVNode("button", {
-                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(c).activeTab === "chat" }]),
-                    onClick: e[5] || (e[5] = (i) => window.Vue.unref(c).activeTab = "chat")
+                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(s).activeTab === "chat" }]),
+                    onClick: e[5] || (e[5] = (o) => window.Vue.unref(s).activeTab = "chat")
                   }, " Чат ", 2),
                   window.Vue.createElementVNode("button", {
-                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(c).activeTab === "topics" }]),
-                    onClick: e[6] || (e[6] = (i) => window.Vue.unref(c).activeTab = "topics")
+                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(s).activeTab === "topics" }]),
+                    onClick: e[6] || (e[6] = (o) => window.Vue.unref(s).activeTab = "topics")
                   }, " Топики ", 2),
                   window.Vue.createElementVNode("button", {
-                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(c).activeTab === "settings" }]),
-                    onClick: e[7] || (e[7] = (i) => window.Vue.unref(c).activeTab = "settings")
+                    class: window.Vue.normalizeClass(["ai-tab", { "is-active": window.Vue.unref(s).activeTab === "settings" }]),
+                    onClick: e[7] || (e[7] = (o) => window.Vue.unref(s).activeTab = "settings")
                   }, " Настройки ", 2)
                 ]),
-                window.Vue.createElementVNode("div", dn, [
+                window.Vue.createElementVNode("div", pn, [
                   window.Vue.withDirectives(window.Vue.createVNode(ye, null, null, 512), [
-                    [window.Vue.vShow, window.Vue.unref(c).activeTab === "chat"]
+                    [window.Vue.vShow, window.Vue.unref(s).activeTab === "chat"]
                   ]),
-                  window.Vue.unref(c).activeTab === "topics" ? (window.Vue.openBlock(), window.Vue.createBlock(Yt, { key: 0 })) : window.Vue.createCommentVNode("", !0),
-                  window.Vue.unref(c).activeTab === "settings" ? (window.Vue.openBlock(), window.Vue.createBlock(qt, { key: 1 })) : window.Vue.createCommentVNode("", !0)
+                  window.Vue.unref(s).activeTab === "topics" ? (window.Vue.openBlock(), window.Vue.createBlock($e, { key: 0 })) : window.Vue.createCommentVNode("", !0),
+                  window.Vue.unref(s).activeTab === "settings" ? (window.Vue.openBlock(), window.Vue.createBlock(Ee, { key: 1 })) : window.Vue.createCommentVNode("", !0)
                 ])
               ], 2)
             ], 32)) : window.Vue.createCommentVNode("", !0)
@@ -2283,22 +2308,75 @@ const ct = {
       ]))
     ], 64));
   }
-}), pn = { class: "ai-page" }, wn = { class: "ai-page-chat-wrapper" }, hn = /* @__PURE__ */ window.Vue.defineComponent({
+}), hn = { class: "ai-page" }, gn = { class: "ai-page-header" }, fn = { class: "ai-page-header-actions" }, mn = { class: "ai-page-chat-wrapper" }, xn = /* @__PURE__ */ window.Vue.defineComponent({
   __name: "ai-page",
   setup(l) {
     return window.Vue.onMounted(() => {
-      ve(), c.activeTab = "chat";
-    }), (n, t) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", pn, [
-      t[0] || (t[0] = window.Vue.createElementVNode("div", { class: "ai-page-header" }, [
-        window.Vue.createElementVNode("h2", null, "AI Assistant Chat"),
-        window.Vue.createElementVNode("p", null, "Полноэкранный режим чата с ИИ.")
-      ], -1)),
-      window.Vue.createElementVNode("div", wn, [
-        window.Vue.createVNode(ye)
+      ve(), s.activeTab || (s.activeTab = "chat");
+    }), (n, t) => (window.Vue.openBlock(), window.Vue.createElementBlock("div", hn, [
+      window.Vue.createElementVNode("div", gn, [
+        t[6] || (t[6] = window.Vue.createElementVNode("h2", null, "AI Assistant", -1)),
+        window.Vue.createElementVNode("div", fn, [
+          window.Vue.createElementVNode("button", {
+            class: window.Vue.normalizeClass(["ai-page-btn", { "is-active": window.Vue.unref(s).activeTab === "chat" }]),
+            title: "Чат",
+            onClick: t[0] || (t[0] = (e) => window.Vue.unref(s).activeTab = "chat")
+          }, [...t[3] || (t[3] = [
+            window.Vue.createElementVNode("svg", {
+              xmlns: "http://www.w3.org/2000/svg",
+              width: "16",
+              height: "16",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2"
+            }, [
+              window.Vue.createElementVNode("path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" })
+            ], -1),
+            window.Vue.createElementVNode("span", { class: "btn-text" }, "Чат", -1)
+          ])], 2),
+          window.Vue.createElementVNode("button", {
+            class: window.Vue.normalizeClass(["ai-page-btn", { "is-active": window.Vue.unref(s).activeTab === "topics" }]),
+            title: "Топики",
+            onClick: t[1] || (t[1] = (e) => window.Vue.unref(s).activeTab = "topics")
+          }, [...t[4] || (t[4] = [
+            window.Vue.createStaticVNode('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg><span class="btn-text">Топики</span>', 2)
+          ])], 2),
+          window.Vue.createElementVNode("button", {
+            class: window.Vue.normalizeClass(["ai-page-btn", { "is-active": window.Vue.unref(s).activeTab === "settings" }]),
+            title: "Настройки",
+            onClick: t[2] || (t[2] = (e) => window.Vue.unref(s).activeTab = "settings")
+          }, [...t[5] || (t[5] = [
+            window.Vue.createElementVNode("svg", {
+              xmlns: "http://www.w3.org/2000/svg",
+              width: "16",
+              height: "16",
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2"
+            }, [
+              window.Vue.createElementVNode("circle", {
+                cx: "12",
+                cy: "12",
+                r: "3"
+              }),
+              window.Vue.createElementVNode("path", { d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" })
+            ], -1),
+            window.Vue.createElementVNode("span", { class: "btn-text" }, "Настройки", -1)
+          ])], 2)
+        ])
+      ]),
+      window.Vue.createElementVNode("div", mn, [
+        window.Vue.withDirectives(window.Vue.createVNode(ye, null, null, 512), [
+          [window.Vue.vShow, window.Vue.unref(s).activeTab === "chat"]
+        ]),
+        window.Vue.unref(s).activeTab === "topics" ? (window.Vue.openBlock(), window.Vue.createBlock($e, { key: 0 })) : window.Vue.createCommentVNode("", !0),
+        window.Vue.unref(s).activeTab === "settings" ? (window.Vue.openBlock(), window.Vue.createBlock(Ee, { key: 1 })) : window.Vue.createCommentVNode("", !0)
       ])
     ]));
   }
-}), gn = `/* === БАЗОВЫЕ КОНТЕЙНЕРЫ === */
+}), kn = `/* === БАЗОВЫЕ КОНТЕЙНЕРЫ === */
 .ai-trigger { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--border-secondary-color); border-radius: 8px; background: transparent; color: var(--fg-secondary-color); cursor: pointer; transition: all 0.2s ease; position: relative; }
 .ai-trigger:hover { background: var(--bg-hover-color); color: var(--fg-accent-color); border-color: var(--border-accent-color); }
 .ai-indicator { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background-color: var(--fg-accent-color); border-radius: 50%; border: 2px solid var(--bg-primary-color); animation: ai-pulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1); }
@@ -2449,45 +2527,98 @@ const ct = {
 .ai-minimized-widget { position: fixed; bottom: 24px; right: 24px; background: var(--bg-secondary-color); border: 1px solid var(--border-secondary-color); border-radius: 12px; padding: 12px 20px; box-shadow: 0 12px 24px rgba(0,0,0,0.15); z-index: 99999; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; color: var(--fg-primary-color); font-weight: 500; }
 .ai-minimized-widget:hover { transform: translateY(-4px); border-color: var(--fg-accent-color); }
 
-/* === MARKDOWN СТИЛИ === */
-.ai-md-content p { margin-top: 0; margin-bottom: 12px; }
-.ai-md-content p:last-child { margin-bottom: 0; }
-.ai-md-content pre { background: var(--bg-tertiary-color); padding: 12px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-secondary-color); margin: 12px 0; }
-.ai-md-content code { font-family: monospace; background: var(--bg-tertiary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.9em; }
-
 /* === АНИМАЦИИ === */
 .ai-fade-enter-active, .ai-fade-leave-active { transition: opacity 0.2s ease; }
 .ai-fade-enter-active .ai-modal, .ai-fade-leave-active .ai-modal { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 .ai-fade-enter-from, .ai-fade-leave-to { opacity: 0; }
 .ai-fade-enter-from .ai-modal, .ai-fade-leave-to .ai-modal { transform: scale(0.96) translateY(10px); }
 
+/* === СТРАНИЦА ПЛАГИНА (PAGE) === */
 .ai-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 120px);
-  gap: 16px;
+  height: calc(100vh - 50px);
+  gap: 8px;
+  padding: 8px 0 0 0;
 }
+@media (min-width: 768px) {
+  .ai-page {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
 .ai-page-header {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Возвращаем отступы для заголовка на мобильных */
+  padding: 0 16px;
 }
+@media (min-width: 768px) {
+  .ai-page-header {
+    padding: 0;
+  }
+}
+
 .ai-page-header h2 {
-  margin: 0 0 4px 0;
+  margin: 0;
   color: var(--fg-primary-color);
 }
-.ai-page-header p {
-  margin: 0;
-  color: var(--fg-secondary-color);
-  font-size: 0.9rem;
+.ai-page-header-actions {
+  display: flex;
+  gap: 8px;
 }
+.ai-page-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary-color);
+  border: 1px solid var(--border-secondary-color);
+  color: var(--fg-secondary-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.ai-page-btn:hover {
+  background: var(--bg-hover-color);
+  color: var(--fg-primary-color);
+}
+.ai-page-btn.is-active {
+  color: var(--fg-accent-color);
+  border-color: var(--border-accent-color);
+  background: var(--bg-accent-overlay-color);
+}
+@media (max-width: 600px) {
+  .ai-page-btn .btn-text {
+    display: none;
+  }
+  .ai-page-btn {
+    padding: 8px;
+  }
+}
+
 .ai-page-chat-wrapper {
   flex: 1;
-  border: 1px solid var(--border-secondary-color);
-  border-radius: 8px;
+  /* Для мобильных экранов убираем рамки и скругления, кроме верхнего бордера */
+  border: none;
+  border-top: 1px solid var(--border-secondary-color);
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary-color);
 }
+@media (min-width: 768px) {
+  .ai-page-chat-wrapper {
+    border: 1px solid var(--border-secondary-color);
+    border-radius: 8px;
+  }
+}
+
 .ai-page {
   .ai-tab-view {
     flex: 1;
@@ -2498,28 +2629,40 @@ const ct = {
   .ai-body {
     flex: 1;
     overflow-y: auto;
+    /* Увеличим внутренний отступ для чата, так как внешний контейнер прижат к краям */
+    padding: 16px 8px;
+  }
+  .ai-input-box {
+    border: none;
+    border-radius: 0;
   }
   .ai-input-area {
     flex-shrink: 0;
+    padding: 0;
   }
 }
-`, mn = {
+@media (min-width: 768px) {
+  .ai-page .ai-body {
+    padding: 16px;
+  }
+}
+`, Vn = {
   id: "ai-assistant",
   name: "AI Assistant",
   description: "AI-помощник с фоновым выполнением запросов",
   version: "1.0.0",
   icon: "mdi:robot-outline",
   slots: {
-    toolbar: window.Vue.markRaw(un)
+    toolbar: window.Vue.markRaw(wn)
   },
   pages: {
-    index: window.Vue.markRaw(hn)
+    index: window.Vue.markRaw(xn)
   },
-  styles: gn,
+  styles: kn,
   activate(l) {
     k.setContext(l), console.log("[AI Assistant] Activated");
   }
 };
 export {
-  mn as default
+  Vn as default
 };

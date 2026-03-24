@@ -32,6 +32,10 @@ function navigateTo(path: string) {
   router.push(`/${params.value.vault}/${path}`)
 }
 
+function navigateToPlugin(pluginId: string) {
+  router.push(`/${params.value.vault}/plugin/${pluginId}`)
+}
+
 function getFirstFile(section: ContentNavItem): string | null {
   const flat = flattenNavItems([section])
   return flat.length > 0 ? flat[0].path : null
@@ -134,6 +138,7 @@ function formatDate(dateStr?: string) {
             v-for="plugin in pluginStore.enabledPlugins" 
             :key="plugin.id" 
             class="plugin-card"
+            @click="navigateToPlugin(plugin.id)"
           >
             <Icon :icon="plugin.icon || 'mdi:puzzle'" class="plugin-icon" />
             <div class="plugin-details">
@@ -383,10 +388,13 @@ function formatDate(dateStr?: string) {
   border-radius: 12px;
   background-color: var(--bg-secondary-color);
   border: 1px solid var(--border-secondary-color);
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  cursor: pointer;
   
   &:hover {
-    border-color: var(--border-primary-color);
+    background-color: var(--bg-hover-color);
+    border-color: var(--fg-accent-color);
+    transform: translateY(-2px);
   }
 }
 

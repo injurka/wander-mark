@@ -27,12 +27,18 @@ export const aiState = reactive({
 
   router: null as any,
   vaultId: '',
+  vaultUrl: '',
+  showToast: null as any,
+  confirm: null as any,
 })
 
 export const aiActions = {
   setContext(ctx: PluginContext) {
     aiState.router = ctx.router
     aiState.vaultId = ctx.vaultId
+    aiState.vaultUrl = ctx.vaultUrl
+    aiState.showToast = ctx.showToast
+    aiState.confirm = ctx.confirm
   },
 
   open() {

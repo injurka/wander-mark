@@ -27,18 +27,16 @@ const pluginsDialogOpen = ref(false)
 const { showToast } = useToast()
 const { confirm } = useConfirm()
 
-// Если мы заходим сразу на страницу хранилища, скрываем меню
-const menu = ref(route.name !== 'VaultIndex')
+const menu = ref(route.name !== 'VaultIndex' && route.name !== 'PluginPage')
 const searchOpen = ref(false)
 const scrollableRef = ref<HTMLElement | null>(null)
 const mainAreaRef = ref<HTMLElement | null>(null)
 const isSwipingOnScrollable = ref(false)
 
-// Следим за роутом: скрываем на главной, раскрываем при переходе в документы (на десктопах)
 watch(() => route.name, (newName, oldName) => {
-  if (newName === 'VaultIndex') {
+  if (newName === 'VaultIndex' || newName === 'PluginPage') {
     menu.value = false
-  } else if (oldName === 'VaultIndex' && typeof window !== 'undefined' && window.innerWidth >= 768) {
+  } else if ((oldName === 'VaultIndex' || oldName === 'PluginPage') && typeof window !== 'undefined' && window.innerWidth >= 768) {
     menu.value = true
   }
 })
@@ -75,7 +73,7 @@ watch(() => params.value.vault, async (vault) => {
         return content ? JSON.parse(content) : null
     }
 
-    const[navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
+    const [navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
         parseJson(`content/${vault}/nav.json`),
         parseJson(`meta/${vault}/settings.json`),
         parseJson(`meta/${vault}/backlinks.json`),
@@ -132,7 +130,7 @@ const resolveAppUrl = async (vaultConfig: any, path: string) => {
 
 watch(() => data.value.settings, async (settings) => {
   if (!settings) {
-    localScripts.value =[]
+    localScripts.value = []
     localStyles.value =[]
     return
   }

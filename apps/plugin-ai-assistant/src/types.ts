@@ -5,6 +5,8 @@ export interface PluginContext {
   navItems: any[] | null
   router: any
   getFileContent: (path: string) => Promise<string | null>
+  showToast?: (message: string, options?: any) => void
+  confirm?: (options: any) => Promise<boolean>
 }
 
 export interface AiHistoryItem {

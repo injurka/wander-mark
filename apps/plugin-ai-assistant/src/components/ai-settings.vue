@@ -5,6 +5,7 @@ import { aiActions, aiState } from '../store/ai.store'
 const editId = ref<string | null>(null)
 const editName = ref('')
 const editContent = ref('')
+const isLoadingConfig = ref(false)
 
 function startAdd() {
   editId.value = 'new'
@@ -29,17 +30,78 @@ function savePrompt() {
   }
   editId.value = null
 }
+
+async function loadConfig() {
+  isLoadingConfig.value = true
+  try {
+    const url = `${aiState.vaultUrl}/configs/plugins/configs/ai-assistant.json`
+    const res = await fetch(url)
+    if (!res.ok) {
+      throw new Error(`Ошибка HTTP: ${res.status}`)
+    }
+
+    const data = await res.json()
+    let loaded = false
+
+    if (data.apiKey) {
+      aiState.apiKey = data.apiKey
+      loaded = true
+    }
+
+    if (data.prompts && Array.isArray(data.prompts)) {
+      data.prompts.forEach((p: any) => {
+        // Добавляем только если промпта с таким именем еще нет
+        if (!aiState.systemPrompts.some(existing => existing.name === p.name)) {
+          aiActions.addPrompt(p.name || 'Без названия', p.content || '')
+        }
+      })
+      loaded = true
+    }
+
+    if (loaded) {
+      if (aiState.showToast) {
+        aiState.showToast('Конфиг успешно загружен!', { type: 'success' })
+      }
+      else {
+        alert('Конфиг успешно загружен!')
+      }
+    }
+    else {
+      if (aiState.showToast) {
+        aiState.showToast('Конфиг пуст или имеет неверный формат', { type: 'warning' })
+      }
+      else {
+        alert('Конфиг пуст или имеет неверный формат')
+      }
+    }
+  }
+  catch (e: any) {
+    if (aiState.showToast) {
+      aiState.showToast(`Не удалось загрузить конфиг: ${e.message}`, { type: 'error' })
+    }
+    else {
+      alert(`Не удалось загрузить конфиг: ${e.message}`)
+    }
+  }
+  finally {
+    isLoadingConfig.value = false
+  }
+}
 </script>
 
 <template>
   <div class="ai-tab-view">
     <div class="ai-body custom-scrollbar">
       <div class="ai-settings">
+        <!-- API Key Block -->
         <div class="settings-block">
-          <label>
-            API Key (AiHubMix)
-            <input v-model="aiState.apiKey" type="password" placeholder="sk-..." class="editor-input">
-          </label>
+          <div class="topics-header">
+            <label style="margin:0">API Key (AiHubMix)</label>
+            <button class="ai-btn ai-btn-sm" :disabled="isLoadingConfig" @click="loadConfig">
+              {{ isLoadingConfig ? 'Загрузка...' : 'Загрузить конфиг' }}
+            </button>
+          </div>
+          <input v-model="aiState.apiKey" type="password" placeholder="sk-..." class="editor-input">
         </div>
 
         <div class="settings-block">
