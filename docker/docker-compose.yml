@@ -2,18 +2,16 @@ services:
   wander-mark-client:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-client:${V_CLIENT:-latest}
     restart: unless-stopped
-    ports:
-      - "3333:3333"
     depends_on:
       - wander-mark-server
+      - trip-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wander-client.rule=Host(`wander-mark.ru`)"
+      - "traefik.http.routers.wander-client.rule=Host(`wander-mark.trip-scheduler.ru`)"
       - "traefik.http.routers.wander-client.entrypoints=websecure"
       - "traefik.http.routers.wander-client.tls.certresolver=letsencrypt"
       - "traefik.http.services.wander-client.loadbalancer.server.port=3333"
-    networks:
-      - traefik_network
+      - "traefik.docker.network=trip-net"
 
   wander-mark-server:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-server:${V_SERVER:-latest}
@@ -23,17 +21,20 @@ services:
       FS_BASE_PATH: /data
     volumes:
       - ${VAULT_PATH:-./vault}:/data:ro
-    ports:
-      - "4444:8080"
+    networks:
+      - wander-mark
+      - trip-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wander-server.rule=Host(`api.wander-mark.ru`)"
+      - "traefik.http.routers.wander-server.rule=Host(`wander-api.trip-scheduler.ru`)"
       - "traefik.http.routers.wander-server.entrypoints=websecure"
       - "traefik.http.routers.wander-server.tls.certresolver=letsencrypt"
       - "traefik.http.services.wander-server.loadbalancer.server.port=8080"
-    networks:
-      - traefik_network
+      - "traefik.docker.network=trip-net"
 
 networks:
   wander-mark:
     driver: bridge
+  trip-net:
+    external: true
+    name: trip-net
