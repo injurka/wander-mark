@@ -34,7 +34,7 @@ function savePrompt() {
 async function loadConfig() {
   isLoadingConfig.value = true
   try {
-    const url = `${aiState.vaultUrl}/configs/plugins/configs/ai-assistant.json`
+    const url = `${aiState.vaultUrl}/plugins/configs/ai-assistant.json`
     const res = await fetch(url)
     if (!res.ok) {
       throw new Error(`Ошибка HTTP: ${res.status}`)
