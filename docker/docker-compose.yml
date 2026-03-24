@@ -6,8 +6,14 @@ services:
       - "3333:3333"
     depends_on:
       - wander-mark-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wander-client.rule=Host(`wander-mark.ru`)"
+      - "traefik.http.routers.wander-client.entrypoints=websecure"
+      - "traefik.http.routers.wander-client.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wander-client.loadbalancer.server.port=3333"
     networks:
-      - wander-mark
+      - traefik_network
 
   wander-mark-server:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-server:${V_SERVER:-latest}
@@ -19,8 +25,14 @@ services:
       - ${VAULT_PATH:-./vault}:/data:ro
     ports:
       - "4444:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wander-server.rule=Host(`api.wander-mark.ru`)"
+      - "traefik.http.routers.wander-server.entrypoints=websecure"
+      - "traefik.http.routers.wander-server.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wander-server.loadbalancer.server.port=8080"
     networks:
-      - wander-mark
+      - traefik_network
 
 networks:
   wander-mark:
