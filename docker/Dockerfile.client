@@ -15,6 +15,8 @@ RUN bun --cwd=apps/client run build
 # =================================================================
 FROM nginx:stable-alpine
 
+COPY --from=builder /usr/src/app/apps/client/dist /usr/share/nginx/html
+
 EXPOSE 3333
 
 CMD ["nginx", "-g", "daemon off;"]
