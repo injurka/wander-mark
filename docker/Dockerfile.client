@@ -16,6 +16,7 @@ RUN bun --cwd=apps/client run build
 FROM nginx:stable-alpine
 
 COPY --from=builder /usr/src/app/apps/client/dist /usr/share/nginx/html
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3333
 
