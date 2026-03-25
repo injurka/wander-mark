@@ -310,6 +310,7 @@ function formatDate(dateStr?: string) {
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
+  overflow: hidden;
 
   &:hover {
     background-color: var(--bg-hover-color);
@@ -318,7 +319,7 @@ function formatDate(dateStr?: string) {
 
   @include media-down(sm) {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
   }
 }
@@ -343,6 +344,9 @@ function formatDate(dateStr?: string) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
+  flex: 1;
+  min-width: 0;
 }
 
 .file-meta {
@@ -350,6 +354,7 @@ function formatDate(dateStr?: string) {
   align-items: center;
   gap: 16px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .meta-tag {

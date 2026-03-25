@@ -13,7 +13,6 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
     return
   }
 
-  // Если нет топика - создаем
   if (!aiState.currentTopicId) {
     aiActions.createNewTopic()
   }
@@ -22,13 +21,29 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
   if (!topic)
     return
 
-  // Именуем топик по первому промпту, если он "Новый чат"
   if (topic.title === 'Новый чат' || topic.title === 'Старый чат') {
     topic.title = promptText.length > 30 ? `${promptText.slice(0, 30)}...` : promptText
   }
 
-  const requestId = Date.now().toString()
   const activePrompt = aiState.systemPrompts.find(p => p.id === aiState.selectedPromptId) || aiState.systemPrompts[0]
+
+  const messages: any[] = [
+    { role: 'system', content: activePrompt.content },
+  ]
+
+  for (const item of topic.history) {
+    if (item.status === 'success') {
+      messages.push({ role: 'user', content: item.prompt })
+
+      if (item.response) {
+        messages.push({ role: 'assistant', content: item.response })
+      }
+    }
+  }
+
+  messages.push({ role: 'user', content: promptText })
+
+  const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
 
   topic.history.push({
     id: requestId,
@@ -52,10 +67,7 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
       },
       body: JSON.stringify({
         model: aiState.selectedModel,
-        messages: [
-          { role: 'system', content: activePrompt.content },
-          { role: 'user', content: promptText },
-        ],
+        messages, // Отправляем собранный массив с контекстом
       }),
       signal: abortController.signal,
     })

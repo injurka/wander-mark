@@ -62,7 +62,7 @@ export const aiActions = {
 
   createNewTopic() {
     const newTopic: AiTopic = {
-      id: Date.now().toString(),
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
       title: 'Новый чат',
       history: [],
       updatedAt: Date.now(),
@@ -94,7 +94,9 @@ export const aiActions = {
   },
 
   addPrompt(name: string, content: string) {
-    aiState.systemPrompts.push({ id: Date.now().toString(), name, content })
+    // Делаем ID гарантированно уникальным даже при цикле
+    const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
+    aiState.systemPrompts.push({ id: uniqueId, name, content })
   },
   updatePrompt(id: string, name: string, content: string) {
     const p = aiState.systemPrompts.find(p => p.id === id)
@@ -118,7 +120,17 @@ export function initAiStore() {
 
   const savedPrompts = localStorage.getItem('wm-ai-prompts')
   if (savedPrompts) {
-    aiState.systemPrompts = JSON.parse(savedPrompts)
+    const parsed = JSON.parse(savedPrompts)
+    const seenIds = new Set()
+
+    // Дедупликация ID: чинит уже сломанные из локал стораджа промпты
+    parsed.forEach((p: any) => {
+      if (seenIds.has(p.id)) {
+        p.id = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
+      }
+      seenIds.add(p.id)
+    })
+    aiState.systemPrompts = parsed
   }
   else {
     const oldPrompt = localStorage.getItem('wm-ai-sysprompt')
@@ -138,7 +150,7 @@ export function initAiStore() {
     const oldHistory = localStorage.getItem('wm-ai-history')
     if (oldHistory) {
       aiState.topics = [{
-        id: Date.now().toString(),
+        id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
         title: 'Старый чат',
         history: JSON.parse(oldHistory),
         updatedAt: Date.now(),
