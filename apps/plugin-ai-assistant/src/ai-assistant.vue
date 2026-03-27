@@ -3,10 +3,12 @@ import { onMounted } from 'vue'
 import AiChat from './components/ai-chat.vue'
 import AiSettings from './components/ai-settings.vue'
 import AiTopics from './components/ai-topics.vue'
-import { t } from './i18n'
+import { usePluginI18n } from './i18n'
 import { aiActions, aiState, initAiStore } from './store/ai.store'
 
 defineOptions({ name: 'AiAssistantWidget', inheritAttrs: false })
+
+const { t } = usePluginI18n()
 
 onMounted(() => initAiStore())
 

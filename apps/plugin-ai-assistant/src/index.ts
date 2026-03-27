@@ -1,5 +1,6 @@
+// src/index.ts
 import type { PluginContext } from './types'
-import { markRaw } from 'vue'
+import { markRaw, unref } from 'vue'
 import AiAssistant from './ai-assistant.vue'
 import AiPage from './ai-page.vue'
 import { setupPluginI18n } from './i18n'
@@ -28,10 +29,10 @@ export default {
     aiActions.setContext(ctx)
 
     if (ctx.locale) {
-      setupPluginI18n(ctx.locale)
+      // ПЕРЕДАЕМ КАК ФУНКЦИЮ (ГЕТТЕР)
+      setupPluginI18n(() => unref(ctx.locale as any))
     }
 
-    // eslint-disable-next-line no-console
     console.log('[AI Assistant] Activated')
   },
 }

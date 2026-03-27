@@ -1,81 +1,83 @@
 {
   "settings": {
-    "appearance": "Appearance",
-    "theme": "Theme",
-    "themeLight": "Light",
-    "themeDark": "Dark",
-    "interface": "Interface",
-    "borderless": "Borderless View",
-    "coloredFolders": "Colored Folders",
-    "showIcons": "Show Icons",
-    "showOutline": "Show Outline",
-    "plugins": "Plugin Manager",
-    "language": "Language"
+    "appearance": "外观",
+    "theme": "主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "interface": "界面",
+    "borderless": "无边框视图",
+    "coloredFolders": "彩色文件夹",
+    "showIcons": "显示图标",
+    "showOutline": "显示大纲线",
+    "plugins": "插件管理器",
+    "language": "语言"
   },
   "home": {
-    "title": "Knowledge Base",
-    "subtitle": "Manage your remote vaults",
-    "addVault": "Add Vault",
-    "yourVaults": "Your Vaults",
-    "download": "Download",
-    "reinstall": "Reinstall",
-    "delete": "Delete",
-    "addDialogTitle": "Add Vault",
-    "vaultId": "Vault ID",
-    "vaultIdHint": "Exact folder name on the server, e.g., Chinese",
-    "serverUrl": "Server URL",
-    "serverUrlHint": "Base URL (name will be fetched automatically)",
-    "cancel": "Cancel",
-    "add": "Add"
+    "title": "知识库",
+    "subtitle": "管理您的远程知识库",
+    "addVault": "添加知识库",
+    "yourVaults": "您的知识库",
+    "download": "下载",
+    "reinstall": "重新安装",
+    "delete": "删除",
+    "addDialogTitle": "添加知识库",
+    "vaultId": "知识库 ID",
+    "vaultIdHint": "服务器上的确切文件夹名称，例如 Chinese",
+    "serverUrl": "服务器 URL",
+    "serverUrlHint": "基础 URL（名称将自动获取）",
+    "cancel": "取消",
+    "add": "添加"
   },
   "sidebar": {
-    "search": "Search...",
-    "vaultHome": "Vault Home",
-    "allVaults": "All Vaults"
+    "search": "搜索...",
+    "vaultHome": "知识库首页",
+    "allVaults": "所有知识库"
   },
   "vaultIndex": {
-    "defaultDesc": "Vault homepage",
-    "sections": "Sections",
-    "items": "items",
-    "recentChanges": "Recent Changes",
-    "min": "min",
-    "plugins": "Plugins",
-    "noActivePlugins": "No active plugins"
+    "defaultDesc": "知识库首页",
+    "sections": "目录",
+    "items": "项",
+    "recentChanges": "最近更改",
+    "min": "分钟",
+    "plugins": "插件",
+    "noActivePlugins": "没有激活的插件",
+    "readMore": "了解更多",
+    "historyTitle": "变更历史"
   },
   "contentViewer": {
-    "backlinks": "Backlinks",
-    "readingTime": "Reading time",
-    "wordCount": "Word count",
-    "words": "words",
-    "lastModified": "Last modified"
+    "backlinks": "反向链接",
+    "readingTime": "阅读时间",
+    "wordCount": "字数",
+    "words": "字",
+    "lastModified": "最后修改时间"
   },
   "search": {
-    "placeholder": "Search notes and tags...",
-    "noResults": "No results found",
-    "resetFilters": "Reset filters",
-    "toNavigate": "to navigate",
-    "toSelect": "to select"
+    "placeholder": "搜索笔记和标签...",
+    "noResults": "未找到结果",
+    "resetFilters": "重置过滤器",
+    "toNavigate": "跳转",
+    "toSelect": "选择"
   },
   "confirm": {
-    "title": "Confirmation",
-    "cancel": "Cancel",
-    "ok": "OK"
+    "title": "确认",
+    "cancel": "取消",
+    "ok": "确定"
   },
   "page": {
-    "loading": "Loading...",
-    "notFound": "Page not found or unavailable",
-    "notFoundDesc": "You might be offline and the file is not downloaded, or the page has been moved.",
-    "pluginNotFound": "Plugin page not found",
-    "pluginNotFoundDesc": "The plugin does not provide this page or has not been loaded yet."
+    "loading": "加载中...",
+    "notFound": "页面未找到或不可用",
+    "notFoundDesc": "您可能处于离线状态且文件未下载，或者页面已被移动。",
+    "pluginNotFound": "未找到插件页面",
+    "pluginNotFoundDesc": "插件不提供此页面或尚未加载。"
   },
   "plugins": {
-    "title": "Plugins",
-    "urlPlaceholder": "Plugin URL (.js)",
-    "installing": "Loading...",
-    "install": "Install",
-    "noInstalled": "No installed plugins",
-    "pasteHint": "Paste plugin URL above to install",
-    "enable": "Enable",
-    "disable": "Disable"
+    "title": "插件",
+    "urlPlaceholder": "插件 URL (.js)",
+    "installing": "加载中...",
+    "install": "安装",
+    "noInstalled": "没有已安装的插件",
+    "pasteHint": "在上方粘贴插件 URL 以进行安装",
+    "enable": "启用",
+    "disable": "禁用"
   }
 }

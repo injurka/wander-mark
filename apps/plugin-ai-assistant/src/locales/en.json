@@ -8,13 +8,53 @@
     "fullscreen": "Fullscreen",
     "windowed": "Windowed mode",
     "minimize": "Minimize to background",
-    "close": "Close",
-    "newChat": "New Chat",
-    "clearChat": "Clear Chat",
-    "thinking": "AI is thinking...",
-    "sendMessage": "Type a message...",
+    "close": "Close"
+  },
+  "chat": {
+    "emptyState": "New dialogue started. Write your first prompt!",
     "generating": "Generating response...",
     "error": "Error",
-    "aborted": "Aborted"
+    "aborted": "Aborted",
+    "placeholder": "Type a message...",
+    "clearChat": "Clear Chat",
+    "newTopic": "New Topic",
+    "promptSelect": "Select Prompt",
+    "promptTitle": "Prompt",
+    "modelSelect": "Select Model",
+    "modelTitle": "Model",
+    "cancel": "Cancel",
+    "send": "Send",
+    "unknown": "Unknown",
+    "clearConfirm": "Clear current chat?"
+  },
+  "topics": {
+    "title": "Your Dialogues",
+    "newChat": "+ New Chat",
+    "empty": "You have no saved chats yet.",
+    "messages": "messages",
+    "delete": "Delete"
+  },
+  "settings": {
+    "loadConfig": "Load Config",
+    "loading": "Loading...",
+    "systemPrompts": "Your System Prompts",
+    "add": "+ Add",
+    "promptName": "Prompt Name",
+    "promptPlaceholder": "You are a professional translator...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "configSuccess": "Config loaded successfully!",
+    "configEmpty": "Config is empty or has invalid format",
+    "configError": "Failed to load config: ",
+    "newPrompt": "New Prompt",
+    "apiKeyMissing": "Please provide an API key in the 'Settings' tab."
+  },
+  "store": {
+    "newChat": "New Chat",
+    "oldChat": "Old Chat",
+    "defaultPromptName": "Default",
+    "defaultPromptContent": "You are a helpful AI assistant. Answer briefly and to the point. Format code and text in Markdown.",
+    "abortedRes": "Request aborted.",
+    "emptyRes": "Empty response"
   }
 }

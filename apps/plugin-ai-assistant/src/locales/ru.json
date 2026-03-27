@@ -8,13 +8,53 @@
     "fullscreen": "На весь экран",
     "windowed": "Оконный режим",
     "minimize": "Свернуть в фон",
-    "close": "Закрыть",
-    "newChat": "Новый чат",
-    "clearChat": "Очистить чат",
-    "thinking": "AI думает...",
-    "sendMessage": "Напишите сообщение...",
+    "close": "Закрыть"
+  },
+  "chat": {
+    "emptyState": "Новый диалог начат. Напишите первый запрос!",
     "generating": "Генерация ответа...",
     "error": "Ошибка",
-    "aborted": "Отменено"
+    "aborted": "Отменено",
+    "placeholder": "Напишите сообщение...",
+    "clearChat": "Очистить чат",
+    "newTopic": "Новый топик",
+    "promptSelect": "Выбор промпта",
+    "promptTitle": "Промпт",
+    "modelSelect": "Выбор модели",
+    "modelTitle": "Модель",
+    "cancel": "Отменить",
+    "send": "Отправить",
+    "unknown": "Неизвестно",
+    "clearConfirm": "Очистить текущий чат?"
+  },
+  "topics": {
+    "title": "Ваши диалоги",
+    "newChat": "+ Новый чат",
+    "empty": "У вас еще нет сохраненных чатов.",
+    "messages": "сообщений",
+    "delete": "Удалить"
+  },
+  "settings": {
+    "loadConfig": "Загрузить конфиг",
+    "loading": "Загрузка...",
+    "systemPrompts": "Ваши системные промпты",
+    "add": "+ Добавить",
+    "promptName": "Название промпта",
+    "promptPlaceholder": "Ты профессиональный переводчик...",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "configSuccess": "Конфиг успешно загружен!",
+    "configEmpty": "Конфиг пуст или имеет неверный формат",
+    "configError": "Не удалось загрузить конфиг: ",
+    "newPrompt": "Новый промпт",
+    "apiKeyMissing": "Пожалуйста, укажите API ключ на вкладке 'Настройки'."
+  },
+  "store": {
+    "newChat": "Новый чат",
+    "oldChat": "Старый чат",
+    "defaultPromptName": "Стандартный",
+    "defaultPromptContent": "Ты полезный AI-ассистент. Отвечай кратко и по делу. Форматируй код и текст в Markdown.",
+    "abortedRes": "Запрос отменен.",
+    "emptyRes": "Пустой ответ"
   }
 }

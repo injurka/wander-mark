@@ -8,7 +8,6 @@
     "dev": "vite build --watch",
     "--------------------------------<      BUILD     >--------------------------------": "",
     "build": "vite build",
-    "postbuild": "cp dist/ai-assistant.js \"/root/my/wander-mark/vaults-example/.export/plugins/ai-assistant.js\"",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

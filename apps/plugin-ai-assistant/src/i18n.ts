@@ -1,31 +1,36 @@
-import type { Ref } from 'vue'
-import { watch } from 'vue'
-import { createI18n } from 'vue-i18n'
+// src/i18n.ts
+import { ref, watch } from 'vue'
 import cn from './locales/cn.json'
 import en from './locales/en.json'
 import ru from './locales/ru.json'
 
-// Создаем собственный экземпляр i18n для плагина
-const i18n = createI18n({
-  legacy: false,
-  locale: 'ru', // Язык по умолчанию, если хост не передаст свой
-  fallbackLocale: 'en',
-  messages: { ru, en, cn },
-})
+const messages: Record<string, any> = { ru, en, cn }
 
-/**
- * Функция для инициализации локализации плагина.
- * Она принимает реактивную ссылку на локаль от хоста.
- */
-export function setupPluginI18n(hostLocale: Ref<string>) {
-  // Следим за изменениями локали в хост-приложении
-  // и синхронно меняем локаль в нашем плагине.
-  watch(hostLocale, (newLocale) => {
-    if (newLocale) {
-      i18n.global.locale.value = newLocale as 'ru' | 'en' | 'cn'
+// Локальное реактивное состояние языка для плагина
+const currentLocale = ref('ru')
+
+// Принимаем функцию-геттер вместо Ref
+export function setupPluginI18n(getLocale: () => string | undefined) {
+  watch(getLocale, (newLocale) => {
+    if (newLocale && messages[newLocale]) {
+      currentLocale.value = newLocale
     }
-  }, { immediate: true }) // immediate: true - чтобы применилось сразу при активации
+  }, { immediate: true })
 }
 
-// Экспортируем функцию перевода, чтобы использовать ее в компонентах
-export const t = i18n.global.t
+export function usePluginI18n() {
+  const t = (key: string) => {
+    const keys = key.split('.')
+    let result = messages[currentLocale.value]
+
+    for (const k of keys) {
+      if (result === undefined || result === null)
+        break
+      result = result[k]
+    }
+
+    return typeof result === 'string' ? result : key
+  }
+
+  return { t, locale: currentLocale }
+}

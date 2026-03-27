@@ -90,9 +90,9 @@ const currentVault = computed(() => route.params.vault as string)
         @click="emit('openSearch')"
       />
 
-      <ViewerSettingsMenu 
-        :vault="currentVault" 
-        @open-plugins="emit('openPlugins')" 
+      <ViewerSettingsMenu
+        :vault="currentVault"
+        @open-plugins="emit('openPlugins')"
       />
     </div>
   </header>

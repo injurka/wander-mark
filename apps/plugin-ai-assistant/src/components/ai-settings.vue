@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { usePluginI18n } from '../i18n'
 import { aiActions, aiState } from '../store/ai.store'
 
+const { t } = usePluginI18n()
 const editId = ref<string | null>(null)
 const editName = ref('')
 const editContent = ref('')
@@ -9,7 +11,7 @@ const isLoadingConfig = ref(false)
 
 function startAdd() {
   editId.value = 'new'
-  editName.value = 'Новый промпт'
+  editName.value = t('settings.newPrompt')
   editContent.value = ''
 }
 
@@ -34,13 +36,27 @@ function savePrompt() {
 async function loadConfig() {
   isLoadingConfig.value = true
   try {
-    const url = `${aiState.vaultUrl}/plugins/configs/ai-assistant.json`
-    const res = await fetch(url)
-    if (!res.ok) {
-      throw new Error(`Ошибка HTTP: ${res.status}`)
+    // 1. Формируем новый путь относительно корня хранилища
+    const configPath = `meta/${aiState.vaultId}/plugins/configs/ai-assistant.json`
+
+    let configText = null
+
+    // 2. Пытаемся получить файл через API хоста (работает оффлайн и в нативе)
+    if (aiState.getFileContent) {
+      configText = await aiState.getFileContent(configPath)
     }
 
-    const data = await res.json()
+    // 3. Fallback: если не вышло, делаем обычный fetch
+    if (!configText) {
+      const url = `${aiState.vaultUrl}/${configPath}`
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error(`HTTP: ${res.status}`)
+      }
+      configText = await res.text()
+    }
+
+    const data = JSON.parse(configText)
     let loaded = false
 
     if (data.apiKey) {
@@ -50,9 +66,8 @@ async function loadConfig() {
 
     if (data.prompts && Array.isArray(data.prompts)) {
       data.prompts.forEach((p: any) => {
-        // Добавляем только если промпта с таким именем еще нет
         if (!aiState.systemPrompts.some(existing => existing.name === p.name)) {
-          aiActions.addPrompt(p.name || 'Без названия', p.content || '')
+          aiActions.addPrompt(p.name || t('chat.unknown'), p.content || '')
         }
       })
       loaded = true
@@ -60,27 +75,27 @@ async function loadConfig() {
 
     if (loaded) {
       if (aiState.showToast) {
-        aiState.showToast('Конфиг успешно загружен!', { type: 'success' })
+        aiState.showToast(t('settings.configSuccess'), { type: 'success' })
       }
       else {
-        alert('Конфиг успешно загружен!')
+        alert(t('settings.configSuccess'))
       }
     }
     else {
       if (aiState.showToast) {
-        aiState.showToast('Конфиг пуст или имеет неверный формат', { type: 'warning' })
+        aiState.showToast(t('settings.configEmpty'), { type: 'warning' })
       }
       else {
-        alert('Конфиг пуст или имеет неверный формат')
+        alert(t('settings.configEmpty'))
       }
     }
   }
   catch (e: any) {
     if (aiState.showToast) {
-      aiState.showToast(`Не удалось загрузить конфиг: ${e.message}`, { type: 'error' })
+      aiState.showToast(`${t('settings.configError')}${e.message}`, { type: 'error' })
     }
     else {
-      alert(`Не удалось загрузить конфиг: ${e.message}`)
+      alert(`${t('settings.configError')}${e.message}`)
     }
   }
   finally {
@@ -98,7 +113,7 @@ async function loadConfig() {
           <div class="topics-header">
             <label style="margin:0">API Key (AiHubMix)</label>
             <button class="ai-btn ai-btn-sm" :disabled="isLoadingConfig" @click="loadConfig">
-              {{ isLoadingConfig ? 'Загрузка...' : 'Загрузить конфиг' }}
+              {{ isLoadingConfig ? t('settings.loading') : t('settings.loadConfig') }}
             </button>
           </div>
           <input v-model="aiState.apiKey" type="password" placeholder="sk-..." class="editor-input">
@@ -106,22 +121,22 @@ async function loadConfig() {
 
         <div class="settings-block">
           <div class="topics-header">
-            <label style="margin:0">Ваши системные промпты</label>
+            <label style="margin:0">{{ t('settings.systemPrompts') }}</label>
             <button class="ai-btn ai-btn-primary ai-btn-sm" @click="startAdd">
-              + Добавить
+              {{ t('settings.add') }}
             </button>
           </div>
 
           <!-- Редактор промпта -->
           <div v-if="editId" class="prompt-editor">
-            <input v-model="editName" placeholder="Название промпта" class="editor-input">
-            <textarea v-model="editContent" rows="4" placeholder="Ты профессиональный переводчик..." class="editor-input custom-scrollbar" />
+            <input v-model="editName" :placeholder="t('settings.promptName')" class="editor-input">
+            <textarea v-model="editContent" rows="4" :placeholder="t('settings.promptPlaceholder')" class="editor-input custom-scrollbar" />
             <div class="editor-actions">
               <button class="ai-btn ai-btn-sm" @click="editId = null">
-                Отмена
+                {{ t('settings.cancel') }}
               </button>
               <button class="ai-btn ai-btn-primary ai-btn-sm" @click="savePrompt">
-                Сохранить
+                {{ t('settings.save') }}
               </button>
             </div>
           </div>

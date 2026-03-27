@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import { computed, nextTick, ref, watch } from 'vue'
+import { usePluginI18n } from '../i18n'
 import { cancelAiRequest, sendAiRequest } from '../services/ai.service'
 import { aiActions, aiState, MODELS } from '../store/ai.store'
 
+const { t } = usePluginI18n()
 const chatBodyRef = ref<HTMLElement | null>(null)
 const showPromptMenu = ref(false)
 const showModelMenu = ref(false)
 
 const currentTopic = computed(() => aiActions.getCurrentTopic())
-const activePromptName = computed(() => aiState.systemPrompts.find(p => p.id === aiState.selectedPromptId)?.name || 'Неизвестно')
+const activePromptName = computed(() => aiState.systemPrompts.find(p => p.id === aiState.selectedPromptId)?.name || t('chat.unknown'))
 
 function scrollToBottom() {
   nextTick(() => {
@@ -58,7 +60,7 @@ function closeMenus() {
   <div class="ai-tab-view" @click="closeMenus">
     <div ref="chatBodyRef" class="ai-body">
       <div v-if="!currentTopic || currentTopic.history.length === 0" style="text-align: center; color: var(--fg-muted-color); margin-top: 40px;">
-        Новый диалог начат. Напишите первый запрос!
+        {{ t('chat.emptyState') }}
       </div>
 
       <template v-if="currentTopic">
@@ -67,11 +69,11 @@ function closeMenus() {
             {{ item.prompt }}
           </div>
           <div v-if="item.status === 'loading'" class="ai-status loading">
-            Генерация ответа...
+            {{ t('chat.generating') }}
           </div>
           <div v-else class="ai-response-bubble ai-md-content markdown-body" v-html="renderMarkdown(item.response)" />
           <div class="ai-status" :class="item.status">
-            {{ item.status === 'error' ? 'Ошибка' : item.status === 'aborted' ? 'Отменено' : new Date(item.date).toLocaleTimeString() }}
+            {{ item.status === 'error' ? t('chat.error') : item.status === 'aborted' ? t('chat.aborted') : new Date(item.date).toLocaleTimeString() }}
           </div>
         </div>
       </template>
@@ -82,27 +84,27 @@ function closeMenus() {
         <textarea
           v-model="aiState.userPrompt"
           class="ai-textarea custom-scrollbar"
-          placeholder="Напишите сообщение..."
+          :placeholder="t('chat.placeholder')"
           @keydown.ctrl.enter.prevent="handleSend"
         />
 
         <div class="ai-input-bottom">
           <div class="ai-tools-left">
-            <button class="ai-tool-btn shrink-none" title="Очистить чат" @click.stop="aiActions.clearCurrentTopic()">
+            <button class="ai-tool-btn shrink-none" :title="t('chat.clearChat')" @click.stop="aiActions.clearCurrentTopic()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
             </button>
-            <button class="ai-tool-btn shrink-none" title="Новый топик" @click.stop="aiActions.createNewTopic()">
+            <button class="ai-tool-btn shrink-none" :title="t('chat.newTopic')" @click.stop="aiActions.createNewTopic()">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
             </button>
 
             <div class="ai-dropdown-wrap">
-              <button class="ai-tool-btn" title="Выбор промпта" @click.stop="showPromptMenu = !showPromptMenu; showModelMenu = false">
+              <button class="ai-tool-btn" :title="t('chat.promptSelect')" @click.stop="showPromptMenu = !showPromptMenu; showModelMenu = false">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 <span class="tool-text">{{ activePromptName }}</span>
               </button>
               <div v-if="showPromptMenu" class="ai-dropdown">
                 <div class="dropdown-title">
-                  Промпт
+                  {{ t('chat.promptTitle') }}
                 </div>
                 <div v-for="p in aiState.systemPrompts" :key="p.id" class="dropdown-item" :class="{ 'is-active': p.id === aiState.selectedPromptId }" @click.stop="selectPrompt(p.id)">
                   {{ p.name }}
@@ -111,13 +113,13 @@ function closeMenus() {
             </div>
 
             <div class="ai-dropdown-wrap">
-              <button class="ai-tool-btn" title="Выбор модели" @click.stop="showModelMenu = !showModelMenu; showPromptMenu = false">
+              <button class="ai-tool-btn" :title="t('chat.modelSelect')" @click.stop="showModelMenu = !showModelMenu; showPromptMenu = false">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-none"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></svg>
                 <span class="tool-text">{{ aiState.selectedModel }}</span>
               </button>
               <div v-if="showModelMenu" class="ai-dropdown">
                 <div class="dropdown-title">
-                  Модель
+                  {{ t('chat.modelTitle') }}
                 </div>
                 <div v-for="m in MODELS" :key="m" class="dropdown-item" :class="{ 'is-active': m === aiState.selectedModel }" @click.stop="selectModel(m)">
                   {{ m }}
@@ -127,10 +129,10 @@ function closeMenus() {
           </div>
 
           <div class="ai-tools-right">
-            <button v-if="aiState.isLoading" class="ai-send-btn is-stop" title="Отменить" @click.stop="cancelAiRequest">
+            <button v-if="aiState.isLoading" class="ai-send-btn is-stop" :title="t('chat.cancel')" @click.stop="cancelAiRequest">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
             </button>
-            <button v-else class="ai-send-btn" :class="{ 'is-ready': aiState.userPrompt.trim() }" title="Отправить" @click.stop="handleSend">
+            <button v-else class="ai-send-btn" :class="{ 'is-ready': aiState.userPrompt.trim() }" :title="t('chat.send')" @click.stop="handleSend">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
             </button>
           </div>

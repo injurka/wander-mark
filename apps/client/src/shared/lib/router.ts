@@ -1,11 +1,12 @@
-import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
     component: () => import('~/pages/index.vue'),
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/:vault',
@@ -22,27 +23,33 @@ const routes: RouteRecordRaw[] = [
         component: () => import('~/pages/[vault]/plugin/[pluginId].vue'),
       },
       {
+        path: 'recent',
+        name: 'RecentChanges',
+        component: () => import('~/pages/[vault]/recent.vue'),
+      },
+      {
         path: ':pwd(.*)*',
         name: 'ContentViewer',
         component: () => import('~/pages/[vault]/[...pwd].vue'),
-      }
-    ]
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('~/pages/index.vue'),
-    meta: { layout: 'default' }
-  }
+    meta: { layout: 'default' },
+  },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
   scrollBehavior(_to, _from, savedPosition) {
-    if (savedPosition) return savedPosition
+    if (savedPosition)
+      return savedPosition
     return { top: 0 }
-  }
+  },
 })
 
 export default router

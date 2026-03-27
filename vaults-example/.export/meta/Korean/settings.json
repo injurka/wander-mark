@@ -5,14 +5,9 @@
     "description": "Korean Korean Korean"
   },
   "plugins": [
-    {
-      "id": "search-bar",
-      "url": "plugins/search-bar.js",
-      "version": "1.0.0",
-      "enabledByDefault": true
-    }
+    "meta/Korean/plugins/ai-assistant.js"
   ],
   "styles": [
-    "chinese-theme.css"
+    "korean-theme.css"
   ]
 }

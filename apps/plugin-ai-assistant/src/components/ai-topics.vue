@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { usePluginI18n } from '../i18n'
 import { aiActions, aiState } from '../store/ai.store'
+
+const { t } = usePluginI18n()
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleString('ru-RU', {
@@ -16,14 +19,14 @@ function formatDate(ts: number) {
     <div class="ai-body custom-scrollbar">
       <div class="ai-topics">
         <div class="topics-header">
-          <h3>Ваши диалоги</h3>
+          <h3>{{ t('topics.title') }}</h3>
           <button class="ai-btn ai-btn-primary ai-btn-sm" @click="aiActions.createNewTopic()">
-            + Новый чат
+            {{ t('topics.newChat') }}
           </button>
         </div>
 
         <div v-if="aiState.topics.length === 0" class="topics-empty">
-          У вас еще нет сохраненных чатов.
+          {{ t('topics.empty') }}
         </div>
 
         <div class="topics-list">
@@ -39,12 +42,12 @@ function formatDate(ts: number) {
                 {{ topic.title }}
               </div>
               <div class="topic-meta">
-                <span>{{ topic.history.length }} сообщений</span>
+                <span>{{ topic.history.length }} {{ t('topics.messages') }}</span>
                 <span>•</span>
                 <span>{{ formatDate(topic.updatedAt) }}</span>
               </div>
             </div>
-            <button class="topic-delete-btn" title="Удалить" @click.stop="aiActions.deleteTopic(topic.id)">
+            <button class="topic-delete-btn" :title="t('topics.delete')" @click.stop="aiActions.deleteTopic(topic.id)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
             </button>
           </div>

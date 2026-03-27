@@ -4,6 +4,11 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [vue()],
+
+  define: {
+    'process.env': {},
+  },
+
   build: {
     lib: {
       entry: './src/index.ts',

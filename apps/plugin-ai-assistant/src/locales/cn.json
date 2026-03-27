@@ -8,13 +8,53 @@
     "fullscreen": "全屏",
     "windowed": "窗口模式",
     "minimize": "最小化到后台",
-    "close": "关闭",
-    "newChat": "新聊天",
-    "clearChat": "清除聊天",
-    "thinking": "AI 正在思考...",
-    "sendMessage": "输入消息...",
-    "generating": "正在生成回应...",
+    "close": "关闭"
+  },
+  "chat": {
+    "emptyState": "新对话已开始。写下你的第一个提示！",
+    "generating": "生成回应中...",
     "error": "错误",
-    "aborted": "已中止"
+    "aborted": "已中止",
+    "placeholder": "输入消息...",
+    "clearChat": "清除聊天",
+    "newTopic": "新话题",
+    "promptSelect": "选择提示词",
+    "promptTitle": "提示词",
+    "modelSelect": "选择模型",
+    "modelTitle": "模型",
+    "cancel": "取消",
+    "send": "发送",
+    "unknown": "未知",
+    "clearConfirm": "清除当前聊天？"
+  },
+  "topics": {
+    "title": "你的对话",
+    "newChat": "+ 新聊天",
+    "empty": "你还没有保存的聊天。",
+    "messages": "条消息",
+    "delete": "删除"
+  },
+  "settings": {
+    "loadConfig": "加载配置",
+    "loading": "加载中...",
+    "systemPrompts": "你的系统提示词",
+    "add": "+ 添加",
+    "promptName": "提示词名称",
+    "promptPlaceholder": "你是一名专业翻译...",
+    "cancel": "取消",
+    "save": "保存",
+    "configSuccess": "配置加载成功！",
+    "configEmpty": "配置为空或格式无效",
+    "configError": "加载配置失败: ",
+    "newPrompt": "新提示词",
+    "apiKeyMissing": "请在“设置”选项卡中提供 API 密钥。"
+  },
+  "store": {
+    "newChat": "新聊天",
+    "oldChat": "旧聊天",
+    "defaultPromptName": "默认",
+    "defaultPromptContent": "你是一个有用的AI助手。简明扼要地回答。用Markdown格式化代码和文本。",
+    "abortedRes": "请求已中止。",
+    "emptyRes": "空响应"
   }
 }

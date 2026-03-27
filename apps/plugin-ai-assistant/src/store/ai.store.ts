@@ -1,5 +1,6 @@
 import type { AiSystemPrompt, AiTopic, PluginContext } from '../types'
 import { reactive, watch } from 'vue'
+import { usePluginI18n } from '../i18n'
 
 export const MODELS = [
   'gemini-3.1-flash-lite-preview',
@@ -30,6 +31,7 @@ export const aiState = reactive({
   vaultUrl: '',
   showToast: null as any,
   confirm: null as any,
+  getFileContent: null as any, 
 })
 
 export const aiActions = {
@@ -39,6 +41,7 @@ export const aiActions = {
     aiState.vaultUrl = ctx.vaultUrl
     aiState.showToast = ctx.showToast
     aiState.confirm = ctx.confirm
+    aiState.getFileContent = ctx.getFileContent
   },
 
   open() {
@@ -61,9 +64,10 @@ export const aiActions = {
   },
 
   createNewTopic() {
+    const { t } = usePluginI18n()
     const newTopic: AiTopic = {
       id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
-      title: 'Новый чат',
+      title: t('store.newChat'),
       history: [],
       updatedAt: Date.now(),
     }
@@ -81,10 +85,20 @@ export const aiActions = {
       aiState.currentTopicId = aiState.topics.length > 0 ? aiState.topics[0].id : null
     }
   },
-  clearCurrentTopic() {
+  async clearCurrentTopic() {
+    const { t } = usePluginI18n()
     const topic = this.getCurrentTopic()
-    // eslint-disable-next-line no-alert
-    if (topic && confirm('Очистить текущий чат?')) {
+
+    let confirmed = false
+    if (aiState.confirm) {
+      confirmed = await aiState.confirm(t('chat.clearConfirm'))
+    }
+    else {
+      // eslint-disable-next-line no-alert
+      confirmed = confirm(t('chat.clearConfirm'))
+    }
+
+    if (topic && confirmed) {
       topic.history = []
       topic.updatedAt = Date.now()
     }
@@ -94,7 +108,6 @@ export const aiActions = {
   },
 
   addPrompt(name: string, content: string) {
-    // Делаем ID гарантированно уникальным даже при цикле
     const uniqueId = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
     aiState.systemPrompts.push({ id: uniqueId, name, content })
   },
@@ -115,6 +128,8 @@ export function initAiStore() {
   if (aiState.isInitialized)
     return
 
+  const { t } = usePluginI18n()
+
   aiState.apiKey = localStorage.getItem('wm-ai-apikey') || ''
   aiState.selectedModel = localStorage.getItem('wm-ai-model') || MODELS[0]
 
@@ -123,7 +138,6 @@ export function initAiStore() {
     const parsed = JSON.parse(savedPrompts)
     const seenIds = new Set()
 
-    // Дедупликация ID: чинит уже сломанные из локал стораджа промпты
     parsed.forEach((p: any) => {
       if (seenIds.has(p.id)) {
         p.id = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
@@ -136,8 +150,8 @@ export function initAiStore() {
     const oldPrompt = localStorage.getItem('wm-ai-sysprompt')
     aiState.systemPrompts = [{
       id: 'default',
-      name: 'Стандартный',
-      content: oldPrompt || 'Ты полезный AI-ассистент. Отвечай кратко и по делу. Форматируй код и текст в Markdown.',
+      name: t('store.defaultPromptName'),
+      content: oldPrompt || t('store.defaultPromptContent'),
     }]
   }
   aiState.selectedPromptId = localStorage.getItem('wm-ai-selected-prompt') || aiState.systemPrompts[0].id
@@ -151,7 +165,7 @@ export function initAiStore() {
     if (oldHistory) {
       aiState.topics = [{
         id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
-        title: 'Старый чат',
+        title: t('store.oldChat'),
         history: JSON.parse(oldHistory),
         updatedAt: Date.now(),
       }]

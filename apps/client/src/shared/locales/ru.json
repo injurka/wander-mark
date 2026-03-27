@@ -40,7 +40,9 @@
     "recentChanges": "Последние изменения",
     "min": "мин",
     "plugins": "Плагины",
-    "noActivePlugins": "Нет активных плагинов"
+    "noActivePlugins": "Нет активных плагинов",
+    "readMore": "Подробнее",
+    "historyTitle": "История изменений"
   },
   "contentViewer": {
     "backlinks": "Ссылки сюда",

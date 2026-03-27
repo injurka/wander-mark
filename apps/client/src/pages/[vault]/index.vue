@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { KitBtn } from '~/components/01.kit'
 import { PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentNavItemType, useContentViewerStore } from '~/components/05.modules/content-viewer'
@@ -128,6 +129,12 @@ function formatDate(dateStr?: string) {
               <span class="meta-date">{{ formatDate(file.meta?.lastModified) }}</span>
             </div>
           </div>
+        </div>
+
+        <div class="recent-actions">
+          <KitBtn variant="tonal" color="secondary" size="md" @click="navigateTo('recent')">
+            {{ t('vaultIndex.readMore') }}
+          </KitBtn>
         </div>
       </section>
 
@@ -382,6 +389,12 @@ function formatDate(dateStr?: string) {
 .meta-date {
   font-size: 0.85rem;
   color: var(--fg-muted-color);
+}
+
+.recent-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 .plugins-slot-wrapper {

@@ -1,3 +1,4 @@
+import { usePluginI18n } from '../i18n'
 import { aiActions, aiState } from '../store/ai.store'
 
 let abortController: AbortController | null = null
@@ -6,10 +7,12 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
   if (!promptText.trim() || aiState.isLoading)
     return
 
+  const { t } = usePluginI18n()
+
   if (!aiState.apiKey) {
     aiState.activeTab = 'settings'
     // eslint-disable-next-line no-alert
-    alert('Пожалуйста, укажите API ключ на вкладке "Настройки".')
+    alert(t('settings.apiKeyMissing'))
     return
   }
 
@@ -21,7 +24,7 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
   if (!topic)
     return
 
-  if (topic.title === 'Новый чат' || topic.title === 'Старый чат') {
+  if (topic.title === t('store.newChat') || topic.title === t('store.oldChat')) {
     topic.title = promptText.length > 30 ? `${promptText.slice(0, 30)}...` : promptText
   }
 
@@ -67,25 +70,25 @@ export async function sendAiRequest(promptText: string, onScrollRequest: () => v
       },
       body: JSON.stringify({
         model: aiState.selectedModel,
-        messages, // Отправляем собранный массив с контекстом
+        messages,
       }),
       signal: abortController.signal,
     })
 
     if (!res.ok)
-      throw new Error(`Ошибка API: ${res.status}`)
+      throw new Error(`API Error: ${res.status}`)
 
     const data = await res.json()
-    const responseText = data.choices?.[0]?.message?.content || 'Пустой ответ'
+    const responseText = data.choices?.[0]?.message?.content || t('store.emptyRes')
 
     updateHistoryItem(requestId, { response: responseText, status: 'success' })
   }
   catch (error: any) {
     if (error.name === 'AbortError') {
-      updateHistoryItem(requestId, { response: 'Запрос отменен.', status: 'aborted' })
+      updateHistoryItem(requestId, { response: t('store.abortedRes'), status: 'aborted' })
     }
     else {
-      updateHistoryItem(requestId, { response: `Ошибка: ${error.message}`, status: 'error' })
+      updateHistoryItem(requestId, { response: `${t('chat.error')}: ${error.message}`, status: 'error' })
     }
   }
   finally {

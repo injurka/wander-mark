@@ -40,7 +40,9 @@
     "recentChanges": "最近更改",
     "min": "分钟",
     "plugins": "插件",
-    "noActivePlugins": "没有激活的插件"
+    "noActivePlugins": "没有激活的插件",
+    "readMore": "了解更多",
+    "historyTitle": "变更历史"
   },
   "contentViewer": {
     "backlinks": "反向链接",

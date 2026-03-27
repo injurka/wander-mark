@@ -16,6 +16,9 @@
 			"path": "apps/plugin-ai-assistant"
 		},
 		{
+			"path": "apps/plugin-chinese-dictionary"
+		},
+		{
 			"path": "vaults-example"
 		},
 		{
@@ -26,5 +29,3 @@
 		"explorer.fileNesting.expand": false
 	}
 }
-
-
