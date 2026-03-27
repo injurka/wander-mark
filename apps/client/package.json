@@ -38,8 +38,8 @@
     "icons:bundle": "bun run build/bundle-icons.ts"
   },
   "dependencies": {
-    "@capacitor/android": "^8.2.0",
-    "@capacitor/core": "^8.2.0",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@capacitor/filesystem": "^8.1.2",
     "@iconify-icons/mdi": "^1.2.48",
     "@tauri-apps/api": "^2.10.1",
@@ -60,14 +60,14 @@
     "pinia": "3.0.4",
     "shiki": "^4.0.2",
     "vite-plugin-pwa": "^1.2.0",
-    "vue": "^3.5.30",
+    "vue": "^3.5.31",
     "vue-i18n": "^11.3.0",
-    "vue-router": "^5.0.3"
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.2.0",
+    "@capacitor/cli": "^8.3.0",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify/utils": "^3.1.0",
     "@iconify/vue": "^5.0.0",
@@ -77,17 +77,17 @@
     "@types/workbox-sw": "^4.3.7",
     "@vite-pwa/assets-generator": "1.0.2",
     "@vitejs/plugin-vue": "^6.0.5",
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "eslint-plugin-format": "2.0.1",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "1.98.0",
-    "typescript": "5.9.3",
+    "typescript": "6.0.2",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-icons": "^23.0.1",
-    "unplugin-vue-components": "^31.0.0",
-    "vite": "^8.0.0",
-    "vite-plugin-compression2": "^2.5.2",
-    "vitest": "^4.1.0",
+    "unplugin-vue-components": "^32.0.0",
+    "vite": "^8.0.3",
+    "vite-plugin-compression2": "^2.5.3",
+    "vitest": "^4.1.2",
     "vue-tsc": "^3.2.6"
   }
 }

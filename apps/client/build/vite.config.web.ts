@@ -1,21 +1,30 @@
-import { fileURLToPath, URL } from 'node:url'
 import { resolve } from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
 import Vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Icons from 'unplugin-icons/vite'
+import { defineConfig } from 'vite'
 import { compression as Compression } from 'vite-plugin-compression2'
+import { VitePWA } from 'vite-plugin-pwa'
+import packageJson from '../package.json'
 import { autoImportOptionsCfg } from './cfg/auto-import'
 import { iconsCfg } from './cfg/icons'
-import { visualizerPlugin } from './lib/helpers'
-import { VitePWA } from 'vite-plugin-pwa'
 import { pwaCfg } from './cfg/pwa'
+import { visualizerPlugin } from './lib/helpers'
+
+const buildDate = new Date()
+const buildRevision = buildDate.toISOString()
+const appVersion = packageJson.version
 
 export default defineConfig({
   base: './',
   root: resolve(__dirname, '../src'),
   publicDir: resolve(__dirname, '../public'),
   envDir: resolve(__dirname, '../../'),
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __BUILD_DATE__: JSON.stringify(buildRevision),
+  },
 
   resolve: {
     alias: {
@@ -54,6 +63,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, '../src/index.html'),
+        revision: buildRevision,
       },
     },
   },

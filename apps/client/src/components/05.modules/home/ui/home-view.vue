@@ -20,6 +20,18 @@ function toggleTheme() {
   setTheme(theme.value === ThemesVariant.Light ? ThemesVariant.Dark : ThemesVariant.Light)
 }
 
+const version = __APP_VERSION__
+const buildDateFormatted = computed(() => {
+  const date = new Date(__BUILD_DATE__)
+  return date.toLocaleString(currentLocale.value, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+})
+
 const {
   vaults,
   progressMap,
@@ -150,6 +162,10 @@ const {
       </div>
     </div>
 
+    <div class="app-build-info">
+      v{{ version }} ({{ buildDateFormatted }})
+    </div>
+
     <KitDialog v-model:visible="isAddDialogVisible" :title="t('home.addDialogTitle')" icon="mdi:cloud-plus" :max-width="500">
       <div class="form-content">
         <div v-if="addError" class="alert-error">
@@ -260,7 +276,7 @@ const {
   z-index: 1;
   max-width: 900px;
   margin: 0 auto;
-  padding: 100px 20px 80px; /* Увеличили верхний паддинг из-за хедера */
+  padding: 100px 20px 80px;
   display: flex;
   flex-direction: column;
   gap: 60px;
@@ -515,5 +531,23 @@ const {
   color: var(--fg-error-color);
   border-radius: 6px;
   font-size: 0.9rem;
+}
+.app-build-info {
+  position: absolute;
+  bottom: 12px;
+  left: 20px;
+  font-size: 0.75rem;
+  color: var(--fg-muted-color);
+  font-family: 'Maple Mono CN', monospace;
+  z-index: 5;
+  opacity: 0.6;
+  user-select: none;
+  pointer-events: none;
+
+  @include media-down(sm) {
+    left: 16px;
+    bottom: 8px;
+    font-size: 0.7rem;
+  }
 }
 </style>
