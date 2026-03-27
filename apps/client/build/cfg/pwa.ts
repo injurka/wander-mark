@@ -11,7 +11,7 @@ export const pwaCfg: Parameters<typeof VitePWA>[0] = {
   manifest: {
     name: 'WanderMark',
     short_name: 'WanderMark',
-    description: 'Ваш планировщик путешествий',
+    description: 'Да здравствуют ваши заметки',
     theme_color: '#ffffff',
     lang: 'ru',
     icons: [{
@@ -41,7 +41,6 @@ export const pwaCfg: Parameters<typeof VitePWA>[0] = {
     additionalManifestEntries: [{
       url: '/',
       revision: new Date().toString(),
-      // revision: import.meta.env.APP_VERSION || new Date().toString(),
     }],
   },
   devOptions: {

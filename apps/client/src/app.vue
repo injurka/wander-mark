@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import { useHead } from '@vueuse/head'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useHead } from '@vueuse/head'
+import { GlobalConfirm, GlobalToasts } from '~/components/02.shared/global-dialogs'
 
-import { useChangeTheme } from '~/shared/composables/use-change-theme'
-
+import { ReloadPrompt } from '~/components/02.shared/reload-prompt'
 import { DefaultLayout } from '~/components/06.layouts/default'
-import { GlobalToasts, GlobalConfirm } from '~/components/02.shared/global-dialogs'
+import { useChangeTheme } from '~/shared/composables/use-change-theme'
 
 useChangeTheme()
 
@@ -14,12 +14,49 @@ const route = useRoute()
 const layoutName = computed(() => (route.meta.layout as string) || 'default')
 
 const layouts: Record<string, any> = {
-  'default': DefaultLayout,
+  default: DefaultLayout,
 }
 
+const siteUrl = 'https://wander-mark.trip-scheduler.ru'
+const siteName = 'WanderMark'
+const description = 'WanderMark — удобное хранилище личных заметок. Сохраняйте идеи, организуйте мысли и держите важную информацию всегда под рукой.'
+
 useHead({
-  titleTemplate: (titleChunk) => titleChunk ? `${titleChunk} | WanderingMark` : `WanderingMark`,
-  htmlAttrs: { lang: 'ru' }
+  titleTemplate: titleChunk => titleChunk ? `${titleChunk} | ${siteName}` : siteName,
+  htmlAttrs: {
+    lang: 'ru',
+  },
+  link: [
+    {
+      rel: 'canonical',
+      href: computed(() => `${siteUrl}${route.path}`),
+    },
+    {
+      rel: 'icon',
+      type: 'image/svg+xml',
+      href: '/logo.svg',
+    },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        'name': siteName,
+        'alternateName': ['Блокнот', 'Личные заметки', 'Менеджер заметок'],
+        'url': siteUrl,
+        'description': description,
+        'applicationCategory': 'UtilityApplication',
+        'operatingSystem': 'Any',
+        'offers': {
+          '@type': 'Offer',
+          'price': '0',
+          'priceCurrency': 'RUB',
+        },
+      }),
+    },
+  ],
 })
 </script>
 
@@ -31,7 +68,7 @@ useHead({
       </transition>
     </router-view>
   </component>
-  
+
   <router-view v-else v-slot="{ Component }">
     <transition name="fade" mode="out-in">
       <component :is="Component" />
@@ -40,4 +77,5 @@ useHead({
 
   <GlobalToasts />
   <GlobalConfirm />
+  <ReloadPrompt />
 </template>
