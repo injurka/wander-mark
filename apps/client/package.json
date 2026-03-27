@@ -56,6 +56,7 @@
     "markdown-it-collapsible": "2.0.2",
     "markdown-it-container": "4.0.0",
     "markdown-it-obsidian-callouts": "0.3.3",
+    "mermaid": "^11.13.0",
     "pinia": "3.0.4",
     "shiki": "^4.0.2",
     "vite-plugin-pwa": "^1.2.0",

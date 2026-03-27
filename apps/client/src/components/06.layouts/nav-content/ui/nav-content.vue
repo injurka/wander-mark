@@ -170,8 +170,6 @@ useHead(() => ({
 watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
 
 watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
-  console.log(`[HOST] Initializing plugins with locale: ${currentLocale.value}`)
-
   if (!vault || status.value === 'pending')
     return
 

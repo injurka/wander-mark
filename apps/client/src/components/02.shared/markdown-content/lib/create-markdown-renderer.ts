@@ -1,4 +1,3 @@
-
 import type { Highlighter } from 'shiki'
 import catppuccinFrappe from '@shikijs/themes/catppuccin-frappe'
 import catppuccinLatte from '@shikijs/themes/catppuccin-latte'
@@ -35,7 +34,6 @@ async function getHighlighter(): Promise<Highlighter> {
 
 export async function createMarkdownRenderer(params: CreateMarkdownRendererParams): Promise<MarkdownIt> {
   const { imageBasePath, shikiTheme } = params
-
   const highlighter = await getHighlighter()
 
   const md = new MarkdownIt({
@@ -44,6 +42,10 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
     linkify: true,
     typographer: true,
     highlight: (str: string, lang: string): string => {
+      if (lang === 'mermaid') {
+        return `<div class="mermaid">${md.utils.escapeHtml(str)}</div>`
+      }
+
       if (!lang || !highlighter.getLoadedLanguages().includes(lang)) {
         return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
       }

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type MarkdownIt from 'markdown-it'
+import mermaid from 'mermaid'
+import { useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
+import { useVaultService } from '~/shared/services/vault.service'
 import { useHanziDetection } from '../composables/use-hanzi-detection'
 import { createMarkdownRenderer } from '../lib'
 import HanziTooltip from './hanzi-tooltip.vue'
-import { useVaultService } from '~/shared/services/vault.service'
-import { useRouter } from 'vue-router'
 
 interface Props {
   content: string
@@ -31,6 +32,15 @@ const shikiTheme = computed(() => {
   return theme.value === ThemesVariant.Light ? 'catppuccin-latte' : 'catppuccin-mocha'
 })
 
+function applyMermaidTheme() {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: theme.value === ThemesVariant.Light ? 'default' : 'dark',
+    securityLevel: 'loose', // Позволяет кликабельные элементы, если нужно
+    fontFamily: '\'Inter\', \'Maple Mono CN\', sans-serif',
+  })
+}
+
 async function initRenderer() {
   try {
     mdInstance.value = await createMarkdownRenderer({
@@ -53,17 +63,28 @@ watch(
       let html = md.render(newContent)
       html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
       renderedContent.value = html
-      
+
       await nextTick()
       const wrapper = document.querySelector('.markdown-body')
       if (wrapper && props.vault) {
+        try {
+          applyMermaidTheme()
+          await mermaid.run({
+            querySelector: '.mermaid',
+            suppressErrors: true,
+          })
+        }
+        catch (e) {
+          console.warn('Mermaid rendering failed', e)
+        }
+
         const images = wrapper.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
         for (const img of images) {
           const originalSrc = img.getAttribute('data-src')
-          
+
           if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
             const decodedSrc = decodeURIComponent(originalSrc)
-            
+
             // Если путь начинается с /images/ (как бывает в Obsidian), убираем слэш,
             // иначе считаем, что картинка лежит внутри папки content/Vault/...
             const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
@@ -71,12 +92,14 @@ watch(
               : `content/${props.vault}/${decodedSrc}`
 
             img.src = await vaultService.resolveMediaUrl(props.vault, mediaPath)
-          } else if (originalSrc) {
-             img.src = originalSrc
+          }
+          else if (originalSrc) {
+            img.src = originalSrc
           }
         }
       }
-    } else {
+    }
+    else {
       renderedContent.value = ''
     }
   },
@@ -84,6 +107,14 @@ watch(
 
 watch(shikiTheme, async () => {
   await initRenderer()
+})
+
+watch(theme, () => {
+  applyMermaidTheme()
+  if (mdInstance.value && props.content) {
+    const html = mdInstance.value.render(props.content)
+    renderedContent.value = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
+  }
 })
 
 onMounted(() => {
@@ -125,7 +156,7 @@ function handleContentClick(event: MouseEvent) {
       const allImages = Array.from(container.querySelectorAll('img')) as HTMLImageElement[]
       const imageUrls = allImages.map(el => el.src)
       const clickedUrl = img.src
-      currentImages.value =[clickedUrl, ...imageUrls.filter(url => url !== clickedUrl)]
+      currentImages.value = [clickedUrl, ...imageUrls.filter(url => url !== clickedUrl)]
       openImageViewer()
     }
   }
@@ -435,76 +466,20 @@ details.callout {
   & .callout[data-callout='cite'] {
     --callout-color: var(--co-quote);
   }
-}
-.hero {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: rgba(115, 233, 144, 0.08);
-  border: 1px solid rgba(115, 233, 144, 0.25);
-  border-left: 4px solid rgba(142, 175, 151, 0.5);
-  border-radius: 12px;
-  padding: 16px 24px;
-  margin: 2rem 0;
-  position: relative;
-  overflow: hidden;
 
-  @include media-down(md) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+  .mermaid {
+    display: flex;
+    justify-content: center;
+    background: var(--bg-tertiary-color);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
   }
-}
-.hero .hanzi {
-  font-family: 'Maple Mono CN', 'KaiTi', serif;
-  font-size: 3.5rem;
-  line-height: 1;
-  font-weight: 500;
-  color: #81bb8f;
-  opacity: 1;
-  margin-right: 24px;
-  padding-right: 24px;
-  border-right: 1px solid rgba(115, 233, 144, 0.3);
-  flex-shrink: 0;
-  @include media-down(md) {
-    border-right: none;
-    border-bottom: 1px solid rgba(115, 233, 144, 0.3);
-    padding-right: 0;
-    margin-right: 0;
-    padding-bottom: 12px;
-    width: 100%;
-    text-align: center;
-  }
-}
-.hero .meta {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-}
-.hero .meta h1 {
-  margin: 0 !important;
-  border: none !important;
-  padding: 0 !important;
-  background: none !important;
-  font-size: 1.5rem;
-  line-height: 1.2;
-  color: var(--fg-primary-color);
-  font-weight: 700;
-  display: block;
-}
-.hero .meta .pinyin {
-  font-size: 1.1rem;
-  font-family: 'Maple Mono CN', monospace;
-  color: #61b576;
-  margin-top: 4px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-.hero .meta .desc {
-  font-size: 0.9rem;
-  color: var(--fg-secondary-color);
-  margin-top: 6px;
-  line-height: 1.4;
 }
 </style>
