@@ -1,0 +1,20 @@
+{
+  "ai": {
+    "title": "AI Assistant",
+    "chat": "Чат",
+    "topics": "Топики",
+    "settings": "Настройки",
+    "openInPage": "Открыть на отдельной странице",
+    "fullscreen": "На весь экран",
+    "windowed": "Оконный режим",
+    "minimize": "Свернуть в фон",
+    "close": "Закрыть",
+    "newChat": "Новый чат",
+    "clearChat": "Очистить чат",
+    "thinking": "AI думает...",
+    "sendMessage": "Напишите сообщение...",
+    "generating": "Генерация ответа...",
+    "error": "Ошибка",
+    "aborted": "Отменено"
+  }
+}

@@ -4,12 +4,14 @@ import type { SearchIndexItem } from '../models'
 import { Icon } from '@iconify/vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import Fuse from 'fuse.js'
+import { useI18n } from 'vue-i18n'
 import { useContentViewerStore } from '../store'
 
 const modelValue = defineModel<boolean>({ required: true })
 
 const store = useContentViewerStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const query = ref('')
 const selectedTags = ref<Set<string>>(new Set())
@@ -188,7 +190,7 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
             v-model="query"
             type="text"
             class="search-input"
-            placeholder="Поиск по заметкам и тегам..."
+            :placeholder="t('search.placeholder')"
             autocomplete="off"
             @input="activeIndex = 0"
           >
@@ -229,7 +231,6 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
               />
             </div>
 
-            <!-- Tags in result card -->
             <div v-if="result.item.tags && result.item.tags.length > 0" class="result-tags">
               <span v-for="tag in result.item.tags.slice(0, 3)" :key="tag" class="mini-tag">
                 {{ tag }}
@@ -243,20 +244,20 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
 
         <div v-else-if="query || selectedTags.size > 0" class="no-results">
           <Icon icon="mdi:file-search-outline" size="48" class="no-results-icon" />
-          <p>Ничего не найдено</p>
+          <p>{{ t('search.noResults') }}</p>
           <span v-if="selectedTags.size > 0" class="reset-link" @click="selectedTags.clear()">
-            Сбросить фильтры
+            {{ t('search.resetFilters') }}
           </span>
         </div>
 
         <div v-else class="empty-state">
           <div class="empty-hint">
             <Icon icon="mdi:keyboard-return" />
-            <span>для перехода</span>
+            <span>{{ t('search.toNavigate') }}</span>
           </div>
           <div class="empty-hint">
             <Icon icon="mdi:arrow-up-down" />
-            <span>для навигации</span>
+            <span>{{ t('search.toSelect') }}</span>
           </div>
         </div>
       </div>

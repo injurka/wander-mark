@@ -1,0 +1,81 @@
+{
+  "settings": {
+    "appearance": "Оформление",
+    "theme": "Тема",
+    "themeLight": "Светлая",
+    "themeDark": "Темная",
+    "interface": "Интерфейс",
+    "borderless": "Широкий просмотр",
+    "coloredFolders": "Цветные папки",
+    "showIcons": "Иконки в меню",
+    "showOutline": "Линии структуры",
+    "plugins": "Менеджер плагинов",
+    "language": "Язык"
+  },
+  "home": {
+    "title": "База знаний",
+    "subtitle": "Управляйте вашими удаленными хранилищами",
+    "addVault": "Добавить хранилище",
+    "yourVaults": "Ваши хранилища",
+    "download": "Скачать",
+    "reinstall": "Переустановить",
+    "delete": "Удалить",
+    "addDialogTitle": "Добавить хранилище",
+    "vaultId": "ID хранилища",
+    "vaultIdHint": "Точное имя папки на сервере, например, Chinese",
+    "serverUrl": "URL сервера",
+    "serverUrlHint": "Базовый URL (название само подтянется с сервера)",
+    "cancel": "Отмена",
+    "add": "Добавить"
+  },
+  "sidebar": {
+    "search": "Поиск...",
+    "vaultHome": "Главная хранилища",
+    "allVaults": "Все хранилища"
+  },
+  "vaultIndex": {
+    "defaultDesc": "Главная страница хранилища",
+    "sections": "Разделы",
+    "items": "элементов",
+    "recentChanges": "Последние изменения",
+    "min": "мин",
+    "plugins": "Плагины",
+    "noActivePlugins": "Нет активных плагинов"
+  },
+  "contentViewer": {
+    "backlinks": "Ссылки сюда",
+    "readingTime": "Время чтения",
+    "wordCount": "Количество слов",
+    "words": "слов",
+    "lastModified": "Дата последнего изменения"
+  },
+  "search": {
+    "placeholder": "Поиск по заметкам и тегам...",
+    "noResults": "Ничего не найдено",
+    "resetFilters": "Сбросить фильтры",
+    "toNavigate": "для перехода",
+    "toSelect": "для навигации"
+  },
+  "confirm": {
+    "title": "Подтверждение",
+    "cancel": "Отмена",
+    "ok": "ОК"
+  },
+  "page": {
+    "loading": "Загрузка...",
+    "notFound": "Страница не найдена или недоступна",
+    "notFoundDesc": "Возможно, вы находитесь офлайн и файл не скачан, либо страница была перемещена.",
+    "pluginNotFound": "Страница плагина не найдена",
+    "pluginNotFoundDesc": "Плагин не предоставляет такую страницу или еще не загружен."
+  },
+  "plugins": {
+    "title": "Плагины",
+    "urlPlaceholder": "URL плагина (.js)",
+    "installing": "Загрузка...",
+    "install": "Установить",
+    "noInstalled": "Нет установленных плагинов",
+    "pasteHint": "Вставьте URL плагина выше для установки",
+    "enable": "Включить",
+    "disable": "Выключить"
+  }
+}

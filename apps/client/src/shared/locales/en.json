@@ -1,0 +1,81 @@
+{
+  "settings": {
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "interface": "Interface",
+    "borderless": "Borderless View",
+    "coloredFolders": "Colored Folders",
+    "showIcons": "Show Icons",
+    "showOutline": "Show Outline",
+    "plugins": "Plugin Manager",
+    "language": "Language"
+  },
+  "home": {
+    "title": "Knowledge Base",
+    "subtitle": "Manage your remote vaults",
+    "addVault": "Add Vault",
+    "yourVaults": "Your Vaults",
+    "download": "Download",
+    "reinstall": "Reinstall",
+    "delete": "Delete",
+    "addDialogTitle": "Add Vault",
+    "vaultId": "Vault ID",
+    "vaultIdHint": "Exact folder name on the server, e.g., Chinese",
+    "serverUrl": "Server URL",
+    "serverUrlHint": "Base URL (name will be fetched automatically)",
+    "cancel": "Cancel",
+    "add": "Add"
+  },
+  "sidebar": {
+    "search": "Search...",
+    "vaultHome": "Vault Home",
+    "allVaults": "All Vaults"
+  },
+  "vaultIndex": {
+    "defaultDesc": "Vault homepage",
+    "sections": "Sections",
+    "items": "items",
+    "recentChanges": "Recent Changes",
+    "min": "min",
+    "plugins": "Plugins",
+    "noActivePlugins": "No active plugins"
+  },
+  "contentViewer": {
+    "backlinks": "Backlinks",
+    "readingTime": "Reading time",
+    "wordCount": "Word count",
+    "words": "words",
+    "lastModified": "Last modified"
+  },
+  "search": {
+    "placeholder": "Search notes and tags...",
+    "noResults": "No results found",
+    "resetFilters": "Reset filters",
+    "toNavigate": "to navigate",
+    "toSelect": "to select"
+  },
+  "confirm": {
+    "title": "Confirmation",
+    "cancel": "Cancel",
+    "ok": "OK"
+  },
+  "page": {
+    "loading": "Loading...",
+    "notFound": "Page not found or unavailable",
+    "notFoundDesc": "You might be offline and the file is not downloaded, or the page has been moved.",
+    "pluginNotFound": "Plugin page not found",
+    "pluginNotFoundDesc": "The plugin does not provide this page or has not been loaded yet."
+  },
+  "plugins": {
+    "title": "Plugins",
+    "urlPlaceholder": "Plugin URL (.js)",
+    "installing": "Loading...",
+    "install": "Install",
+    "noInstalled": "No installed plugins",
+    "pasteHint": "Paste plugin URL above to install",
+    "enable": "Enable",
+    "disable": "Disable"
+  }
+}

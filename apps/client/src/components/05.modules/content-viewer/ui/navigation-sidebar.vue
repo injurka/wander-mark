@@ -2,6 +2,7 @@
 import type { ContentNavItem } from '~/components/05.modules/content-viewer'
 import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
 import { KitBtn, KitInput } from '~/components/01.kit'
 import { findPathBySysname } from '../lib/navigation'
 import NavigationTree from './navigation-tree.vue'
@@ -15,7 +16,8 @@ const props = defineProps<Props>()
 const emit = defineEmits(['update:menu'])
 const menu = defineModel<boolean>('menu', { required: true })
 const router = useRouter()
-  
+const { t } = useI18n()
+
 const sidebarRef = ref<HTMLElement | null>(null)
 const sidebarWidth = ref(300)
 const resizing = ref(false)
@@ -33,7 +35,7 @@ useSwipe(sidebarRef, {
 })
 
 async function selectItem(item: ContentNavItem) {
-  const path = findPathBySysname(props.items ||[], item.sysname)
+  const path = findPathBySysname(props.items || [], item.sysname)
   if (path) {
     if (window.innerWidth < 768) {
       menu.value = false
@@ -90,7 +92,7 @@ function stopResize() {
         <KitInput
           v-model="searchQuery"
           variant="solo"
-          placeholder="Поиск..."
+          :placeholder="t('sidebar.search')"
           rounded
         />
       </div>
@@ -107,11 +109,11 @@ function stopResize() {
       <div class="sidebar-footer">
         <button class="home-link" @click="router.push(`/${params.vault}`)">
           <Icon icon="mdi:book-open-page-variant-outline" class="home-icon" />
-          <span>Главная хранилища</span>
+          <span>{{ t('sidebar.vaultHome') }}</span>
         </button>
         <button class="home-link" @click="router.push(AppRoutePaths.Root)">
           <Icon icon="mdi:home-outline" class="home-icon" />
-          <span>Все хранилища</span>
+          <span>{{ t('sidebar.allVaults') }}</span>
         </button>
       </div>
     </div>
@@ -227,7 +229,7 @@ function stopResize() {
   &:hover {
     color: var(--fg-primary-color);
     background-color: var(--bg-hover-color);
-    
+
     .home-icon {
       opacity: 1;
       color: var(--fg-accent-color);

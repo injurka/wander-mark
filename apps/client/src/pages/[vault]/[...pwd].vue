@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ContentViewer, ContentViewerFooter, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { useVaultService } from '~/shared/services/vault.service'
@@ -7,6 +8,7 @@ import { useVaultService } from '~/shared/services/vault.service'
 const store = useContentViewerStore()
 const params = useTypedRouteParams()
 const vaultService = useVaultService()
+const { t } = useI18n()
 
 const contentData = ref<string>('')
 const status = ref<'pending' | 'success' | 'error'>('pending')
@@ -16,14 +18,16 @@ watch(params, async () => {
   try {
     const path = params.value.pwd.join('/')
     const content = await vaultService.getFileContent(params.value.vault, `content/${params.value.vault}/${path}.md`)
-    
+
     if (content) {
       contentData.value = content
       status.value = 'success'
-    } else {
+    }
+    else {
       throw new Error('Not found')
     }
-  } catch (e) {
+  }
+  catch (e) {
     contentData.value = ''
     status.value = 'error'
   }
@@ -33,7 +37,9 @@ watch(params, async () => {
 <template>
   <div class="page-wrapper">
     <div v-if="status === 'pending'" class="loading-state">
-      <div class="loading-text">Загрузка...</div>
+      <div class="loading-text">
+        {{ t('page.loading') }}
+      </div>
     </div>
 
     <template v-else-if="status === 'success' && contentData">
@@ -43,8 +49,8 @@ watch(params, async () => {
 
     <div v-else class="empty-state">
       <div class="alert">
-        <h3>Страница не найдена или недоступна</h3>
-        <p>Возможно, вы находитесь офлайн и файл не скачан, либо страница была перемещена.</p>
+        <h3>{{ t('page.notFound') }}</h3>
+        <p>{{ t('page.notFoundDesc') }}</p>
       </div>
     </div>
   </div>

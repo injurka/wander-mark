@@ -1,3 +1,5 @@
+import type { Ref } from 'vue'
+
 export interface PluginContext {
   vaultId: string
   vaultUrl: string
@@ -7,6 +9,9 @@ export interface PluginContext {
   getFileContent: (path: string) => Promise<string | null>
   showToast?: (message: string, options?: any) => void
   confirm?: (options: any) => Promise<boolean>
+
+  locale?: Ref<string>
+  t?: (key: string) => string
 }
 
 export interface AiHistoryItem {

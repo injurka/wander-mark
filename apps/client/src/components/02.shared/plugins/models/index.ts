@@ -1,15 +1,16 @@
-import type { Component } from 'vue'
+import type { Component, Ref } from 'vue'
+import type { Composer, Locale } from 'vue-i18n'
 
 // ─── Слоты, в которые плагин может встраивать компоненты ───
-export type PluginSlotName =
-  | 'toolbar'         // Верхняя панель (рядом с кнопками header)
-  | 'sidebar-top'     // Верх боковой навигации
-  | 'sidebar-bottom'  // Низ боковой навигации
-  | 'content-before'  // Перед контентом заметки
-  | 'content-after'   // После контента заметки (перед backlinks)
-  | 'footer'          // Нижняя часть страницы
-  | 'overlay'         // Оверлей поверх всего (модалки, панели)
-  | 'vault-index'     // Слот на главной странице хранилища (для кнопок плагинов и т.д.)
+export type PluginSlotName
+  = | 'toolbar' // Верхняя панель (рядом с кнопками header)
+  | 'sidebar-top' // Верх боковой навигации
+  | 'sidebar-bottom' // Низ боковой навигации
+  | 'content-before' // Перед контентом заметки
+  | 'content-after' // После контента заметки (перед backlinks)
+  | 'footer' // Нижняя часть страницы
+  | 'overlay' // Оверлей поверх всего (модалки, панели)
+  | 'vault-index' // Слот на главной странице хранилища (для кнопок плагинов и т.д.)
 
 // ─── Контекст, который хост передаёт плагину ───
 export interface PluginContext {
@@ -29,6 +30,10 @@ export interface PluginContext {
   showToast: (message: string, options?: { title?: string, type?: 'info' | 'success' | 'warning' | 'error', duration?: number }) => void
   /** Вызвать модальное окно подтверждения */
   confirm: (options: string | { title?: string, message: string, confirmText?: string, cancelText?: string, persistent?: boolean }) => Promise<boolean>
+  /** Реактивная ссылка на текущую локаль хоста (ru, en, cn) */
+  locale: Ref<Locale>
+  /** Функция перевода из инстанса i18n хоста */
+  t: Composer['t']
 }
 
 // ─── Манифест плагина (то, что экспортирует ES-модуль) ───

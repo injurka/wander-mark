@@ -1,0 +1,20 @@
+{
+  "ai": {
+    "title": "AI 助手",
+    "chat": "聊天",
+    "topics": "话题",
+    "settings": "设置",
+    "openInPage": "在单独页面中打开",
+    "fullscreen": "全屏",
+    "windowed": "窗口模式",
+    "minimize": "最小化到后台",
+    "close": "关闭",
+    "newChat": "新聊天",
+    "clearChat": "清除聊天",
+    "thinking": "AI 正在思考...",
+    "sendMessage": "输入消息...",
+    "generating": "正在生成回应...",
+    "error": "错误",
+    "aborted": "已中止"
+  }
+}

@@ -50,7 +50,6 @@
     "@vueuse/core": "^14.2.1",
     "@vueuse/head": "^2.0.0",
     "fuse.js": "^7.1.0",
-    "vite-plugin-pwa": "^1.2.0",
     "idb-keyval": "^6.2.2",
     "markdown-it": "14.1.1",
     "markdown-it-attrs": "4.3.1",
@@ -59,7 +58,9 @@
     "markdown-it-obsidian-callouts": "0.3.3",
     "pinia": "3.0.4",
     "shiki": "^4.0.2",
+    "vite-plugin-pwa": "^1.2.0",
     "vue": "^3.5.30",
+    "vue-i18n": "^11.3.0",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {

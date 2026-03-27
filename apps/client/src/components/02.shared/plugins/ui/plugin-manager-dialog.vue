@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { KitBtn, KitDialog, KitInput } from '~/components/01.kit'
 import { usePluginStore } from '../store'
 
-// Предполагаем что KitDialog, KitBtn, KitInput доступны в проекте
-import { KitDialog, KitBtn, KitInput } from '~/components/01.kit'
-
 const visible = defineModel<boolean>('visible', { required: true })
-
 const pluginStore = usePluginStore()
+const { t } = useI18n()
 
 const installUrl = ref('')
 const installLoading = ref(false)
 const installError = ref('')
 
 async function handleInstall() {
-  if (!installUrl.value.trim()) return
+  if (!installUrl.value.trim())
+    return
 
   installLoading.value = true
   installError.value = ''
@@ -49,7 +49,7 @@ async function handleUninstall(pluginId: string) {
 <template>
   <KitDialog
     v-model:visible="visible"
-    title="Плагины"
+    :title="t('plugins.title')"
     icon="mdi:puzzle-outline"
     :max-width="560"
   >
@@ -58,7 +58,7 @@ async function handleUninstall(pluginId: string) {
       <div class="pm-install-row">
         <KitInput
           v-model="installUrl"
-          placeholder="URL плагина (.js)"
+          :placeholder="t('plugins.urlPlaceholder')"
           class="pm-install-input"
           size="md"
           @keydown.enter="handleInstall"
@@ -68,7 +68,7 @@ async function handleUninstall(pluginId: string) {
           :disabled="installLoading || !installUrl.trim()"
           @click="handleInstall"
         >
-          {{ installLoading ? 'Загрузка...' : 'Установить' }}
+          {{ installLoading ? t('plugins.installing') : t('plugins.install') }}
         </KitBtn>
       </div>
       <p v-if="installError" class="pm-error">
@@ -80,8 +80,8 @@ async function handleUninstall(pluginId: string) {
     <div class="pm-list">
       <div v-if="pluginStore.plugins.length === 0" class="pm-empty">
         <Icon icon="mdi:puzzle-outline" class="pm-empty-icon" />
-        <p>Нет установленных плагинов</p>
-        <span>Вставьте URL плагина выше для установки</span>
+        <p>{{ t('plugins.noInstalled') }}</p>
+        <span>{{ t('plugins.pasteHint') }}</span>
       </div>
 
       <div
@@ -114,7 +114,7 @@ async function handleUninstall(pluginId: string) {
             density="compact"
             @click="handleToggle(plugin.id, plugin.enabled)"
           >
-            {{ plugin.enabled ? 'Выключить' : 'Включить' }}
+            {{ plugin.enabled ? t('plugins.disable') : t('plugins.enable') }}
           </KitBtn>
           <KitBtn
             variant="text"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n'
 import { MarkdownContent } from '~/components/02.shared/markdown-content'
 import { useContentViewerStore } from '../store'
 import BacklinksSection from './backlinks-section.vue'
@@ -11,13 +12,15 @@ interface Props {
 defineProps<Props>()
 
 const store = useContentViewerStore()
+const { t, locale } = useI18n()
+
 const meta = computed(() => store.activeItem?.meta)
 
 const formattedDate = computed(() => {
   if (!meta.value?.lastModified)
     return ''
   try {
-    return new Date(meta.value.lastModified).toLocaleDateString('ru-RU', {
+    return new Date(meta.value.lastModified).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -28,12 +31,21 @@ const formattedDate = computed(() => {
   }
 })
 
+// Упрощенная логика плюрализации внутри компонента в зависимости от локали
 function getMinString(n: number) {
-  if (n % 10 === 1 && n % 100 !== 11)
-    return 'минута'
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100))
-    return 'минуты'
-  return 'минут'
+  if (locale.value === 'ru') {
+    if (n % 10 === 1 && n % 100 !== 11)
+      return 'минута'
+    if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100))
+      return 'минуты'
+    return 'минут'
+  }
+  else if (locale.value === 'en') {
+    return n === 1 ? 'minute' : 'minutes'
+  }
+  else {
+    return '分钟'
+  }
 }
 </script>
 
@@ -42,17 +54,17 @@ function getMinString(n: number) {
     <div class="markdown-body-wrapper">
       <!-- Блок метаданных -->
       <div v-if="meta" class="content-meta">
-        <div v-if="meta.readingTime" class="meta-item" title="Время чтения">
+        <div v-if="meta.readingTime" class="meta-item" :title="t('contentViewer.readingTime')">
           <Icon icon="mdi:clock-outline" class="meta-icon" />
           <span>{{ meta.readingTime }} {{ getMinString(meta.readingTime) }}</span>
         </div>
 
-        <div v-if="meta.words" class="meta-item" title="Количество слов">
+        <div v-if="meta.words" class="meta-item" :title="t('contentViewer.wordCount')">
           <Icon icon="mdi:file-document-outline" class="meta-icon" />
-          <span>{{ meta.words }} слов</span>
+          <span>{{ meta.words }} {{ t('contentViewer.words') }}</span>
         </div>
 
-        <div v-if="formattedDate" class="meta-item" title="Дата последнего изменения">
+        <div v-if="formattedDate" class="meta-item" :title="t('contentViewer.lastModified')">
           <Icon icon="mdi:calendar-blank-outline" class="meta-icon" />
           <span>{{ formattedDate }}</span>
         </div>

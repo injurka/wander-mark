@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
+import { computed, ref } from 'vue'
 import { KitBtn, KitCheckbox, KitDropdown } from '~/components/01.kit'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useContentViewerStore } from '../store'
+import { useLocale } from '~/shared/composables/use-locale'
 
 const props = defineProps<{ vault: string }>()
 
@@ -13,6 +15,8 @@ const emit = defineEmits<{
 const { setTheme, theme } = useChangeTheme()
 const contentViewerStore = useContentViewerStore()
 const dropdownRef = ref<InstanceType<typeof KitDropdown> | null>(null)
+
+const { currentLocale, cycleLanguage, languageNames, t } = useLocale() 
 
 const currentThemeIcon = computed(() =>
   theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night',
@@ -45,25 +49,33 @@ function handleOpenPlugins() {
       <div class="divider" />
 
       <div class="menu-section">
-        <div class="section-title">Оформление</div>
+        <div class="section-title">{{ t('settings.appearance') }}</div>
         <div class="menu-item" @click="toggleTheme">
           <div class="item-label">
             <Icon :icon="currentThemeIcon" class="item-icon" />
-            <span>Тема</span>
+            <span>{{ t('settings.theme') }}</span>
           </div>
-          <span class="value-text">{{ theme === 'light' ? 'Светлая' : 'Темная' }}</span>
+          <span class="value-text">{{ theme === 'light' ? t('settings.themeLight') : t('settings.themeDark') }}</span>
+        </div>
+        <!-- Выбор языка -->
+        <div class="menu-item" @click="cycleLanguage">
+          <div class="item-label">
+            <Icon icon="mdi:translate" class="item-icon" />
+            <span>{{ t('settings.language') }}</span>
+          </div>
+          <span class="value-text">{{ languageNames[currentLocale] }}</span>
         </div>
       </div>
 
       <div class="divider" />
 
       <div class="menu-section">
-        <div class="section-title">Интерфейс</div>
+        <div class="section-title">{{ t('settings.interface') }}</div>
         <div class="settings-group">
-          <KitCheckbox v-model="contentViewerStore.borderlessViewEnabled" label="Широкий просмотр" />
-          <KitCheckbox v-model="contentViewerStore.coloredFoldersEnabled" label="Цветные папки" />
-          <KitCheckbox v-model="contentViewerStore.showIconsEnabled" label="Иконки в меню" />
-          <KitCheckbox v-model="contentViewerStore.showOutlineEnabled" label="Линии структуры" />
+          <KitCheckbox v-model="contentViewerStore.borderlessViewEnabled" :label="t('settings.borderless')" />
+          <KitCheckbox v-model="contentViewerStore.coloredFoldersEnabled" :label="t('settings.coloredFolders')" />
+          <KitCheckbox v-model="contentViewerStore.showIconsEnabled" :label="t('settings.showIcons')" />
+          <KitCheckbox v-model="contentViewerStore.showOutlineEnabled" :label="t('settings.showOutline')" />
         </div>
       </div>
 
@@ -71,7 +83,7 @@ function handleOpenPlugins() {
         <div class="menu-item" @click="handleOpenPlugins">
           <div class="item-label">
             <Icon icon="mdi:puzzle-outline" class="item-icon" />
-            <span>Менеджер плагинов</span>
+            <span>{{ t('settings.plugins') }}</span>
           </div>
         </div>
       </div>

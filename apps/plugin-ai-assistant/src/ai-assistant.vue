@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import AiChat from './components/ai-chat.vue'
 import AiSettings from './components/ai-settings.vue'
 import AiTopics from './components/ai-topics.vue'
+import { t } from './i18n'
 import { aiActions, aiState, initAiStore } from './store/ai.store'
 
 defineOptions({ name: 'AiAssistantWidget', inheritAttrs: false })
@@ -18,7 +19,7 @@ function openPage() {
 </script>
 
 <template>
-  <button v-bind="$attrs" type="button" class="ai-trigger" title="AI Assistant" @click.stop.prevent="aiActions.toggle()">
+  <button v-bind="$attrs" type="button" class="ai-trigger" :title="t('ai.title')" @click.stop.prevent="aiActions.toggle()">
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8" /><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
     <div v-if="aiState.isLoading && !aiState.isOpen" class="ai-indicator" />
   </button>
@@ -27,7 +28,7 @@ function openPage() {
     <div v-if="aiState.isMinimized" class="ai-minimized-widget" @click.stop="aiActions.open()">
       <div v-if="aiState.isLoading" class="ai-indicator" style="position: static;" />
       <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8" /><rect x="4" y="8" width="16" height="12" rx="2" /></svg>
-      <span>{{ aiState.isLoading ? 'AI думает...' : 'AI Assistant' }}</span>
+      <span>{{ aiState.isLoading ? t('ai.thinking') : t('ai.title') }}</span>
     </div>
 
     <Transition name="ai-fade">
@@ -36,21 +37,20 @@ function openPage() {
           <div class="ai-header">
             <div class="ai-title">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8" /><rect x="4" y="8" width="16" height="12" rx="2" /></svg>
-              AI Assistant
+              {{ t('ai.title') }}
             </div>
             <div class="ai-header-actions">
-              <!-- Кнопка "Открыть на отдельной странице" -->
-              <button class="ai-icon-btn" title="Открыть на отдельной странице" type="button" @click.stop="openPage">
+              <button class="ai-icon-btn" :title="t('ai.openInPage')" type="button" @click.stop="openPage">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
               </button>
-              <button class="ai-icon-btn" :title="aiState.isFullscreen ? 'Оконный режим' : 'На весь экран'" type="button" @click.stop="aiActions.toggleFullscreen()">
+              <button class="ai-icon-btn" :title="aiState.isFullscreen ? t('ai.windowed') : t('ai.fullscreen')" type="button" @click.stop="aiActions.toggleFullscreen()">
                 <svg v-if="!aiState.isFullscreen" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M16 3h3a2 2 0 0 1 2 2v3" /><path d="M8 21H5a2 2 0 0 1-2-2v-3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M16 3v3a2 2 0 0 0 2 2h3" /><path d="M8 21v-3a2 2 0 0 0-2-2H3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>
               </button>
-              <button class="ai-icon-btn" title="Свернуть в фон" type="button" @click.stop="aiActions.minimize()">
+              <button class="ai-icon-btn" :title="t('ai.minimize')" type="button" @click.stop="aiActions.minimize()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
               </button>
-              <button class="ai-icon-btn" title="Закрыть" type="button" @click.stop="aiActions.close()">
+              <button class="ai-icon-btn" :title="t('ai.close')" type="button" @click.stop="aiActions.close()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
@@ -58,13 +58,13 @@ function openPage() {
 
           <div class="ai-tabs">
             <button class="ai-tab" :class="{ 'is-active': aiState.activeTab === 'chat' }" @click="aiState.activeTab = 'chat'">
-              Чат
+              {{ t('ai.chat') }}
             </button>
             <button class="ai-tab" :class="{ 'is-active': aiState.activeTab === 'topics' }" @click="aiState.activeTab = 'topics'">
-              Топики
+              {{ t('ai.topics') }}
             </button>
             <button class="ai-tab" :class="{ 'is-active': aiState.activeTab === 'settings' }" @click="aiState.activeTab = 'settings'">
-              Настройки
+              {{ t('ai.settings') }}
             </button>
           </div>
 

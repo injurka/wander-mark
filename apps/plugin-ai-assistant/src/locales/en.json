@@ -1,0 +1,20 @@
+{
+  "ai": {
+    "title": "AI Assistant",
+    "chat": "Chat",
+    "topics": "Topics",
+    "settings": "Settings",
+    "openInPage": "Open in separate page",
+    "fullscreen": "Fullscreen",
+    "windowed": "Windowed mode",
+    "minimize": "Minimize to background",
+    "close": "Close",
+    "newChat": "New Chat",
+    "clearChat": "Clear Chat",
+    "thinking": "AI is thinking...",
+    "sendMessage": "Type a message...",
+    "generating": "Generating response...",
+    "error": "Error",
+    "aborted": "Aborted"
+  }
+}

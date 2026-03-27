@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { KitDialog, KitBtn } from '~/components/01.kit'
+import { useI18n } from 'vue-i18n'
+import { KitBtn, KitDialog } from '~/components/01.kit'
 import { useConfirm } from '~/shared/composables/use-confirm'
 
 const { isOpen, options, respond } = useConfirm()
+const { t } = useI18n()
 
 watch(isOpen, (val) => {
   if (!val) {
@@ -15,7 +17,7 @@ watch(isOpen, (val) => {
 <template>
   <KitDialog
     v-model:visible="isOpen"
-    :title="options.title || 'Подтверждение'"
+    :title="options.title || t('confirm.title')"
     icon="mdi:help-circle-outline"
     :persistent="options.persistent"
     :max-width="400"
@@ -26,10 +28,10 @@ watch(isOpen, (val) => {
 
     <template #footer>
       <KitBtn variant="text" color="secondary" @click="respond(false)">
-        {{ options.cancelText || 'Отмена' }}
+        {{ options.cancelText || t('confirm.cancel') }}
       </KitBtn>
       <KitBtn color="primary" @click="respond(true)">
-        {{ options.confirmText || 'ОК' }}
+        {{ options.confirmText || t('confirm.ok') }}
       </KitBtn>
     </template>
   </KitDialog>

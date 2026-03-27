@@ -210,6 +210,7 @@ declare global {
   const useLastChanged: typeof import('@vueuse/core').useLastChanged
   const useLink: typeof import('vue-router').useLink
   const useLocalStorage: typeof import('@vueuse/core').useLocalStorage
+  const useLocale: typeof import('../../composables/use-locale').useLocale
   const useMagicKeys: typeof import('@vueuse/core').useMagicKeys
   const useManualRefHistory: typeof import('@vueuse/core').useManualRefHistory
   const useMediaControls: typeof import('@vueuse/core').useMediaControls
@@ -330,6 +331,9 @@ declare global {
   // @ts-ignore
   export type { ConfirmOptions } from '../../composables/use-confirm'
   import('../../composables/use-confirm')
+  // @ts-ignore
+  export type { LocaleType } from '../../composables/use-locale'
+  import('../../composables/use-locale')
   // @ts-ignore
   export type { ToastType, ToastOptions, Toast } from '../../composables/use-toast'
   import('../../composables/use-toast')
@@ -550,6 +554,7 @@ declare module 'vue' {
     readonly useLastChanged: UnwrapRef<typeof import('@vueuse/core')['useLastChanged']>
     readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('@vueuse/core')['useLocalStorage']>
+    readonly useLocale: UnwrapRef<typeof import('../../composables/use-locale')['useLocale']>
     readonly useMagicKeys: UnwrapRef<typeof import('@vueuse/core')['useMagicKeys']>
     readonly useManualRefHistory: UnwrapRef<typeof import('@vueuse/core')['useManualRefHistory']>
     readonly useMediaControls: UnwrapRef<typeof import('@vueuse/core')['useMediaControls']>

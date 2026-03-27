@@ -1,19 +1,20 @@
 <script lang="ts" setup>
-import { ref, watchEffect, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useHead } from '@vueuse/head'
 import { useEventListener, useSwipe } from '@vueuse/core'
+import { useHead } from '@vueuse/head'
+import { ref, watch, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
+import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
+import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
-import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
-import { useVaultService } from '~/shared/services/vault.service'
-import { isNative } from '~/shared/services/fs.client'
-
-import { PluginSlot, PluginManagerDialog } from '~/components/02.shared/plugins'
-import { usePluginStore } from '~/components/02.shared/plugins/store'
-import { useToast } from '~/shared/composables/use-toast'
 import { useConfirm } from '~/shared/composables/use-confirm'
+
+import { useToast } from '~/shared/composables/use-toast'
+import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
+import { isNative } from '~/shared/services/fs.client'
+import { useVaultService } from '~/shared/services/vault.service'
 
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
@@ -26,6 +27,8 @@ const pluginsDialogOpen = ref(false)
 
 const { showToast } = useToast()
 const { confirm } = useConfirm()
+const { t } = useI18n()
+const { currentLocale } = useLocale()
 
 const menu = ref(route.name !== 'VaultIndex' && route.name !== 'PluginPage')
 const searchOpen = ref(false)
@@ -36,7 +39,8 @@ const isSwipingOnScrollable = ref(false)
 watch(() => route.name, (newName, oldName) => {
   if (newName === 'VaultIndex' || newName === 'PluginPage') {
     menu.value = false
-  } else if ((oldName === 'VaultIndex' || oldName === 'PluginPage') && typeof window !== 'undefined' && window.innerWidth >= 768) {
+  }
+  else if ((oldName === 'VaultIndex' || oldName === 'PluginPage') && typeof window !== 'undefined' && window.innerWidth >= 768) {
     menu.value = true
   }
 })
@@ -45,13 +49,16 @@ const isHeaderVisible = ref(true)
 const lastScrollTop = ref(0)
 const scrollThreshold = 50
 const status = ref<'pending' | 'success'>('pending')
-const data = ref<{nav: any, settings: any, backlinks: any, searchIndex: any}>({ nav:[], settings: null, backlinks: null, searchIndex:[] })
+const data = ref<{ nav: any, settings: any, backlinks: any, searchIndex: any }>({ nav: [], settings: null, backlinks: null, searchIndex: [] })
 
 function handleScroll() {
-  if (!scrollableRef.value) return
+  if (!scrollableRef.value)
+    return
   const scrollTop = scrollableRef.value.scrollTop
-  if (scrollTop < scrollThreshold) isHeaderVisible.value = true
-  else if (scrollTop < lastScrollTop.value) isHeaderVisible.value = true
+  if (scrollTop < scrollThreshold)
+    isHeaderVisible.value = true
+  else if (scrollTop < lastScrollTop.value)
+    isHeaderVisible.value = true
   else isHeaderVisible.value = false
   lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop
 }
@@ -59,34 +66,39 @@ function handleScroll() {
 useSwipe(mainAreaRef, {
   passive: true,
   onSwipeStart: (e) => { isSwipingOnScrollable.value = !!(e.target as HTMLElement).closest('table') },
-  onSwipeEnd: (_, direction) => { if (!isSwipingOnScrollable.value && !menu.value && direction === 'right') menu.value = true },
+  onSwipeEnd: (_, direction) => {
+    if (!isSwipingOnScrollable.value && !menu.value && direction === 'right')
+      menu.value = true
+  },
 })
 
 useEventListener(scrollableRef, 'scroll', handleScroll)
 
 watch(() => params.value.vault, async (vault) => {
-  if (!vault) return
+  if (!vault)
+    return
   status.value = 'pending'
   try {
     const parseJson = async (path: string) => {
-        const content = await vaultService.getFileContent(vault, path)
-        return content ? JSON.parse(content) : null
+      const content = await vaultService.getFileContent(vault, path)
+      return content ? JSON.parse(content) : null
     }
 
     const [navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
-        parseJson(`content/${vault}/nav.json`),
-        parseJson(`meta/${vault}/settings.json`),
-        parseJson(`meta/${vault}/backlinks.json`),
-        parseJson(`meta/${vault}/search.json`),
+      parseJson(`content/${vault}/nav.json`),
+      parseJson(`meta/${vault}/settings.json`),
+      parseJson(`meta/${vault}/backlinks.json`),
+      parseJson(`meta/${vault}/search.json`),
     ])
-    
+
     data.value = {
-      nav: navRes ||[],
+      nav: navRes || [],
       settings: settingsRes,
       backlinks: backlinksRes,
-      searchIndex: searchRes ||[],
+      searchIndex: searchRes || [],
     }
-  } finally {
+  }
+  finally {
     status.value = 'success'
   }
 }, { immediate: true })
@@ -103,9 +115,10 @@ watchEffect(() => {
 const localScripts = ref<any[]>([])
 const localStyles = ref<any[]>([])
 
-const resolveAppUrl = async (vaultConfig: any, path: string) => {
-  if (path.startsWith('http') || path.startsWith('data:')) return path
-  
+async function resolveAppUrl(vaultConfig: any, path: string) {
+  if (path.startsWith('http') || path.startsWith('data:'))
+    return path
+
   const cleanPath = path.replace(/^\//, '')
 
   if (vaultConfig.type === 'local' && vaultConfig.localPath) {
@@ -115,7 +128,8 @@ const resolveAppUrl = async (vaultConfig: any, path: string) => {
   if (vaultConfig.isDownloaded) {
     if (isNative) {
       return await vaultService.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
-    } else {
+    }
+    else {
       const content = await vaultService.getFileContent(vaultConfig.id, cleanPath)
       if (content) {
         const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
@@ -131,32 +145,37 @@ const resolveAppUrl = async (vaultConfig: any, path: string) => {
 watch(() => data.value.settings, async (settings) => {
   if (!settings) {
     localScripts.value = []
-    localStyles.value =[]
+    localStyles.value = []
     return
   }
   const vault = vaultService.getVault(params.value.vault)
-  if (!vault) return
+  if (!vault)
+    return
 
-  localScripts.value = await Promise.all((settings.scripts ||[]).map(async (src: string) => ({
-    src: await resolveAppUrl(vault, `meta/${params.value.vault}/${src}`), defer: true
+  localScripts.value = await Promise.all((settings.scripts || []).map(async (src: string) => ({
+    src: await resolveAppUrl(vault, `meta/${params.value.vault}/${src}`),
+    defer: true,
   })))
-  localStyles.value = await Promise.all((settings.styles ||[]).map(async (href: string) => ({
-    rel: 'stylesheet', href: await resolveAppUrl(vault, `meta/${params.value.vault}/${href}`)
+  localStyles.value = await Promise.all((settings.styles || []).map(async (href: string) => ({
+    rel: 'stylesheet',
+    href: await resolveAppUrl(vault, `meta/${params.value.vault}/${href}`),
   })))
 }, { immediate: true })
 
 useHead(() => ({
   script: localScripts.value,
-  link: localStyles.value
+  link: localStyles.value,
 }))
 
 watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
 
-watch(() =>[params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
-  if (!vault || status.value === 'pending') return
+watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
+  if (!vault || status.value === 'pending')
+    return
 
   const vaultConfig = vaultService.getVault(vault)
-  if (!vaultConfig) return
+  if (!vaultConfig)
+    return
 
   await pluginStore.init(vault, {
     vaultId: vault,
@@ -167,27 +186,31 @@ watch(() =>[params.value.vault, data.value.settings] as const, async ([vault, se
     getFileContent: (path: string) => vaultService.getFileContent(vault, path),
     showToast,
     confirm,
+    locale: currentLocale,
+    t,
   })
 
   if (settings?.plugins && Array.isArray(settings.plugins)) {
     for (const p of settings.plugins) {
-      const pId = typeof p === 'string' ? p : p.id;
-      const pUrl = typeof p === 'string' ? p : p.url;
-      const enabledByDefault = typeof p === 'string' ? true : (p.enabledByDefault ?? true);
+      const pId = typeof p === 'string' ? p : p.id
+      const pUrl = typeof p === 'string' ? p : p.url
+      const enabledByDefault = typeof p === 'string' ? true : (p.enabledByDefault ?? true)
 
-      if (!pUrl) continue;
+      if (!pUrl)
+        continue
 
-      const pluginUrl = await resolveAppUrl(vaultConfig, pUrl);
+      const pluginUrl = await resolveAppUrl(vaultConfig, pUrl)
 
       const alreadyInstalled = pluginStore.plugins.some(
-        installed => installed.id === pId || installed.sourceUrl === pluginUrl
-      );
+        installed => installed.id === pId || installed.sourceUrl === pluginUrl,
+      )
 
       if (!alreadyInstalled) {
         try {
-          await pluginStore.install(pluginUrl, enabledByDefault);
-        } catch (e) {
-          console.warn(`[nav-content] Failed to auto-install plugin "${pId || pUrl}":`, e);
+          await pluginStore.install(pluginUrl, enabledByDefault)
+        }
+        catch (e) {
+          console.warn(`[nav-content] Failed to auto-install plugin "${pId || pUrl}":`, e)
         }
       }
     }
@@ -201,10 +224,10 @@ watch(() =>[params.value.vault, data.value.settings] as const, async ([vault, se
     <div v-else class="layout-content">
       <ContentViewerNavigation v-model:menu="menu" :items="data.nav" />
       <main ref="mainAreaRef" class="main-area">
-        <ContentViewerHeader 
-          :menu="menu" 
-          :visible="isHeaderVisible" 
-          @update:menu="menu = $event" 
+        <ContentViewerHeader
+          :menu="menu"
+          :visible="isHeaderVisible"
+          @update:menu="menu = $event"
           @open-search="searchOpen = true"
           @open-plugins="pluginsDialogOpen = true"
         >
@@ -250,7 +273,7 @@ watch(() =>[params.value.vault, data.value.settings] as const, async ([vault, se
   height: 100%;
   overflow-y: auto;
   padding: 50px 0 0 0;
-  
+
   &.borderless :deep(.content-viewer) {
     width: 100% !important;
     max-width: 100% !important;

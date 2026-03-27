@@ -1,38 +1,40 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 
 const route = useRoute()
 const pluginStore = usePluginStore()
+const { t } = useI18n()
 
 const pluginId = computed(() => route.params.pluginId as string)
 
 const pluginPathArray = computed(() => {
   const path = route.params.pluginPath
 
-  if (Array.isArray(path)) 
+  if (Array.isArray(path))
     return path
-  
-  if (path) 
+
+  if (path)
     return [path]
-  
-  return[]
+
+  return []
 })
 
 const pluginPageKey = computed(() => {
   const pathArr = pluginPathArray.value
-  
-  if (!pathArr || pathArr.length === 0) 
+
+  if (!pathArr || pathArr.length === 0)
     return 'index'
-  
+
   return pathArr.join('/')
 })
 
 const pluginComponent = computed(() => {
   const loadedPlugin = pluginStore.loaded.get(pluginId.value)
 
-  if (!loadedPlugin) 
+  if (!loadedPlugin)
     return null
 
   return loadedPlugin.module.pages?.[pluginPageKey.value] || null
@@ -41,16 +43,16 @@ const pluginComponent = computed(() => {
 
 <template>
   <div class="plugin-page-wrapper">
-    <component 
-      :is="pluginComponent" 
-      v-if="pluginComponent" 
-      :plugin-id="pluginId" 
-      :plugin-path="pluginPathArray" 
+    <component
+      :is="pluginComponent"
+      v-if="pluginComponent"
+      :plugin-id="pluginId"
+      :plugin-path="pluginPathArray"
     />
     <div v-else class="plugin-page-not-found">
       <div class="alert">
-        <h3>Страница плагина не найдена</h3>
-        <p>Плагин <strong>{{ pluginId }}</strong> не предоставляет страницу <code>{{ pluginPageKey }}</code> или еще не загружен.</p>
+        <h3>{{ t('page.pluginNotFound') }}</h3>
+        <p>{{ t('page.pluginNotFoundDesc') }}</p>
       </div>
     </div>
   </div>

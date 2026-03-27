@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useContentViewerStore } from '../store'
 
 const store = useContentViewerStore()
 const links = computed(() => store.currentBacklinks)
 const route = useRoute()
+const { t } = useI18n()
 </script>
 
 <template>
   <div v-if="links.length > 0" class="backlinks-section">
     <div class="backlinks-title">
       <Icon icon="mdi:link-variant" class="icon" />
-      <span>Ссылки сюда</span>
+      <span>{{ t('contentViewer.backlinks') }}</span>
     </div>
 
     <div class="backlinks-grid">
@@ -68,7 +70,7 @@ const route = useRoute()
   border: 1px solid transparent;
   text-decoration: none;
   transition: all 0.2s;
-  cursor: pointer; /* На всякий случай явно указываем курсор */
+  cursor: pointer;
 
   &:hover {
     background-color: var(--bg-hover-color);

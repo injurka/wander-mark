@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import type { ContentNavItem } from '~/components/05.modules/content-viewer'
 import { Icon } from '@iconify/vue'
-import { useContentViewerStore, ContentNavItemType, ContentNavItem } from '~/components/05.modules/content-viewer'
-import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
-import { usePluginStore } from '~/components/02.shared/plugins/store'
-import { flattenNavItems } from '~/components/05.modules/content-viewer/lib/navigation'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { PluginSlot } from '~/components/02.shared/plugins'
+import { usePluginStore } from '~/components/02.shared/plugins/store'
+import { ContentNavItemType, useContentViewerStore } from '~/components/05.modules/content-viewer'
+import { flattenNavItems } from '~/components/05.modules/content-viewer/lib/navigation'
+import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 
 const store = useContentViewerStore()
 const pluginStore = usePluginStore()
 const params = useTypedRouteParams()
 const router = useRouter()
+const { t } = useI18n()
 
 const title = computed(() => store.vaultSettings?.info?.title || params.value.vault)
-const description = computed(() => store.vaultSettings?.info?.description || 'Главная страница хранилища')
+const description = computed(() => store.vaultSettings?.info?.description || t('vaultIndex.defaultDesc'))
 
 const rootSections = computed(() => {
-  return (store.navItems ||[]).filter((item: ContentNavItem) => item.type === ContentNavItemType.Directory)
+  return (store.navItems || []).filter((item: ContentNavItem) => item.type === ContentNavItemType.Directory)
 })
 
 const recentFiles = computed(() => {
-  const allFiles = flattenNavItems(store.navItems ||[]).filter(item => item.type === ContentNavItemType.File)
+  const allFiles = flattenNavItems(store.navItems || []).filter(item => item.type === ContentNavItemType.File)
   return allFiles
     .filter(item => item.meta?.lastModified)
     .sort((a, b) => new Date(b.meta!.lastModified).getTime() - new Date(a.meta!.lastModified).getTime())
@@ -49,12 +52,16 @@ function handleSectionClick(section: ContentNavItem) {
 }
 
 function formatDate(dateStr?: string) {
-  if (!dateStr) return ''
+  if (!dateStr)
+    return ''
   try {
-    return new Date(dateStr).toLocaleDateString('ru-RU', {
-      day: 'numeric', month: 'short', year: 'numeric'
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     })
-  } catch {
+  }
+  catch {
     return ''
   }
 }
@@ -67,8 +74,12 @@ function formatDate(dateStr?: string) {
         <Icon icon="mdi:book-open-page-variant" />
       </div>
       <div class="hero-content">
-        <h1 class="vault-title">{{ title }}</h1>
-        <p class="vault-desc">{{ description }}</p>
+        <h1 class="vault-title">
+          {{ title }}
+        </h1>
+        <p class="vault-desc">
+          {{ description }}
+        </p>
       </div>
     </div>
 
@@ -76,19 +87,19 @@ function formatDate(dateStr?: string) {
       <section v-if="rootSections.length > 0" class="index-section">
         <h2 class="section-title">
           <Icon icon="mdi:folder-outline" class="mr-2" />
-          Разделы
+          {{ t('vaultIndex.sections') }}
         </h2>
         <div class="sections-grid">
-          <div 
-            v-for="section in rootSections" 
-            :key="section.sysname" 
+          <div
+            v-for="section in rootSections"
+            :key="section.sysname"
             class="section-card"
             @click="handleSectionClick(section)"
           >
             <Icon icon="mdi:folder" class="section-icon" />
             <div class="section-info">
               <span class="section-name" :title="section.title">{{ section.title }}</span>
-              <span class="section-count" v-if="section.children">{{ section.children.length }} элементов</span>
+              <span v-if="section.children" class="section-count">{{ section.children.length }} {{ t('vaultIndex.items') }}</span>
             </div>
           </div>
         </div>
@@ -97,12 +108,12 @@ function formatDate(dateStr?: string) {
       <section v-if="recentFiles.length > 0" class="index-section">
         <h2 class="section-title">
           <Icon icon="mdi:clock-outline" class="mr-2" />
-          Последние изменения
+          {{ t('vaultIndex.recentChanges') }}
         </h2>
         <div class="recent-list">
-          <div 
-            v-for="file in recentFiles" 
-            :key="file.path" 
+          <div
+            v-for="file in recentFiles"
+            :key="file.path"
             class="recent-item"
             @click="navigateTo(file.path)"
           >
@@ -112,7 +123,7 @@ function formatDate(dateStr?: string) {
             </div>
             <div class="file-meta">
               <span v-if="file.meta?.readingTime" class="meta-tag">
-                <Icon icon="mdi:clock-fast" /> {{ file.meta.readingTime }} мин
+                <Icon icon="mdi:clock-fast" /> {{ file.meta.readingTime }} {{ t('vaultIndex.min') }}
               </span>
               <span class="meta-date">{{ formatDate(file.meta?.lastModified) }}</span>
             </div>
@@ -123,27 +134,27 @@ function formatDate(dateStr?: string) {
       <section class="index-section">
         <h2 class="section-title">
           <Icon icon="mdi:puzzle-outline" class="mr-2" />
-          Плагины
+          {{ t('vaultIndex.plugins') }}
         </h2>
-        
+
         <div class="plugins-slot-wrapper">
-           <PluginSlot name="vault-index" />
+          <PluginSlot name="vault-index" />
         </div>
-        
+
         <div class="plugins-list">
           <div v-if="pluginStore.enabledPlugins.length === 0" class="empty-plugins">
-            Нет активных плагинов
+            {{ t('vaultIndex.noActivePlugins') }}
           </div>
-          <div 
-            v-for="plugin in pluginStore.enabledPlugins" 
-            :key="plugin.id" 
+          <div
+            v-for="plugin in pluginStore.enabledPlugins"
+            :key="plugin.id"
             class="plugin-card"
             @click="navigateToPlugin(plugin.id)"
           >
             <Icon :icon="plugin.icon || 'mdi:puzzle'" class="plugin-icon" />
             <div class="plugin-details">
               <span class="plugin-name">{{ plugin.name }}</span>
-              <span class="plugin-desc" v-if="plugin.description">{{ plugin.description }}</span>
+              <span v-if="plugin.description" class="plugin-desc">{{ plugin.description }}</span>
             </div>
           </div>
         </div>
@@ -227,7 +238,7 @@ function formatDate(dateStr?: string) {
   font-weight: 700;
   color: var(--fg-primary-color);
   margin: 0 0 16px 0;
-  
+
   .mr-2 {
     margin-right: 8px;
     color: var(--fg-accent-color);
@@ -236,7 +247,7 @@ function formatDate(dateStr?: string) {
 
 .sections-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
 }
 
@@ -274,7 +285,7 @@ function formatDate(dateStr?: string) {
   flex-direction: column;
   gap: 2px;
   flex: 1;
-  min-width: 0; 
+  min-width: 0;
 }
 
 .section-name {
@@ -335,7 +346,7 @@ function formatDate(dateStr?: string) {
 .file-icon {
   font-size: 1.2rem;
   color: var(--fg-muted-color);
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .file-name {
@@ -395,7 +406,7 @@ function formatDate(dateStr?: string) {
   border: 1px solid var(--border-secondary-color);
   transition: all 0.2s;
   cursor: pointer;
-  
+
   &:hover {
     background-color: var(--bg-hover-color);
     border-color: var(--fg-accent-color);
