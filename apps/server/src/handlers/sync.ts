@@ -12,7 +12,7 @@ export interface ReadLog {
 export async function handleSync(req: Request): Promise<Response> {
   try {
     const body = await req.json()
-    const { vaultId, logs } = body
+    const { vaultId, identifier, logs } = body
 
     if (!vaultId || !Array.isArray(logs)) {
       return withCors(new Response(JSON.stringify({ error: 'Invalid payload' }), {
@@ -21,8 +21,13 @@ export async function handleSync(req: Request): Promise<Response> {
       }))
     }
 
+    const safeIdentifier = identifier
+      // eslint-disable-next-line e18e/prefer-static-regex
+      ? String(identifier).replace(/[^\w-]/g, '')
+      : 'default'
+
     await mkdir(DATA_DIR, { recursive: true })
-    const dbFile = Bun.file(path.resolve(DATA_DIR, `sync-${vaultId}.json`))
+    const dbFile = Bun.file(path.resolve(DATA_DIR, `sync-${vaultId}-${safeIdentifier}.json`))
 
     let serverLogs: ReadLog[] = []
     if (await dbFile.exists()) {
@@ -39,8 +44,8 @@ export async function handleSync(req: Request): Promise<Response> {
       if (mergedMap.has(log.path)) {
         const existing = mergedMap.get(log.path)!
         // eslint-disable-next-line e18e/prefer-spread-syntax
-        const combinedDates = Array.from(new Set([...existing.readDates, ...log.readDates])).sort((a, b) => a - b)
-
+        const combinedDates = Array.from(new Set([...existing.readDates, ...log.readDates]))
+          .sort((a, b) => a - b)
         existing.readDates = combinedDates
         existing.title = log.title || existing.title
       }

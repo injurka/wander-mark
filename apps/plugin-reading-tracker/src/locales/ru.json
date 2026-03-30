@@ -46,12 +46,19 @@
   },
   "sync": {
     "title": "Синхронизация базы",
-    "desc": "Введите URL вашего API для двустороннего слияния истории чтения.",
+    "desc": "Слейте историю чтения с сервером. Введите ваш логин, чтобы синхронизировать личный прогресс.",
     "placeholder": "https://api.yourdomain.com/sync/reading",
+    "identifierLabel": "Ваш идентификатор (Логин)",
+    "identifierPlaceholder": "Например: my-username",
     "syncBtn": "Запустить синхронизацию",
-    "syncing": "Идет синхронизация...",
+    "syncing": "Синхронизация...",
     "lastSync": "Последняя синхронизация",
     "never": "Никогда",
-    "emptyUrlError": "Укажите URL для синхронизации"
+    "emptyUrlError": "Укажите URL для синхронизации",
+    "loadConfig": "Загрузить конфиг",
+    "loading": "Загрузка...",
+    "configSuccess": "Конфиг успешно загружен!",
+    "configEmpty": "В конфиге не найден syncUrl",
+    "configError": "Ошибка загрузки конфига: "
   }
 }

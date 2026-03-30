@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { usePluginI18n } from '../i18n'
 import { trackerActions, trackerState } from '../store/tracker.store'
 
 const { t, locale } = usePluginI18n()
+const isLoadingConfig = ref(false)
 
 const lastSyncFormatted = computed(() => {
   if (!trackerState.lastSync)
@@ -17,6 +18,64 @@ const lastSyncFormatted = computed(() => {
     minute: '2-digit',
   }).format(new Date(trackerState.lastSync))
 })
+
+async function loadConfig() {
+  isLoadingConfig.value = true
+  try {
+    const configPath = `meta/${trackerState.vaultId}/plugins/configs/reading-tracker.json`
+    let configText = null
+
+    // Пытаемся получить файл через API хоста
+    if (trackerState.getFileContent) {
+      configText = await trackerState.getFileContent(configPath)
+    }
+
+    // Fallback: обычный fetch
+    if (!configText) {
+      const url = `${trackerState.vaultUrl}/${configPath}`
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error(`HTTP: ${res.status}`)
+      }
+      configText = await res.text()
+    }
+
+    const data = JSON.parse(configText)
+
+    if (data.syncUrl) {
+      trackerState.syncUrl = data.syncUrl
+      if (data.identifier) {
+        trackerState.identifier = data.identifier
+      }
+
+      if (trackerState.showToast) {
+        trackerState.showToast(t('sync.configSuccess'), { type: 'success' })
+      }
+      else {
+        alert(t('sync.configSuccess'))
+      }
+    }
+    else {
+      if (trackerState.showToast) {
+        trackerState.showToast(t('sync.configEmpty'), { type: 'warning' })
+      }
+      else {
+        alert(t('sync.configEmpty'))
+      }
+    }
+  }
+  catch (e: any) {
+    if (trackerState.showToast) {
+      trackerState.showToast(`${t('sync.configError')}${e.message}`, { type: 'error' })
+    }
+    else {
+      alert(`${t('sync.configError')}${e.message}`)
+    }
+  }
+  finally {
+    isLoadingConfig.value = false
+  }
+}
 
 async function handleSync() {
   if (!trackerState.syncUrl) {
@@ -36,9 +95,21 @@ async function handleSync() {
     </p>
 
     <div class="rt-sync-form">
+      <!-- Блок URL -->
       <div class="rt-form-group">
-        <label class="rt-label">API URL</label>
+        <div class="rt-form-header">
+          <label class="rt-label">API URL</label>
+          <button class="rt-btn-text" :disabled="isLoadingConfig" @click="loadConfig">
+            {{ isLoadingConfig ? t('sync.loading') : t('sync.loadConfig') }}
+          </button>
+        </div>
         <input v-model="trackerState.syncUrl" type="url" class="rt-input" :placeholder="t('sync.placeholder')" :disabled="trackerState.isSyncing">
+      </div>
+
+      <!-- Блок Идентификатора -->
+      <div class="rt-form-group mt-2">
+        <label class="rt-label">{{ t('sync.identifierLabel') }}</label>
+        <input v-model="trackerState.identifier" type="text" class="rt-input" :placeholder="t('sync.identifierPlaceholder')" :disabled="trackerState.isSyncing">
       </div>
 
       <div class="rt-sync-actions">
@@ -81,10 +152,35 @@ async function handleSync() {
   flex-direction: column;
   gap: 8px;
 }
+.rt-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mt-2 {
+  margin-top: 8px;
+}
 .rt-label {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--fg-primary-color);
+  margin: 0;
+}
+.rt-btn-text {
+  background: transparent;
+  border: none;
+  color: var(--fg-accent-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+.rt-btn-text:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.rt-btn-text:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .rt-input {
   width: 100%;
@@ -102,7 +198,7 @@ async function handleSync() {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 .rt-btn {
   background-color: transparent;
@@ -118,7 +214,6 @@ async function handleSync() {
   background-color: var(--bg-accent-color);
   border-color: var(--fg-accent-color);
   color: var(--fg-primary-color);
-  font-size: 75%;
 }
 .rt-btn-primary:hover:not(:disabled) {
   background-color: var(--fg-action-color);

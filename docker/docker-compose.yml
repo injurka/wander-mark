@@ -20,8 +20,10 @@ services:
     environment:
       PORT: "4444"
       FS_BASE_PATH: /data
+      SYNC_DATA_PATH: /sync-data
     volumes:
       - ${VAULT_PATH:-./vault}:/data:ro
+      - ./sync-data:/sync-data
     networks:
       - trip-net
     labels:

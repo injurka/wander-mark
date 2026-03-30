@@ -46,12 +46,19 @@
   },
   "sync": {
     "title": "Database Synchronization",
-    "desc": "Enter your API URL for a two-way merge of your reading history.",
+    "desc": "Merge your reading history with the server. Enter your identifier to sync your personal progress.",
     "placeholder": "https://api.yourdomain.com/sync/reading",
+    "identifierLabel": "Your Identifier (Login)",
+    "identifierPlaceholder": "e.g. my-username",
     "syncBtn": "Run Sync",
     "syncing": "Syncing...",
     "lastSync": "Last sync",
     "never": "Never",
-    "emptyUrlError": "Please provide a sync URL"
+    "emptyUrlError": "Please provide a sync URL",
+    "loadConfig": "Load Config",
+    "loading": "Loading...",
+    "configSuccess": "Config loaded successfully!",
+    "configEmpty": "syncUrl not found in config",
+    "configError": "Failed to load config: "
   }
 }

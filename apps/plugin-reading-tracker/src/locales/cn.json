@@ -46,12 +46,19 @@
   },
   "sync": {
     "title": "数据库同步",
-    "desc": "输入您的 API URL 以进行阅读历史的双向合并。",
+    "desc": "将您的阅读历史与服务器合并。输入您的标识符以同步个人进度。",
     "placeholder": "https://api.yourdomain.com/sync/reading",
+    "identifierLabel": "您的标识符 (登录名)",
+    "identifierPlaceholder": "例如：my-username",
     "syncBtn": "开始同步",
     "syncing": "同步中...",
     "lastSync": "上次同步",
     "never": "从未",
-    "emptyUrlError": "请提供同步 URL"
+    "emptyUrlError": "请提供同步 URL",
+    "loadConfig": "加载配置",
+    "loading": "加载中...",
+    "configSuccess": "配置加载成功！",
+    "configEmpty": "配置中未找到 syncUrl",
+    "configError": "加载配置失败: "
   }
 }
