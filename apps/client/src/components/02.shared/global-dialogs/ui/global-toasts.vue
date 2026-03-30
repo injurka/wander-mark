@@ -39,8 +39,8 @@ const icons: Record<string, string> = {
 <style lang="scss" scoped>
 .global-toasts-container {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
+  top: 24px;
+  right: 24px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -72,19 +72,27 @@ const icons: Record<string, string> = {
 
   &.toast-info {
     border-left: 4px solid var(--fg-accent-color);
-    .toast-icon { color: var(--fg-accent-color); }
+    .toast-icon {
+      color: var(--fg-accent-color);
+    }
   }
   &.toast-success {
-    border-left: 4px solid #4CAF50;
-    .toast-icon { color: #4CAF50; }
+    border-left: 4px solid #4caf50;
+    .toast-icon {
+      color: #4caf50;
+    }
   }
   &.toast-warning {
-    border-left: 4px solid #FF9800;
-    .toast-icon { color: #FF9800; }
+    border-left: 4px solid #ff9800;
+    .toast-icon {
+      color: #ff9800;
+    }
   }
   &.toast-error {
-    border-left: 4px solid #F44336;
-    .toast-icon { color: #F44336; }
+    border-left: 4px solid #f44336;
+    .toast-icon {
+      color: #f44336;
+    }
   }
 }
 

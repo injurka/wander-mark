@@ -1,0 +1,57 @@
+{
+  "mark": {
+    "button": "Mark as Read",
+    "markedNow": "Marked!",
+    "readTimes": "Read times",
+    "notRead": "You haven't marked this material yet"
+  },
+  "widget": {
+    "title": "Reading Activity"
+  },
+  "report": {
+    "title": "Activity Report",
+    "tabs": {
+      "overview": "Overview",
+      "review": "Review",
+      "history": "History",
+      "sync": "Sync"
+    }
+  },
+  "overview": {
+    "totalArticles": "Unique Articles Read",
+    "totalSessions": "Total Reading Sessions",
+    "recentlyRead": "Recently Read",
+    "mostRead": "Most Read",
+    "readCount": "{n} times",
+    "noData": "No data yet"
+  },
+  "review": {
+    "title": "Spaced Repetition",
+    "desc": "The algorithm categorizes materials based on the time passed since the last read to optimize your memory.",
+    "allCaughtUp": "Great job! You have no urgent materials to review.",
+    "times": "Read: {n} times",
+    "lastRead": "Last read",
+    "forgotten": "Slipping Away",
+    "forgottenDesc": "Review date is heavily overdue. Urgent refresher recommended.",
+    "due": "Due for Review",
+    "dueDesc": "The perfect time to consolidate this in your memory.",
+    "mastered": "Mastered",
+    "masteredDesc": "Read multiple times and safely stored in long-term memory."
+  },
+  "history": {
+    "chartTitle": "Activity (14 days)",
+    "timelineTitle": "Recent Activity",
+    "reads": "reads",
+    "empty": "No data for this period"
+  },
+  "sync": {
+    "title": "Database Synchronization",
+    "desc": "Enter your API URL for a two-way merge of your reading history.",
+    "placeholder": "https://api.yourdomain.com/sync/reading",
+    "syncBtn": "Run Sync",
+    "syncing": "Syncing...",
+    "lastSync": "Last sync",
+    "never": "Never",
+    "emptyUrlError": "Please provide a sync URL"
+  }
+}

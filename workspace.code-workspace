@@ -16,6 +16,9 @@
 			"path": "apps/plugin-ai-assistant"
 		},
 		{
+			"path": "apps/plugin-reading-tracker"
+		},
+		{
 			"path": "apps/plugin-chinese-dictionary"
 		},
 		{

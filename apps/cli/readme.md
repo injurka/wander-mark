@@ -155,7 +155,7 @@ bun start --help
 <!--
 Пример частой команды локального использования:
 
-bun start -c /mnt/c/Users/evai/Documents/obsidian-mark/.obsidian/export/config.json --deploy
+bun start -c /home/injurka/Documents/obsidian-mark/.obsidian/export/config.json --deploy
 
 bun start -c /root/my/wander-mark/vaults-example/.export/config.json
  -->

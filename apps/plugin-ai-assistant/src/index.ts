@@ -1,4 +1,5 @@
-// src/index.ts
+/// <reference types="vite/client" />
+
 import type { PluginContext } from './types'
 import { markRaw, unref } from 'vue'
 import AiAssistant from './ai-assistant.vue'
@@ -29,10 +30,10 @@ export default {
     aiActions.setContext(ctx)
 
     if (ctx.locale) {
-      // ПЕРЕДАЕМ КАК ФУНКЦИЮ (ГЕТТЕР)
       setupPluginI18n(() => unref(ctx.locale as any))
     }
 
+    // eslint-disable-next-line no-console
     console.log('[AI Assistant] Activated')
   },
 }

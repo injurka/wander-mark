@@ -204,6 +204,7 @@ function stopResize() {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 86px;
 }
 
 .home-link {

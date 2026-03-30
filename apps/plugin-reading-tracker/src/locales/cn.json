@@ -1,0 +1,57 @@
+{
+  "mark": {
+    "button": "标为已读",
+    "markedNow": "已标记！",
+    "readTimes": "阅读次数",
+    "notRead": "您尚未标记此材料"
+  },
+  "widget": {
+    "title": "阅读动态"
+  },
+  "report": {
+    "title": "活动报告",
+    "tabs": {
+      "overview": "概览",
+      "review": "复习",
+      "history": "历史记录",
+      "sync": "同步"
+    }
+  },
+  "overview": {
+    "totalArticles": "已读文章数",
+    "totalSessions": "总阅读次数",
+    "recentlyRead": "最近阅读",
+    "mostRead": "常读文章",
+    "readCount": "{n} 次",
+    "noData": "暂无数据"
+  },
+  "review": {
+    "title": "间隔重复",
+    "desc": "算法根据上次阅读后的时间对材料进行分类，以优化您的记忆。",
+    "allCaughtUp": "太棒了！您没有需要紧急复习的材料。",
+    "times": "已读：{n} 次",
+    "lastRead": "上次阅读",
+    "forgotten": "逐渐遗忘",
+    "forgottenDesc": "复习日期已严重逾期，强烈建议重温。",
+    "due": "到期复习",
+    "dueDesc": "巩固记忆的最佳时机。",
+    "mastered": "牢固掌握",
+    "masteredDesc": "已阅读多次，安全储存在长期记忆中。"
+  },
+  "history": {
+    "chartTitle": "活动（14天）",
+    "timelineTitle": "近期活动",
+    "reads": "次阅读",
+    "empty": "此期间无数据"
+  },
+  "sync": {
+    "title": "数据库同步",
+    "desc": "输入您的 API URL 以进行阅读历史的双向合并。",
+    "placeholder": "https://api.yourdomain.com/sync/reading",
+    "syncBtn": "开始同步",
+    "syncing": "同步中...",
+    "lastSync": "上次同步",
+    "never": "从未",
+    "emptyUrlError": "请提供同步 URL"
+  }
+}
