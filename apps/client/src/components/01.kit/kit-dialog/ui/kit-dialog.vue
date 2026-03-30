@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, watch, onMounted, onUnmounted, useId } from 'vue'
 import { Icon } from '@iconify/vue'
+import { computed, onMounted, onUnmounted, useId, watch } from 'vue'
 
 interface Props {
   maxWidth?: number
@@ -24,10 +24,11 @@ const maxWidthPx = computed(() => `${maxWidth}px`)
 const dialogId = useId()
 
 function handleOverlayClick(event: MouseEvent) {
-  if (persistent) return
+  if (persistent)
+    return
 
   const target = event.target as HTMLElement
-  
+
   if (event.offsetX > target.clientWidth || event.offsetY > target.clientHeight) {
     return
   }
@@ -42,10 +43,12 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 watch(visible, (isOpen) => {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined')
+    return
   if (isOpen) {
     document.body.style.setProperty('overflow', 'hidden')
-  } else {
+  }
+  else {
     document.body.style.removeProperty('overflow')
   }
 })
@@ -66,7 +69,6 @@ onUnmounted(() => {
   <Teleport to="body">
     <Transition name="dialog" :duration="300">
       <div v-if="visible" class="dialog-root">
-        
         <div class="dialog-overlay" @mousedown="handleOverlayClick" />
 
         <div
@@ -88,9 +90,9 @@ onUnmounted(() => {
                 </h2>
               </div>
             </template>
-            
-            <button 
-              class="close-button" 
+
+            <button
+              class="close-button"
               :aria-label="`Закрыть диалог ${title ?? ''}`"
               @click="visible = false"
             >
@@ -98,8 +100,8 @@ onUnmounted(() => {
             </button>
           </div>
 
-          <p 
-            :id="`dialog-desc-${dialogId}`" 
+          <p
+            :id="`dialog-desc-${dialogId}`"
             :class="description ? 'dialog-description' : 'sr-only'"
           >
             {{ description ?? title }}
@@ -221,7 +223,7 @@ onUnmounted(() => {
 .dialog-title {
   font-size: 1.125rem;
   font-weight: 600;
-  margin: 0; 
+  margin: 0;
 }
 
 .dialog-description {
@@ -265,12 +267,20 @@ onUnmounted(() => {
 }
 
 @keyframes overlay-show {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes overlay-hide {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes content-warp-in {

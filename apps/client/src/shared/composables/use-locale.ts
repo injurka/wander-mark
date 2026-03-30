@@ -1,5 +1,5 @@
-import { watch } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 export type LocaleType = 'ru' | 'en' | 'cn'
@@ -22,13 +22,13 @@ export function useLocale() {
   const languageNames: Record<LocaleType, string> = {
     ru: 'Русский',
     en: 'English',
-    cn: '中文'
+    cn: '中文',
   }
 
   return {
     currentLocale,
     cycleLanguage,
     languageNames,
-    t
+    t,
   }
 }

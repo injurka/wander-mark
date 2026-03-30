@@ -1,64 +1,64 @@
-import fs from 'fs';
-import readline from 'readline';
-import path from 'path';
+import fs from 'node:fs'
+import path from 'node:path'
+import readline from 'node:readline'
 
-const INPUT_FILE = 'cedict_ts.u8'; // Имя скачанного файла
-const OUTPUT_FILE = 'cedict.json'; // Имя готового JSON-файла
+const INPUT_FILE = 'cedict_ts.u8' // Имя скачанного файла
+const OUTPUT_FILE = 'cedict.json' // Имя готового JSON-файла
 
 async function processDictionary() {
-  const inputPath = path.resolve(process.cwd(), INPUT_FILE);
-  const outputPath = path.resolve(process.cwd(), 'src/assets', OUTPUT_FILE); 
+  const inputPath = path.resolve(process.cwd(), INPUT_FILE)
+  const outputPath = path.resolve(process.cwd(), 'src/assets', OUTPUT_FILE)
 
   if (!fs.existsSync(inputPath)) {
-    console.error(`Ошибка: Файл словаря "${INPUT_FILE}" не найден.`);
-    console.log(`Пожалуйста, скачайте его с https://www.mdbg.net/chinese/dictionary?page=cedict и поместите рядом со скриптом.`);
-    return;
+    console.error(`Ошибка: Файл словаря "${INPUT_FILE}" не найден.`)
+    console.log(`Пожалуйста, скачайте его с https://www.mdbg.net/chinese/dictionary?page=cedict и поместите рядом со скриптом.`)
+    return
   }
 
-  console.log(`Начинаю обработку файла: ${inputPath}`);
+  console.log(`Начинаю обработку файла: ${inputPath}`)
 
-  const fileStream = fs.createReadStream(inputPath);
+  const fileStream = fs.createReadStream(inputPath)
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity,
-  });
+  })
 
-  const dictionary = {};
-  let lineCount = 0;
+  const dictionary = {}
+  let lineCount = 0
 
-  const lineRegex = /^(\S+)\s+(\S+)\s+\[(.*?)\]\s+\/(.*)\//;
+  const lineRegex = /^(\S+)\s+(\S+)\s+\[(.*?)\]\s+\/(.*)\//
 
   for await (const line of rl) {
     if (line.startsWith('#') || line.trim() === '') {
-      continue;
+      continue
     }
 
-    const match = line.match(lineRegex);
+    const match = line.match(lineRegex)
     if (match) {
-      const traditional = match[1];
-      const simplified = match[2];
-      const pinyin = match[3];
-      const definition = match[4].replace(/\//g, '; ');
+      const traditional = match[1]
+      const simplified = match[2]
+      const pinyin = match[3]
+      const definition = match[4].replace(/\//g, '; ')
 
       dictionary[simplified] = {
         pinyin,
         definition,
-      };
-      lineCount++;
+      }
+      lineCount++
     }
   }
-  
-  console.log(`Обработано ${lineCount} словарных статей.`);
 
-  const outputDir = path.dirname(outputPath);
+  console.log(`Обработано ${lineCount} словарных статей.`)
+
+  const outputDir = path.dirname(outputPath)
   if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    fs.mkdirSync(outputDir, { recursive: true })
   }
 
-  console.log(`Сохраняю JSON в файл: ${outputPath}`);
-  fs.writeFileSync(outputPath, JSON.stringify(dictionary, null, 2));
+  console.log(`Сохраняю JSON в файл: ${outputPath}`)
+  fs.writeFileSync(outputPath, JSON.stringify(dictionary, null, 2))
 
-  console.log('Готово! Словарь успешно сконвертирован.');
+  console.log('Готово! Словарь успешно сконвертирован.')
 }
 
-processDictionary().catch(console.error);
+processDictionary().catch(console.error)

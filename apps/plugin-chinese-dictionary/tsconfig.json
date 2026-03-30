@@ -12,6 +12,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/**/*"
-, "../server/data/plugins/ai-assistant.js"  ]
+    "src/**/*",
+    "../server/data/plugins/ai-assistant.js"
+  ]
 }

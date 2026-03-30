@@ -1,4 +1,4 @@
-import PluginSlot from './plugin-slot.vue'
 import PluginManagerDialog from './plugin-manager-dialog.vue'
+import PluginSlot from './plugin-slot.vue'
 
-export { PluginSlot, PluginManagerDialog }
+export { PluginManagerDialog, PluginSlot }

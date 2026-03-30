@@ -1,6 +1,6 @@
-import { watchEffect } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
+import { watchEffect } from 'vue'
 
 export enum ThemesVariant {
   Light = 'light',
@@ -33,7 +33,7 @@ export function useChangeTheme() {
   }
 
   return {
-    theme: themePreference, 
+    theme: themePreference,
     getHeadThemeColor,
     setTheme,
   }

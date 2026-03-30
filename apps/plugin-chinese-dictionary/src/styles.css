@@ -77,14 +77,17 @@
   color: var(--fg-secondary-color, #8b949e);
 }
 
-.dict-loader, .dict-not-found {
+.dict-loader,
+.dict-not-found {
   color: var(--fg-muted-color, #586069);
   font-style: italic;
 }
 
 .tooltip-fade-enter-active,
 .tooltip-fade-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .tooltip-fade-enter-from,

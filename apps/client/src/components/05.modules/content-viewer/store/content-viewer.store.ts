@@ -1,9 +1,9 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-import { useRoute } from 'vue-router'
-import { useLocalStorage } from '@vueuse/core'
-import { findItemByPath } from '../lib/navigation'
 import type { BacklinkItem, BacklinksMap, ContentNavItem, SearchIndexItem, VaultMetaSettings } from '../models'
+import { useLocalStorage } from '@vueuse/core'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { findItemByPath } from '../lib/navigation'
 
 const COOKIE_BORDERLESS_VIEW = 'ui_borderlessViewEnabled'
 const COOKIE_COLORED_FOLDERS = 'ui_coloredFoldersEnabled'
@@ -24,21 +24,32 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
   const showOutlineEnabled = useLocalStorage<boolean>(COOKIE_SHOW_OUTLINE, true)
 
   const activeItem = computed(() => {
-    if (!navItems.value) return null
+    if (!navItems.value)
+      return null
     const rawPwd = route.params.pwd
     const pathSegments = Array.isArray(rawPwd) ? rawPwd : [rawPwd].filter(Boolean) as string[]
-    if (pathSegments.length === 0) return null
+    if (pathSegments.length === 0)
+      return null
     return findItemByPath(navItems.value, pathSegments)
   })
 
   const currentBacklinks = computed<BacklinkItem[]>(() => {
-    if (!backlinks.value) return []
+    if (!backlinks.value)
+      return []
     const currentPath = decodeURIComponent(route.path)
     return backlinks.value[currentPath] || backlinks.value[currentPath.replace(/\/$/, '')] || []
   })
 
   return {
-    navItems, vaultSettings, backlinks, activeItem, currentBacklinks, searchIndex,
-    borderlessViewEnabled, coloredFoldersEnabled, showIconsEnabled, showOutlineEnabled,
+    navItems,
+    vaultSettings,
+    backlinks,
+    activeItem,
+    currentBacklinks,
+    searchIndex,
+    borderlessViewEnabled,
+    coloredFoldersEnabled,
+    showIconsEnabled,
+    showOutlineEnabled,
   }
 })

@@ -31,7 +31,7 @@ export const aiState = reactive({
   vaultUrl: '',
   showToast: null as any,
   confirm: null as any,
-  getFileContent: null as any, 
+  getFileContent: null as any,
 })
 
 export const aiActions = {
@@ -113,7 +113,10 @@ export const aiActions = {
   },
   updatePrompt(id: string, name: string, content: string) {
     const p = aiState.systemPrompts.find(p => p.id === id)
-    if (p) { p.name = name; p.content = content }
+    if (p) {
+      p.name = name
+      p.content = content
+    }
   },
   deletePrompt(id: string) {
     if (id === 'default')
@@ -185,8 +188,12 @@ export function initAiStore() {
   watch(() => aiState.apiKey, val => localStorage.setItem('wm-ai-apikey', val))
   watch(() => aiState.selectedModel, val => localStorage.setItem('wm-ai-model', val))
   watch(() => aiState.selectedPromptId, val => localStorage.setItem('wm-ai-selected-prompt', val))
-  watch(() => aiState.systemPrompts, val => localStorage.setItem('wm-ai-prompts', JSON.stringify(val)), { deep: true })
-  watch(() => aiState.topics, val => localStorage.setItem('wm-ai-topics', JSON.stringify(val)), { deep: true })
+  watch(() => aiState.systemPrompts, val => localStorage.setItem('wm-ai-prompts', JSON.stringify(val)), {
+    deep: true,
+  })
+  watch(() => aiState.topics, val => localStorage.setItem('wm-ai-topics', JSON.stringify(val)), {
+    deep: true,
+  })
   watch(() => aiState.currentTopicId, (val) => {
     if (val)
       localStorage.setItem('wm-ai-current-topic', val)

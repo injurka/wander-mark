@@ -1,3 +1,4 @@
+<!-- eslint-disable e18e/prefer-static-regex -->
 <script setup lang="ts">
 import type MarkdownIt from 'markdown-it'
 import mermaid from 'mermaid'
@@ -122,6 +123,7 @@ onMounted(() => {
 })
 
 function openImageViewer() {
+  // eslint-disable-next-line no-console
   console.log('Open image viewer with:', currentImages.value)
 }
 

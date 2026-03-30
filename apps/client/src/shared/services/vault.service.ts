@@ -1,6 +1,6 @@
 import { useLocalStorage } from '@vueuse/core'
-import { readTextFile, writeTextFile, getMediaUrl, writeBinaryFile, deleteFilesByPrefix, isNative } from './fs.client'
 import { get } from 'idb-keyval'
+import { deleteFilesByPrefix, getMediaUrl, isNative, readTextFile, writeBinaryFile, writeTextFile } from './fs.client'
 
 export interface VaultConfig {
   id: string
@@ -13,7 +13,7 @@ export interface VaultConfig {
   name?: string
 }
 
-export const useVaultService = () => {
+export function useVaultService() {
   const vaults = useLocalStorage<VaultConfig[]>('app-vaults', [])
 
   const initPredefinedVaults = async () => {
@@ -30,14 +30,14 @@ export const useVaultService = () => {
           let updated = false
 
           for (const vaultId of config.vaults) {
-            if (!vaults.value.find(v => v.id === vaultId)) {
+            if (!vaults.value.some(v => v.id === vaultId)) {
               vaults.value.push({
                 id: vaultId,
                 title: vaultId,
                 description: '',
                 type: 'remote',
                 url: serverUrl.replace(/\/$/, ''),
-                isDownloaded: false
+                isDownloaded: false,
               })
 
               updated = true
@@ -49,9 +49,11 @@ export const useVaultService = () => {
               if (vault && vault.title === vaultId) {
                 fetch(`${vault.url}/meta/${vaultId}/settings.json`)
                   .then(r => r.json())
-                  .then(settings => {
-                    if (settings.info?.title) vault.title = settings.info.title
-                    if (settings.info?.description) vault.description = settings.info.description
+                  .then((settings) => {
+                    if (settings.info?.title)
+                      vault.title = settings.info.title
+                    if (settings.info?.description)
+                      vault.description = settings.info.description
                   })
                   .catch(e => console.warn(`Failed to fetch metadata for predefined vault ${vaultId}:`, e))
               }
@@ -59,7 +61,8 @@ export const useVaultService = () => {
           }
         }
       }
-    } catch (e) {
+    }
+    catch (e) {
       console.log('No config.json found or failed to parse, skipping predefined vaults.')
     }
   }
@@ -67,7 +70,7 @@ export const useVaultService = () => {
   const addRemoteVault = async (id: string, rawUrl: string) => {
     const cleanUrl = rawUrl.replace(/\/$/, '')
 
-    if (vaults.value.find(v => v.id === id)) {
+    if (vaults.value.some(v => v.id === id)) {
       throw new Error('Хранилище с таким ID уже существует.')
     }
 
@@ -85,8 +88,8 @@ export const useVaultService = () => {
       const description = settings.info?.description || ''
 
       vaults.value.push({ id, title, description, type: 'remote', url: cleanUrl, isDownloaded: false })
-
-    } catch (e: any) {
+    }
+    catch (e: any) {
       console.error(e)
       if (e instanceof TypeError && e.message.includes('fetch')) {
         throw new Error('Ошибка сети или CORS. Убедитесь, что сервер доступен и отдает правильные заголовки.')
@@ -97,32 +100,37 @@ export const useVaultService = () => {
 
   const installVault = async (vaultId: string, onProgress: (p: number) => void) => {
     const vault = vaults.value.find(v => v.id === vaultId)
-    if (!vault || !vault.url) throw new Error('Хранилище не найдено.')
+    if (!vault || !vault.url)
+      throw new Error('Хранилище не найдено.')
 
     const filesToSync = [
       `content/${vaultId}/nav.json`,
       `meta/${vaultId}/settings.json`,
       `meta/${vaultId}/backlinks.json`,
-      `meta/${vaultId}/search.json`
+      `meta/${vaultId}/search.json`,
     ]
 
     try {
       const navRes = await fetch(`${vault.url}/content/${vaultId}/nav.json`)
-      if (!navRes.ok) throw new Error(`Не удалось загрузить nav.json: ${navRes.statusText}`)
+      if (!navRes.ok)
+        throw new Error(`Не удалось загрузить nav.json: ${navRes.statusText}`)
 
       const navItems = await navRes.json()
       const extractPaths = (items: any[], currentPath = ''): string[] => {
-        let paths: string[] = []
+        const paths: string[] = []
         for (const item of items) {
           const fullPath = currentPath ? `${currentPath}/${item.sysname}` : item.sysname
-          if (item.type === 'file') paths.push(`content/${vaultId}/${fullPath}.md`)
-          if (item.children) paths.push(...extractPaths(item.children, fullPath))
+          if (item.type === 'file')
+            paths.push(`content/${vaultId}/${fullPath}.md`)
+          if (item.children)
+            paths.push(...extractPaths(item.children, fullPath))
         }
         return paths
       }
       const itemsToParse = Array.isArray(navItems) ? navItems : (navItems.children || [])
       filesToSync.push(...extractPaths(itemsToParse))
-    } catch (e: any) {
+    }
+    catch (e: any) {
       throw new Error(`Не удалось загрузить структуру хранилища: ${e.message}`)
     }
 
@@ -140,14 +148,15 @@ export const useVaultService = () => {
 
         if (settings.plugins && Array.isArray(settings.plugins)) {
           for (const p of settings.plugins) {
-            const pUrl = typeof p === 'string' ? p : p.url;
+            const pUrl = typeof p === 'string' ? p : p.url
             if (pUrl && !pUrl.startsWith('http') && !pUrl.startsWith('data:')) {
-              filesToSync.push(pUrl.replace(/^\//, ''));
+              filesToSync.push(pUrl.replace(/^\//, ''))
             }
           }
         }
       }
-    } catch (e) { }
+    }
+    catch (e) { }
 
     let loaded = 0
     const mediaToSync = new Set<string>()
@@ -169,7 +178,8 @@ export const useVaultService = () => {
               if (!imgPath.startsWith('http') && !imgPath.startsWith('data:')) {
                 if (imgPath.startsWith('/images/')) {
                   mediaToSync.add(imgPath.replace(/^\//, ''))
-                } else {
+                }
+                else {
                   mediaToSync.add(`content/${vaultId}/${imgPath}`)
                 }
               }
@@ -177,10 +187,12 @@ export const useVaultService = () => {
             while ((match = imgRegex.exec(content)) !== null) extractMedia(match[1])
             while ((match = wikiRegex.exec(content)) !== null) extractMedia(match[1])
           }
-        } else {
+        }
+        else {
           failedFiles.push(file)
         }
-      } catch (e) {
+      }
+      catch (e) {
         console.error(`Failed to load text file: ${file}`)
         failedFiles.push(file)
       }
@@ -196,10 +208,12 @@ export const useVaultService = () => {
           const blob = await res.blob()
           const savePath = media.startsWith('images/') ? media : `vaults/${vaultId}/${media}`
           await writeBinaryFile(savePath, blob)
-        } else {
+        }
+        else {
           failedFiles.push(media)
         }
-      } catch (e) {
+      }
+      catch (e) {
         console.error(`Failed to load media file: ${media}`)
         failedFiles.push(media)
       }
@@ -214,18 +228,21 @@ export const useVaultService = () => {
         const blob = await iconRes.blob()
         await writeBinaryFile(`vaults/${vaultId}/${iconPath}`, blob)
       }
-    } catch {
+    }
+    catch {
     }
 
     if (failedFiles.length > 0) {
       console.warn('Не удалось загрузить следующие файлы:', failedFiles)
       const vIndex = vaults.value.findIndex(v => v.id === vaultId)
-      if (vIndex !== -1) vaults.value[vIndex].isDownloaded = true
+      if (vIndex !== -1)
+        vaults.value[vIndex].isDownloaded = true
       throw new Error(`Хранилище скачано частично. Не удалось скачать ${failedFiles.length} файлов. Посмотрите консоль для подробностей.`)
     }
 
     const vIndex = vaults.value.findIndex(v => v.id === vaultId)
-    if (vIndex !== -1) vaults.value[vIndex].isDownloaded = true
+    if (vIndex !== -1)
+      vaults.value[vIndex].isDownloaded = true
 
     onProgress(100)
   }
@@ -239,7 +256,8 @@ export const useVaultService = () => {
 
   const getFileContent = async (vaultId: string, filePath: string): Promise<string | null> => {
     const vault = getVault(vaultId)
-    if (!vault) return null
+    if (!vault)
+      return null
 
     if (vault.type === 'local' && vault.localPath) {
       return await readTextFile(`${vault.localPath}/${filePath}`, true)
@@ -247,14 +265,17 @@ export const useVaultService = () => {
 
     if (vault.isDownloaded) {
       const content = await readTextFile(`vaults/${vaultId}/${filePath}`)
-      if (content !== null) return content
+      if (content !== null)
+        return content
     }
 
     if (vault.type === 'remote') {
       try {
         const res = await fetch(`${vault.url}/${filePath}`)
-        if (res.ok) return await res.text()
-      } catch (e) {
+        if (res.ok)
+          return await res.text()
+      }
+      catch (e) {
         console.warn(`[Web Mode] Не удалось загрузить файл по сети: ${filePath}`, e)
       }
     }
@@ -264,7 +285,8 @@ export const useVaultService = () => {
 
   const resolveMediaUrl = async (vaultId: string, mediaPath: string): Promise<string> => {
     const vault = getVault(vaultId)
-    if (!vault) return mediaPath
+    if (!vault)
+      return mediaPath
 
     if (vault.type === 'local' && vault.localPath) {
       return await getMediaUrl(`${vault.localPath}/${mediaPath}`, true)
@@ -273,13 +295,15 @@ export const useVaultService = () => {
     if (vault.isDownloaded) {
       if (isNative) {
         return await getMediaUrl(`vaults/${vaultId}/${mediaPath}`)
-      } else {
+      }
+      else {
         try {
           const blob = await get(`vaults/${vaultId}/${mediaPath}`)
           if (blob instanceof Blob) {
             return URL.createObjectURL(blob)
           }
-        } catch (e) {
+        }
+        catch (e) {
           console.error('Failed to load media from IndexedDB:', e)
         }
       }
@@ -301,6 +325,6 @@ export const useVaultService = () => {
     getVault,
     getFileContent,
     resolveMediaUrl,
-    getMediaUrl
+    getMediaUrl,
   }
 }

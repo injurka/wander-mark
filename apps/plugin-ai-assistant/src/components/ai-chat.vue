@@ -28,14 +28,20 @@ watch(() => aiState.isOpen, (isOpen) => {
 watch(() => aiState.currentTopicId, () => scrollToBottom())
 
 function renderMarkdown(text: string) {
-  try { return marked.parse(text) }
-  catch { return text }
+  try {
+    return marked.parse(text)
+  }
+  catch {
+    return text
+  }
 }
 
 function handleSend() {
   const prompt = aiState.userPrompt.trim()
+
   if (!prompt)
     return
+
   aiState.userPrompt = ''
   sendAiRequest(prompt, scrollToBottom)
 }

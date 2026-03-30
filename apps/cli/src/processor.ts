@@ -1,8 +1,10 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { Dirent } from 'node:fs'
+import type { ContentNavItem, FileMetaData, ProcessingContext } from './types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { FRONT_MATTER_REGEX, OBSIDIAN_LINK_REGEX } from './constants'
-import { ContentNavItem, ContentNavItemType, FileMetaData, ProcessingContext } from './types'
+import { ContentNavItemType } from './types'
 import { ensureDirectoryExists, extractSysnameFromFrontMatter, extractTags, isImageExtension, safeCopyFile, stripMarkdown } from './utils'
 
 export async function processDirectoryRecursive(
@@ -13,7 +15,7 @@ export async function processDirectoryRecursive(
   fileMap: Map<string, string>,
   navigationSysname: string,
   ignoredFolderNames: string[],
-  context: ProcessingContext
+  context: ProcessingContext,
 ): Promise<ContentNavItem[]> {
   const childrenNavItems: ContentNavItem[] = []
 
@@ -30,15 +32,18 @@ export async function processDirectoryRecursive(
         console.log(`🚫 Ignoring directory: ${path.join(relativePath, entryName)}`)
         continue
       }
-      if (entryName.startsWith('.')) continue
-      if (entry.isDirectory() && entryName === '-') continue
+      if (entryName.startsWith('.'))
+        continue
+      if (entry.isDirectory() && entryName === '-')
+        continue
 
       // --- Изображения ---
       if (entry.isFile() && isImageExtension(extension)) {
         const targetImagePath = path.join(imageDestPath, entryName)
         try {
           await fs.copyFile(sourceFullPath, targetImagePath)
-        } catch (e: any) { console.error(`Err copy img ${entryName}:`, e.message) }
+        }
+        catch (e: any) { console.error(`Err copy img ${entryName}:`, e.message) }
         continue
       }
 
@@ -65,16 +70,27 @@ export async function processDirectoryRecursive(
       const relativeUrlPath = path.join(relativePath, urlPathPart).replace(/\\/g, '/')
       const currentWebUrl = `/${navigationSysname}/${relativeUrlPath}`.replace(/\/+/g, '/')
 
-      let metaData: FileMetaData | undefined = undefined;
+      let metaData: FileMetaData | undefined
 
       // --- ОБРАБОТКА ДИРЕКТОРИЙ ---
       if (type === ContentNavItemType.Directory) {
         try {
           await fs.mkdir(destFullPath, { recursive: true })
           currentChildren = await processDirectoryRecursive(
-            sourceFullPath, destBasePath, destRelativePath, imageDestPath, fileMap, navigationSysname, ignoredFolderNames, context
+            sourceFullPath,
+            destBasePath,
+            destRelativePath,
+            imageDestPath,
+            fileMap,
+            navigationSysname,
+            ignoredFolderNames,
+            context,
           )
-        } catch (e: any) { console.error(`Err mkdir ${destFullPath}:`, e.message); continue }
+        }
+        catch (e: any) {
+          console.error(`Err mkdir ${destFullPath}:`, e.message)
+          continue
+        }
       }
 
       // --- ОБРАБОТКА MARKDOWN ФАЙЛОВ ---
@@ -82,6 +98,7 @@ export async function processDirectoryRecursive(
         try {
           const fileStats = await fs.stat(sourceFullPath)
           let content = await fs.readFile(sourceFullPath, 'utf8')
+          // eslint-disable-next-line unused-imports/no-unused-vars
           let linksFound = 0
 
           // 1. Извлечение тегов (до удаления frontmatter)
@@ -115,7 +132,7 @@ export async function processDirectoryRecursive(
                 // Graph Links
                 context.graphData.links.push({
                   source: currentWebUrl,
-                  target: targetUrl
+                  target: targetUrl,
                 })
 
                 // Backlinks
@@ -124,7 +141,7 @@ export async function processDirectoryRecursive(
                 }
                 context.backlinks[targetUrl].push({
                   title: sysname,
-                  url: currentWebUrl
+                  url: currentWebUrl,
                 })
               }
               return `[${linkText}](${targetUrl})`
@@ -139,16 +156,16 @@ export async function processDirectoryRecursive(
           metaData = {
             words,
             readingTime: Math.ceil(words / 200) || 1,
-            lastModified: fileStats.mtime.toISOString()
+            lastModified: fileStats.mtime.toISOString(),
           }
 
           // --- Поиск (Добавляем теги) ---
           context.searchIndex.push({
             id: currentWebUrl,
-            title: title,
+            title,
             url: currentWebUrl,
             content: cleanText,
-            tags: extractedTags // Сохраняем теги
+            tags: extractedTags,
           })
 
           // --- Graph Nodes ---
@@ -156,13 +173,13 @@ export async function processDirectoryRecursive(
             id: currentWebUrl,
             label: sysname,
             val: 1 + uniqueOutboundLinks.size,
-            group: navigationSysname
+            group: navigationSysname,
           })
 
           await ensureDirectoryExists(destFullPath)
           await fs.writeFile(destFullPath, content, 'utf8')
-
-        } catch (e: any) {
+        }
+        catch (e: any) {
           console.error(`Error processing MD ${entryName}:`, e.message)
           continue
         }
@@ -181,12 +198,15 @@ export async function processDirectoryRecursive(
       }
       childrenNavItems.push(navItem)
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error(`Ошибка обработки папки ${sourceCurrentPath}:`, error.message)
   }
 
   childrenNavItems.sort((a, b) => {
-    if (a.type !== b.type) return a.type === ContentNavItemType.Directory ? -1 : 1
+    if (a.type !== b.type)
+      return a.type === ContentNavItemType.Directory ? -1 : 1
+
     return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' })
   })
 

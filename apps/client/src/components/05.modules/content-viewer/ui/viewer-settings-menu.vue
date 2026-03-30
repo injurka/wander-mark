@@ -3,8 +3,8 @@ import { Icon } from '@iconify/vue'
 import { computed, ref } from 'vue'
 import { KitBtn, KitCheckbox, KitDropdown } from '~/components/01.kit'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
-import { useContentViewerStore } from '../store'
 import { useLocale } from '~/shared/composables/use-locale'
+import { useContentViewerStore } from '../store'
 
 const props = defineProps<{ vault: string }>()
 
@@ -16,7 +16,7 @@ const { setTheme, theme } = useChangeTheme()
 const contentViewerStore = useContentViewerStore()
 const dropdownRef = ref<InstanceType<typeof KitDropdown> | null>(null)
 
-const { currentLocale, cycleLanguage, languageNames, t } = useLocale() 
+const { currentLocale, cycleLanguage, languageNames, t } = useLocale()
 
 const currentThemeIcon = computed(() =>
   theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night',
@@ -34,22 +34,22 @@ function handleOpenPlugins() {
 
 <template>
   <KitDropdown ref="dropdownRef" :width="280" :close-on-content-click="false">
-    
     <template #activator>
-      <KitBtn 
-        variant="text" 
-        size="sm" 
-        icon="mdi:dots-vertical" 
-        title="Настройки" 
+      <KitBtn
+        variant="text"
+        size="sm"
+        icon="mdi:dots-vertical"
+        title="Настройки"
       />
     </template>
 
     <div class="menu-content">
-      
       <div class="divider" />
 
       <div class="menu-section">
-        <div class="section-title">{{ t('settings.appearance') }}</div>
+        <div class="section-title">
+          {{ t('settings.appearance') }}
+        </div>
         <div class="menu-item" @click="toggleTheme">
           <div class="item-label">
             <Icon :icon="currentThemeIcon" class="item-icon" />
@@ -70,7 +70,9 @@ function handleOpenPlugins() {
       <div class="divider" />
 
       <div class="menu-section">
-        <div class="section-title">{{ t('settings.interface') }}</div>
+        <div class="section-title">
+          {{ t('settings.interface') }}
+        </div>
         <div class="settings-group">
           <KitCheckbox v-model="contentViewerStore.borderlessViewEnabled" :label="t('settings.borderless')" />
           <KitCheckbox v-model="contentViewerStore.coloredFoldersEnabled" :label="t('settings.coloredFolders')" />
@@ -87,7 +89,6 @@ function handleOpenPlugins() {
           </div>
         </div>
       </div>
-
     </div>
   </KitDropdown>
 </template>

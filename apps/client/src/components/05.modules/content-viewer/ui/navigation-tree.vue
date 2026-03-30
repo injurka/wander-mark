@@ -132,7 +132,7 @@ function getNextRootIndex(currentIndex: number) {
   margin: 0;
   width: 100%;
   font-weight: 100;
-  font-variant-numeric: normal; 
+  font-variant-numeric: normal;
   font-family: 'Maple Mono CN';
   letter-spacing: -0.5px;
 }

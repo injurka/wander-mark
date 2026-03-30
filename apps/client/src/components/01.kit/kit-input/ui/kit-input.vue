@@ -39,7 +39,7 @@ function onInput(e: Event) {
   width: 100%;
 
   &.is-rounded .kit-input {
-    border-radius: 9999px; 
+    border-radius: 9999px;
   }
 
   &.is-solo .kit-input {
@@ -50,29 +50,30 @@ function onInput(e: Event) {
 }
 
 .kit-input {
-  appearance: none; 
+  appearance: none;
   margin: 0;
   box-sizing: border-box;
   width: 100%;
   font-family: inherit;
-  
+
   background-color: var(--bg-primary-color);
   color: var(--fg-primary-color);
   border: 1px solid var(--border-primary-color);
   border-radius: 6px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 
   &::placeholder {
     color: var(--fg-muted-color);
-    opacity: 1; 
+    opacity: 1;
   }
 
   &:focus {
     border-color: var(--fg-accent-color);
   }
 
-  
   &--size-xs {
     height: 28px;
     padding: 0 8px;

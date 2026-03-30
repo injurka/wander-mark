@@ -1,3 +1,6 @@
+/* eslint-disable regexp/no-obscure-range */
+/* eslint-disable regexp/no-super-linear-backtracking */
+/* eslint-disable e18e/prefer-static-regex */
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { FRONT_MATTER_REGEX, IMAGE_EXTENSIONS, INLINE_TAG_REGEX, SYSNAME_REGEX } from './constants'
@@ -19,7 +22,8 @@ export async function extractSysnameFromFrontMatter(filePath: string): Promise<s
     const buffer = Buffer.alloc(1024)
     const { bytesRead } = await fileHandle.read(buffer, 0, 1024, 0)
 
-    if (bytesRead === 0) return null
+    if (bytesRead === 0)
+      return null
 
     const contentStart = buffer.toString('utf8', 0, bytesRead)
     const frontMatterMatch = contentStart.match(FRONT_MATTER_REGEX)
@@ -31,9 +35,11 @@ export async function extractSysnameFromFrontMatter(filePath: string): Promise<s
         return sysnameMatch[1].trim()
       }
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.warn(`Не удалось прочитать front matter из файла ${filePath}: ${error.message}`)
-  } finally {
+  }
+  finally {
     await fileHandle?.close()
   }
   return null
@@ -54,10 +60,11 @@ export function extractTags(yamlContent: string | null, bodyContent: string): st
     for (const line of lines) {
       const trimmedLine = line.trim()
 
-      if (!trimmedLine || trimmedLine.startsWith('#')) continue
+      if (!trimmedLine || trimmedLine.startsWith('#'))
+        continue
 
       // Проверка на ключ "tags:"
-      if (trimmedLine.match(/^tags?:/)) {
+      if (/^tags?:/.test(trimmedLine)) {
         // Проверяем наличие значения на той же строке
         // Пример: "tags: tag1, tag2" или "tags: [tag1, tag2]"
         const inlineValueMatch = trimmedLine.match(/^tags?:\s*(.+)$/)
@@ -82,7 +89,8 @@ export function extractTags(yamlContent: string | null, bodyContent: string): st
             // Значение пустое, ожидаем список на следующих строках
             capturingList = true
           }
-        } else {
+        }
+        else {
           // Просто "tags:", ожидаем список
           capturingList = true
         }
@@ -93,8 +101,10 @@ export function extractTags(yamlContent: string | null, bodyContent: string): st
       if (capturingList) {
         if (trimmedLine.startsWith('-')) {
           const tagVal = trimmedLine.substring(1).trim() // Убираем дефис
-          if (tagVal) tags.add(tagVal)
-        } else if (trimmedLine.includes(':')) {
+          if (tagVal)
+            tags.add(tagVal)
+        }
+        else if (trimmedLine.includes(':')) {
           // Начался новый ключ, прекращаем захват
           capturingList = false
         }
@@ -106,16 +116,15 @@ export function extractTags(yamlContent: string | null, bodyContent: string): st
   const matches = bodyContent.match(INLINE_TAG_REGEX)
   if (matches) {
     // matches возвращает массив строк типа "#tag", убираем решетку
-    matches.forEach(m => {
+    matches.forEach((m) => {
       // INLINE_TAG_REGEX = /(?<=^|\s)#([a-zA-Z...]+)/g
-      // match[0] будет "#tag". 
+      // match[0] будет "#tag".
       tags.add(m.replace('#', ''))
     })
   }
 
   // Очистка: убираем кавычки, пустые строки и возможные дубликаты "-" если вдруг просочились
-  return Array.from(tags)
-    .map(t => t.replace(/^["']|["']$/g, '')) // Убираем кавычки вокруг тега
+  return Array.from(tags, t => t.replace(/^["']|["']$/g, '')) // Убираем кавычки вокруг тега
     .filter(t => t.length > 0 && t !== '-')
 }
 
@@ -126,8 +135,10 @@ export async function ensureDirectoryExists(filePath: string): Promise<void> {
   const directory = path.dirname(filePath)
   try {
     await fs.mkdir(directory, { recursive: true })
-  } catch (error: any) {
-    if (error.code !== 'EEXIST') throw error
+  }
+  catch (error: any) {
+    if (error.code !== 'EEXIST')
+      throw error
   }
 }
 
@@ -139,10 +150,12 @@ export async function safeCopyFile(sourcePath: string, destPath: string): Promis
     await fs.access(sourcePath, fs.constants.F_OK)
     await ensureDirectoryExists(destPath)
     await fs.copyFile(sourcePath, destPath)
-  } catch (error: any) {
+  }
+  catch (error: any) {
     if (error.code === 'ENOENT') {
       console.error(`Error: Source file does not exist: ${sourcePath} `)
-    } else {
+    }
+    else {
       console.error(`Error copying file from ${sourcePath} to ${destPath}: ${error.message} `)
     }
   }
@@ -152,7 +165,8 @@ export async function safeCopyFile(sourcePath: string, destPath: string): Promis
  * Очищает текст от Markdown разметки для создания превью и индекса поиска.
  */
 export function stripMarkdown(markdown: string): string {
-  if (!markdown) return ''
+  if (!markdown)
+    return ''
   return markdown
     // Удаляем заголовки
     .replace(/^#+\s+/gm, '')
@@ -162,7 +176,7 @@ export function stripMarkdown(markdown: string): string {
     // Удаляем зачеркнутый текст
     .replace(/~~(.*?)~~/g, '$1')
     // Удаляем ссылки [text](url) -> text
-    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     // Удаляем вики-ссылки [[text]] или [[link|text]] -> text
     .replace(/\[\[(?:[^|\]]+\|)?([^\]]+)\]\]/g, '$1')
     // Удаляем изображения ![[...]] или ![...](...)
@@ -176,7 +190,7 @@ export function stripMarkdown(markdown: string): string {
     // Удаляем HTML теги
     .replace(/<[^>]*>/g, '')
     // Удаляем теги хэштеги из текста поиска (сами теги уже в поле tags)
-    .replace(/(?<=^|\s)#([a-zA-Zа-яА-Я0-9_\-\/]+)/g, '$1')
+    .replace(/(?<=^|\s)#([\wа-яА-Я\-/]+)/g, '$1')
     // Удаляем лишние пробелы и переносы
     .replace(/\s+/g, ' ')
     .trim()

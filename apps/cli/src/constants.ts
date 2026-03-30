@@ -1,3 +1,5 @@
+/* eslint-disable regexp/no-obscure-range */
+/* eslint-disable regexp/no-super-linear-backtracking */
 export const NAV_FILENAME = 'nav.json'
 export const TREE_FILENAME = 'tree.json'
 export const IMAGE_DEST_FOLDER = '_'
@@ -14,8 +16,15 @@ export const OBSIDIAN_LINK_REGEX = /(?<!!)\[\[([^|\]\n]+)(?:\|([^\]\n]+))?\]\]/g
 // Regex to extract inline tags (e.g. #tag or #tag/nested)
 // Supports Cyrillic, Latin, numbers, underscores, hyphens, and forward slashes
 // Looks for # preceded by start of line or whitespace
-export const INLINE_TAG_REGEX = /(?<=^|\s)#([a-zA-Zа-яА-Я0-9_\-\/]+)/g
+export const INLINE_TAG_REGEX = /(?<=^|\s)#([\wа-яА-Я\-/]+)/g
 
 export const IMAGE_EXTENSIONS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.tiff',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.webp',
+  '.bmp',
+  '.tiff',
 ])

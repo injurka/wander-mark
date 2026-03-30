@@ -33,8 +33,8 @@ export interface GraphNode {
 }
 
 export interface GraphLink {
-  source: string 
-  target: string 
+  source: string
+  target: string
 }
 
 export interface GraphData {

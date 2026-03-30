@@ -21,7 +21,8 @@ export async function runDeploy(user: string, host: string, remotePath: string, 
     try {
       await fs.access(path.join(absoluteOutputDir, 'plugins'))
       foldersToArchive += ' plugins'
-    } catch (e) { }
+    }
+    catch { }
 
     await execAsync(`cd ${absoluteOutputDir} && tar -czf ${tarballName} ${foldersToArchive}`)
 

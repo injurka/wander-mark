@@ -1,21 +1,22 @@
+import { createHead } from '@vueuse/head'
+import { createPinia } from 'pinia'
 import * as Vue from 'vue'
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import { createHead } from '@vueuse/head'
+import { vRipple } from '~/shared/directives/ripple'
 import router from '~/shared/lib/router'
-import { isTauri } from '~/shared/services/fs.client'
-import { useVaultService } from '~/shared/services/vault.service'
 import { i18n } from '~/shared/plugins/i18n'
+import { isTauri } from '~/shared/services/fs.client'
+
+import { useVaultService } from '~/shared/services/vault.service'
 
 import App from './app.vue'
-
-import { vRipple } from '~/shared/directives/ripple'
 
 import '~/assets/scss/global.scss'
 import '~/assets/scss/normalize.scss'
 
+;
 
-  ; (window as any).Vue = Vue
+(window as any).Vue = Vue
 
 async function bootstrap() {
   const vaultService = useVaultService()

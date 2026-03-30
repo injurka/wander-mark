@@ -1,16 +1,16 @@
+import { resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
-import { resolve } from 'node:path'
 import Vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Icons from 'unplugin-icons/vite'
+import { defineConfig } from 'vite'
 import { compression as Compression } from 'vite-plugin-compression2'
 import { autoImportOptionsCfg } from './cfg/auto-import'
 import { iconsCfg } from './cfg/icons'
 import { visualizerPlugin } from './lib/helpers'
 
-const host = process.env.TAURI_DEV_HOST;
+const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig({
   base: './',
@@ -50,13 +50,13 @@ export default defineConfig({
     host: host || false,
     hmr: host
       ? {
-        protocol: "ws",
-        host,
-        port: 1421,
-      }
+          protocol: 'ws',
+          host,
+          port: 1421,
+        }
       : undefined,
     watch: {
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
     },
   },
 

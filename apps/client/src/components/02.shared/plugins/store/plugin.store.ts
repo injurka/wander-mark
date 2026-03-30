@@ -1,7 +1,7 @@
-import { ref, computed } from 'vue'
+import type { LoadedPlugin, PluginContext, PluginRecord, PluginSlotName, WanderMarkPlugin } from '../models'
 import { defineStore } from 'pinia'
-import type { PluginRecord, LoadedPlugin, PluginContext, PluginSlotName, WanderMarkPlugin } from '../models'
-import { loadPluginModule, injectPluginStyles, removePluginStyles } from '../lib'
+import { computed, ref } from 'vue'
+import { injectPluginStyles, loadPluginModule, removePluginStyles } from '../lib'
 
 /**
  * Ключ localStorage формируется per-vault:
@@ -23,7 +23,7 @@ export const usePluginStore = defineStore('plugins', () => {
 
   const getSlotComponents = (slot: PluginSlotName) => {
     return computed(() => {
-      const result: Array<{ pluginId: string; component: any }> = []
+      const result: Array<{ pluginId: string, component: any }> = []
       for (const record of enabledPlugins.value) {
         const lp = loaded.value.get(record.id)
         if (lp?.module.slots?.[slot]) {
@@ -92,7 +92,8 @@ export const usePluginStore = defineStore('plugins', () => {
 
   async function enable(pluginId: string) {
     const record = registry.value.find(r => r.id === pluginId)
-    if (!record) return
+    if (!record)
+      return
 
     record.enabled = true
     persist()
@@ -102,7 +103,8 @@ export const usePluginStore = defineStore('plugins', () => {
 
   async function disable(pluginId: string) {
     const record = registry.value.find(r => r.id === pluginId)
-    if (!record) return
+    if (!record)
+      return
 
     record.enabled = false
     persist()
@@ -166,7 +168,8 @@ export const usePluginStore = defineStore('plugins', () => {
   }
 
   function persist() {
-    if (!currentVaultId.value) return
+    if (!currentVaultId.value)
+      return
     localStorage.setItem(
       storageKey(currentVaultId.value),
       JSON.stringify(registry.value),

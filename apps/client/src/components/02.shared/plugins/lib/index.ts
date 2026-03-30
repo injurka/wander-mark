@@ -1,1 +1,1 @@
-export { loadPluginModule, injectPluginStyles, removePluginStyles } from './plugin-loader'
+export { injectPluginStyles, loadPluginModule, removePluginStyles } from './plugin-loader'

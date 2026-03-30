@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -12,7 +13,7 @@ export async function buildFileMapRecursive(
   currentSourcePath: string,
   navigationSysname: string,
   fileMap: Map<string, string>,
-  ignoredFolderNames: string[]
+  ignoredFolderNames: string[],
 ): Promise<void> {
   try {
     const entries: Dirent = await fs.readdir(currentSourcePath, { withFileTypes: true }) as any
@@ -22,7 +23,6 @@ export async function buildFileMapRecursive(
       const sourceFullPath = path.join(currentSourcePath, entryName)
       const extension = path.extname(entryName)
 
-      // Игнорирование
       if (entry.isDirectory() && ignoredFolderNames.includes(entryName)) {
         console.log(`🚫 Ignoring directory for file mapping: ${path.join(path.relative(sourceBasePath, currentSourcePath), entryName)}`)
         continue
@@ -34,7 +34,8 @@ export async function buildFileMapRecursive(
 
       if (entry.isDirectory()) {
         await buildFileMapRecursive(sourceBasePath, sourceFullPath, navigationSysname, fileMap, ignoredFolderNames)
-      } else if (entry.isFile() && extension.toLowerCase() === '.md') {
+      }
+      else if (entry.isFile() && extension.toLowerCase() === '.md') {
         const baseName = path.basename(entryName, extension)
         const frontMatterSysname = await extractSysnameFromFrontMatter(sourceFullPath)
 
@@ -50,7 +51,8 @@ export async function buildFileMapRecursive(
         fileMap.set(baseName, targetUrl)
       }
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error(`Error scanning directory for map ${currentSourcePath}:`, error.message)
   }
 }

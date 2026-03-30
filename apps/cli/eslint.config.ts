@@ -7,5 +7,5 @@ export default antfu({
     'node/prefer-global/buffer': 'off',
     'no-console': 'off',
   },
-  ignores: ['bun.lock'],
+  ignores: ['bun.lock', 'readme.md'],
 })

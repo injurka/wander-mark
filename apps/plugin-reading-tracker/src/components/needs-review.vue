@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ReadLog } from '../store/tracker.store'
 import { computed } from 'vue'
 import { usePluginI18n } from '../i18n'
 import { trackerActions, trackerState } from '../store/tracker.store'
