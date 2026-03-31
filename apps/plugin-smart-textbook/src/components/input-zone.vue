@@ -2,18 +2,14 @@
 import { usePluginI18n } from '../i18n'
 import { generateContent } from '../services/ai.service'
 import { tbState } from '../store/textbook.store'
+import TopicSelect from './topic-select.vue'
 
 const { t } = usePluginI18n()
-const scenarios = ['situational', 'builder', 'review', 'speaking', 'translation'] as const
 </script>
 
 <template>
   <div class="input-zone">
-    <select v-model="tbState.activeScenario" class="tb-select">
-      <option v-for="sc in scenarios" :key="sc" :value="sc">
-        {{ t(`scenario.${sc}`) }}
-      </option>
-    </select>
+    <TopicSelect />
 
     <textarea
       v-model="tbState.currentInput"
@@ -49,15 +45,6 @@ const scenarios = ['situational', 'builder', 'review', 'speaking', 'translation'
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-.tb-select {
-  padding: 12px;
-  background: var(--bg-tertiary-color);
-  color: var(--fg-primary-color);
-  border: 1px solid var(--border-primary-color);
-  border-radius: 8px;
-  outline: none;
-  font-family: inherit;
 }
 .tb-textarea {
   resize: vertical;

@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
-import BoardBuilder from '../components/board-builder.vue'
-import BoardReview from '../components/board-review.vue'
-import BoardSituational from '../components/board-situational.vue'
-import BoardSpeaking from '../components/board-speaking.vue'
-import BoardTranslation from '../components/board-translation.vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import BoardBuilder from '../components/board/board-builder.vue'
+import BoardReview from '../components/board/board-review.vue'
+import BoardSituational from '../components/board/board-situational.vue'
+import BoardSpeaking from '../components/board/board-speaking.vue'
 import InputZone from '../components/input-zone.vue'
 import Settings from '../components/settings.vue'
 import { usePluginI18n } from '../i18n'
@@ -22,37 +21,70 @@ const activeComponent = computed(() => {
   switch (item.scenario) {
     case 'situational': return BoardSituational
     case 'builder': return BoardBuilder
-    case 'translation': return BoardTranslation
     case 'review': return BoardReview
     case 'speaking': return BoardSpeaking
     default: return null
   }
 })
 
+const activeLangClass = computed(() => {
+  const lang = tbActions.getActiveTargetLang()
+  return `lang-${lang.toLowerCase()}`
+})
+
 function selectHistory(id: string) {
   tbState.activeHistoryId = id
-  // Закрываем сайдбар на мобильных устройствах при выборе истории
   if (typeof window !== 'undefined' && window.innerWidth <= 768) {
     tbState.isSidebarOpen = false
   }
 }
 
-// Слушаем генерацию нового контента, чтобы на мобилке тоже закрывать сайдбар
 watch(() => tbState.activeHistoryId, (newId, oldId) => {
   if (newId !== oldId && typeof window !== 'undefined' && window.innerWidth <= 768) {
     tbState.isSidebarOpen = false
   }
 })
+
+const touchStartX = ref(0)
+const touchEndX = ref(0)
+function handleTouchStart(e: TouchEvent) { touchStartX.value = e.changedTouches[0].screenX }
+function handleTouchEnd(e: TouchEvent) {
+  touchEndX.value = e.changedTouches[0].screenX
+  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+    const swipeDistance = touchEndX.value - touchStartX.value
+    if (swipeDistance > 60)
+      tbState.isSidebarOpen = true
+    else if (swipeDistance < -60)
+      tbState.isSidebarOpen = false
+  }
+}
+
+/** Форматирование даты для history-item */
+function formatDate(ts: number): string {
+  const d = new Date(ts)
+  const now = new Date()
+  const isToday = d.toDateString() === now.toDateString()
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  if (isToday)
+    return time
+  return `${d.toLocaleDateString([], { day: 'numeric', month: 'short' })} ${time}`
+}
+
+/** Иконка сценария */
+function scenarioIcon(scenario: string): string {
+  switch (scenario) {
+    case 'situational': return '💬'
+    case 'builder': return '🧩'
+    case 'review': return '🃏'
+    case 'speaking': return '🗣'
+    default: return '📄'
+  }
+}
 </script>
 
 <template>
-  <div class="tb-layout">
-    <!-- Мобильный затемняющий фон -->
-    <div
-      class="tb-mobile-overlay"
-      :class="{ 'is-active': tbState.isSidebarOpen }"
-      @click="tbState.isSidebarOpen = false"
-    />
+  <div class="tb-layout" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+    <div class="tb-mobile-overlay" :class="{ 'is-active': tbState.isSidebarOpen }" @click="tbState.isSidebarOpen = false" />
 
     <div class="tb-sidebar" :class="{ 'is-collapsed': !tbState.isSidebarOpen }">
       <div class="sidebar-header">
@@ -76,42 +108,37 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
             class="history-item" :class="{ 'is-active': tbState.activeHistoryId === item.id }"
             @click="selectHistory(item.id)"
           >
-            <div class="hi-header">
-              <span class="badge">{{ t(`scenario.${item.scenario}`) }}</span>
-              <button class="del-btn" @click.stop="tbActions.deleteHistory(item.id)">
-                ✕
+            <div class="hi-row">
+              <span class="hi-icon">{{ scenarioIcon(item.scenario) }}</span>
+              <div class="hi-body">
+                <span class="hi-prompt">{{ item.prompt }}</span>
+                <span class="hi-meta">{{ formatDate(item.date) }}</span>
+              </div>
+              <button class="del-btn" title="Delete" @click.stop="tbActions.deleteHistory(item.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
-            <p class="truncate">
-              {{ item.prompt }}
-            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <button
-      class="sidebar-toggle"
-      :class="{ 'is-collapsed': !tbState.isSidebarOpen }"
-      :title="tbState.isSidebarOpen ? 'Скрыть панель' : 'Показать панель'"
-      @click="tbState.isSidebarOpen = !tbState.isSidebarOpen"
-    >
+    <button class="sidebar-toggle" :class="{ 'is-collapsed': !tbState.isSidebarOpen }" @click="tbState.isSidebarOpen = !tbState.isSidebarOpen">
       <svg v-if="tbState.isSidebarOpen" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><line x1="9" x2="9" y1="3" y2="21" /><path d="m16 15-3-3 3-3" /></svg>
       <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><line x1="9" x2="9" y1="3" y2="21" /><path d="m14 9 3 3-3 3" /></svg>
     </button>
 
-    <div class="tb-board" :class="{ expanded: !tbState.isSidebarOpen }">
+    <div class="tb-board" :class="[{ expanded: !tbState.isSidebarOpen }, activeLangClass]">
       <div v-if="tbState.isLoading" class="tb-loading-overlay">
         <div class="spinner" />
         <p>{{ t('tb.loading') }}</p>
       </div>
 
       <template v-else-if="activeComponent">
-        <component
-          :is="activeComponent"
-          :key="tbState.activeHistoryId"
-          :data="tbActions.getActiveData()"
-        />
+        <component :is="activeComponent" :key="tbState.activeHistoryId!" :data="tbActions.getActiveData()" />
 
         <div class="follow-up-wrapper">
           <button v-if="!tbState.isFollowUpVisible" class="btn-new-query" @click="tbState.isFollowUpVisible = true">
@@ -119,19 +146,9 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
           </button>
 
           <div v-else class="follow-up-box">
-            <textarea
-              v-model="tbState.followUpInput"
-              class="tb-textarea"
-              :placeholder="t('tb.placeholder')"
-              @keydown.ctrl.enter.prevent="generateFollowUp"
-            />
+            <textarea v-model="tbState.followUpInput" class="tb-textarea" :placeholder="t('tb.placeholder')" @keydown.ctrl.enter.prevent="generateFollowUp" />
             <div class="follow-up-actions">
-              <button
-                class="tb-btn"
-                :class="{ 'is-loading': tbState.isFollowUpLoading }"
-                :disabled="tbState.isFollowUpLoading || !tbState.followUpInput.trim()"
-                @click="generateFollowUp"
-              >
+              <button class="tb-btn" :class="{ 'is-loading': tbState.isFollowUpLoading }" :disabled="tbState.isFollowUpLoading || !tbState.followUpInput.trim()" @click="generateFollowUp">
                 {{ tbState.isFollowUpLoading ? t('tb.loading') : t('tb.send') }}
               </button>
               <button class="tb-btn secondary icon-btn" @click="tbState.isFollowUpVisible = false">
@@ -157,6 +174,19 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
 </template>
 
 <style scoped>
+.lang-chinese {
+  --lang-font: 'Maple Mono CN', sans-serif;
+}
+.lang-japanese {
+  --lang-font: 'Noto Sans JP', sans-serif;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .tb-layout {
   display: flex;
   height: calc(100dvh - 50px);
@@ -164,8 +194,9 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   color: var(--fg-primary-color);
   position: relative;
   overflow: hidden;
+  touch-action: pan-y;
+  z-index: 1;
 }
-
 .tb-mobile-overlay {
   display: none;
   position: absolute;
@@ -181,7 +212,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   opacity: 1;
   pointer-events: auto;
 }
-
 .tb-sidebar {
   width: 380px;
   min-width: 380px;
@@ -199,7 +229,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   transform: translateX(-100%);
   margin-left: -380px;
 }
-
 .sidebar-toggle {
   position: absolute;
   top: 24px;
@@ -226,7 +255,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
 .sidebar-toggle.is-collapsed {
   left: 24px;
 }
-
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -254,67 +282,94 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   margin: 0;
   color: var(--fg-primary-color);
 }
+
+/* ── Redesigned History ── */
 .history-title {
-  font-size: 1.1em;
-  color: var(--fg-secondary-color);
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--border-secondary-color);
-  padding-bottom: 8px;
+  font-size: 0.75em;
+  color: var(--fg-muted-color);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
 }
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
-
 .history-item {
-  padding: 12px;
-  border: 1px solid var(--border-secondary-color);
-  background: var(--bg-tertiary-color);
+  padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s;
+  border: 1px solid transparent;
 }
 .history-item:hover {
-  border-color: var(--border-focus-color);
+  background: var(--bg-tertiary-color);
 }
 .history-item.is-active {
+  background: var(--bg-accent-color);
   border-color: var(--border-accent-color);
-  background: var(--bg-accent-overlay-color);
 }
-.hi-header {
+
+.hi-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 10px;
+  min-width: 0;
 }
-.badge {
-  font-size: 10px;
-  background: var(--bg-primary-color);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--fg-accent-color);
-  text-transform: uppercase;
-}
-.del-btn {
-  background: transparent;
-  color: var(--fg-muted-color);
+.hi-icon {
   font-size: 14px;
-  border: none;
-  padding: 4px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+  line-height: 1;
 }
-.del-btn:hover {
-  color: var(--fg-error-color);
+.hi-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
-.truncate {
+.hi-prompt {
+  font-size: 0.85em;
+  color: var(--fg-primary-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.9em;
-  color: var(--fg-secondary-color);
-  margin: 0;
+  line-height: 1.3;
+}
+.hi-meta {
+  font-size: 0.7em;
+  color: var(--fg-muted-color);
+  line-height: 1.2;
+}
+.del-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted-color);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
+  padding: 0;
+}
+.history-item:hover .del-btn {
+  opacity: 1;
+}
+.del-btn:hover {
+  color: var(--fg-error-color);
+  background: rgba(255, 59, 48, 0.1);
 }
 
+/* ── Board ── */
 .tb-board {
   flex: 1;
   padding: 80px 40px 40px 64px;
@@ -322,6 +377,7 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   position: relative;
   transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
+  font-family: Inter, sans-serif;
 }
 .tb-board.expanded {
   padding-left: 80px;
@@ -339,7 +395,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   margin-bottom: 16px;
   opacity: 0.5;
 }
-
 .tb-loading-overlay {
   position: absolute;
   inset: 0;
@@ -359,13 +414,9 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .follow-up-wrapper {
+  margin-top: 16px;
   padding-top: 16px;
   display: flex;
   flex-direction: column;
@@ -460,7 +511,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   .tb-mobile-overlay {
     display: block;
   }
-
   .tb-sidebar {
     position: absolute;
     left: 0;
@@ -471,11 +521,9 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
     margin-left: 0 !important;
     box-shadow: 4px 0 16px rgba(0, 0, 0, 0.1);
     padding: 16px;
-
     display: flex;
     flex-direction: column;
   }
-
   .sidebar-header {
     order: 1;
     margin-bottom: 0;
@@ -483,7 +531,6 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
   .settings-btn {
     display: none;
   }
-
   .tb-history {
     order: 2;
     flex: 1;
@@ -493,21 +540,17 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
     padding-bottom: 16px;
     margin-bottom: 0;
   }
-
   .input-zone-wrapper {
     order: 3;
     padding-top: 16px;
   }
-
   .sidebar-toggle:not(.is-collapsed) {
     display: none;
   }
-
   .sidebar-toggle.is-collapsed {
     left: 16px;
     top: 16px;
   }
-
   .tb-board {
     padding: 70px 12px 16px 12px;
   }

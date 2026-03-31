@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { usePluginI18n } from '../i18n'
-import { MODELS, tbActions, tbState } from '../store/textbook.store'
+import { MODELS, TARGET_LANGUAGES, tbActions, tbState } from '../store/textbook.store'
 
 const { t } = usePluginI18n()
 const isLoadingConfig = ref(false)
@@ -12,12 +12,10 @@ async function loadConfig() {
     const configPath = `meta/${tbState.vaultId}/plugins/configs/smart-textbook.json`
     let configText = null
 
-    // 1. Попытка через нативный API хоста
     if (tbState.getFileContent) {
       configText = await tbState.getFileContent(configPath)
     }
 
-    // 2. Fallback через HTTP Fetch
     if (!configText) {
       const url = `${tbState.vaultUrl}/${configPath}`
       const res = await fetch(url)
@@ -35,6 +33,10 @@ async function loadConfig() {
     }
     if (data.model && MODELS.includes(data.model)) {
       tbState.model = data.model
+      loaded = true
+    }
+    if (data.targetLanguage && TARGET_LANGUAGES.includes(data.targetLanguage)) {
+      tbState.targetLanguage = data.targetLanguage
       loaded = true
     }
 
@@ -65,6 +67,15 @@ async function loadConfig() {
       </div>
 
       <div class="modal-body">
+        <div class="form-group">
+          <label>{{ t('settings.targetLang') }}</label>
+          <select v-model="tbState.targetLanguage" class="tb-input">
+            <option v-for="lang in TARGET_LANGUAGES" :key="lang" :value="lang">
+              {{ t(`langs.${lang}`) || lang }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>{{ t('settings.apiKey') }} (AiHubMix)</label>
           <input v-model="tbState.apiKey" type="password" placeholder="sk-..." class="tb-input">
@@ -133,7 +144,6 @@ async function loadConfig() {
 .icon-btn:hover {
   color: var(--fg-primary-color);
 }
-
 .modal-body {
   padding: 20px;
   display: flex;
@@ -162,7 +172,6 @@ async function loadConfig() {
 .tb-input:focus {
   border-color: var(--border-focus-color);
 }
-
 .actions-row {
   display: flex;
   justify-content: flex-end;

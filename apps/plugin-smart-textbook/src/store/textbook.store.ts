@@ -1,5 +1,5 @@
-import type { GenerationHistory, PluginContext, ScenarioType } from '../types'
-import { reactive, watch } from 'vue'
+import type { GenerationHistory, PluginContext, ScenarioType, TargetLanguage, TopicDefinition } from '../types'
+import { computed, reactive, watch } from 'vue'
 
 export const MODELS = [
   'gemini-3.1-flash-lite-preview',
@@ -8,14 +8,44 @@ export const MODELS = [
   'qwen3.5-397b-a17b',
 ]
 
+export const TARGET_LANGUAGES: TargetLanguage[] = [
+  'Chinese',
+  'English',
+  'Russian',
+]
+
+/**
+ * Реестр тем.
+ * Темы без `languages` — общие (видны для любого языка).
+ * Темы с `languages: [...]` — видны только при выборе соответствующего языка.
+ */
+export const TOPIC_REGISTRY: TopicDefinition[] = [
+  // ── Общие (все языки) ──
+  { id: 'situational', labelKey: 'scenario.situational', scenario: 'situational' },
+  { id: 'builder', labelKey: 'scenario.builder', scenario: 'builder' },
+  { id: 'review', labelKey: 'scenario.review', scenario: 'review' },
+  { id: 'speaking', labelKey: 'scenario.speaking', scenario: 'speaking' },
+
+  // ── Привязанные к языку ──
+  { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'builder', languages: ['Chinese'] },
+  { id: 'declension-practice', labelKey: 'scenario.declensionPractice', scenario: 'review', languages: ['Russian'] },
+  { id: 'measure-words', labelKey: 'scenario.measureWords', scenario: 'review', languages: ['Chinese'] },
+  { id: 'chengyu-idioms', labelKey: 'scenario.chengyuIdioms', scenario: 'situational', languages: ['Chinese'] },
+  { id: 'phrasal-verbs', labelKey: 'scenario.phrasalVerbs', scenario: 'speaking', languages: ['English'] },
+  { id: 'aspect-pairs', labelKey: 'scenario.aspectPairs', scenario: 'builder', languages: ['Russian'] },
+]
+
 export const tbState = reactive({
   apiKey: '',
   model: MODELS[0],
+  targetLanguage: TARGET_LANGUAGES[0] as TargetLanguage,
 
   isLoading: false,
   isSettingsOpen: false,
   isSidebarOpen: true,
-  activeScenario: 'situational' as ScenarioType,
+  /** Выбранная тема (id из TOPIC_REGISTRY) */
+  activeTopic: 'situational' as string,
+
   currentInput: '',
 
   isFollowUpVisible: false,
@@ -31,6 +61,33 @@ export const tbState = reactive({
   showToast: null as any,
   getFileContent: null as any,
   confirm: null as any,
+})
+
+/**
+ * Темы, отфильтрованные под текущий целевой язык,
+ * разбитые на группы: общие и языковые.
+ */
+export const filteredTopics = computed(() => {
+  const lang = tbState.targetLanguage
+  const universal: TopicDefinition[] = []
+  const langSpecific: TopicDefinition[] = []
+
+  for (const topic of TOPIC_REGISTRY) {
+    if (!topic.languages || topic.languages.length === 0) {
+      universal.push(topic)
+    }
+    else if (topic.languages.includes(lang)) {
+      langSpecific.push(topic)
+    }
+  }
+
+  return { universal, langSpecific }
+})
+
+/** Вычисляемый сценарий на основе выбранной темы */
+export const activeScenario = computed<ScenarioType>(() => {
+  const topic = TOPIC_REGISTRY.find(t => t.id === tbState.activeTopic)
+  return topic?.scenario ?? 'situational'
 })
 
 export const tbActions = {
@@ -53,7 +110,6 @@ export const tbActions = {
       tbState.confirm(msg)
     }
     else {
-      // eslint-disable-next-line no-alert
       alert(msg)
     }
   },
@@ -65,6 +121,7 @@ export const tbActions = {
       prompt,
       data,
       date: Date.now(),
+      targetLang: tbState.targetLanguage,
     }
     tbState.history.unshift(newEntry)
     tbState.activeHistoryId = newEntry.id
@@ -74,8 +131,8 @@ export const tbActions = {
     return tbState.history.find(h => h.id === tbState.activeHistoryId)?.data
   },
 
-  getActivePrompt() {
-    return tbState.history.find(h => h.id === tbState.activeHistoryId)?.prompt || ''
+  getActiveTargetLang(): TargetLanguage {
+    return tbState.history.find(h => h.id === tbState.activeHistoryId)?.targetLang || tbState.targetLanguage
   },
 
   deleteHistory(id: string) {
@@ -89,6 +146,16 @@ export const tbActions = {
 export function initTbStore() {
   tbState.apiKey = localStorage.getItem('wm-tb-apikey') || ''
   tbState.model = localStorage.getItem('wm-tb-model') || MODELS[0]
+
+  const savedLang = localStorage.getItem('wm-tb-targetlang') as TargetLanguage
+  if (savedLang && TARGET_LANGUAGES.includes(savedLang)) {
+    tbState.targetLanguage = savedLang
+  }
+
+  const savedTopic = localStorage.getItem('wm-tb-topic')
+  if (savedTopic && TOPIC_REGISTRY.some(t => t.id === savedTopic)) {
+    tbState.activeTopic = savedTopic
+  }
 
   const savedSidebar = localStorage.getItem('wm-tb-sidebar')
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
@@ -109,6 +176,15 @@ export function initTbStore() {
 
   watch(() => tbState.apiKey, val => localStorage.setItem('wm-tb-apikey', val))
   watch(() => tbState.model, val => localStorage.setItem('wm-tb-model', val))
+  watch(() => tbState.targetLanguage, (val) => {
+    localStorage.setItem('wm-tb-targetlang', val)
+    // Если текущая тема не подходит под новый язык — сбрасываем на первую общую
+    const topic = TOPIC_REGISTRY.find(t => t.id === tbState.activeTopic)
+    if (topic?.languages && topic.languages.length > 0 && !topic.languages.includes(val)) {
+      tbState.activeTopic = 'situational'
+    }
+  })
+  watch(() => tbState.activeTopic, val => localStorage.setItem('wm-tb-topic', val))
   watch(() => tbState.isSidebarOpen, val => localStorage.setItem('wm-tb-sidebar', String(val)))
   watch(() => tbState.history, val => localStorage.setItem('wm-tb-history', JSON.stringify(val)), { deep: true })
 }

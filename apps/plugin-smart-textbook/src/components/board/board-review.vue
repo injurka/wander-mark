@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ReviewData } from '../types'
+import type { ReviewData } from '../../types'
 import { marked } from 'marked'
 import { ref } from 'vue'
-import { usePluginI18n } from '../i18n'
+import { usePluginI18n } from '../../i18n'
 
 defineProps<{ data: ReviewData }>()
 const { t } = usePluginI18n()
@@ -34,19 +34,18 @@ function parseMarkdown(text: string) {
   <div class="review-board">
     <div v-for="(card, index) in data.cards" :key="index" class="flashcard-container">
       <div class="flashcard" :class="{ 'is-flipped': getCardState(index).flipped }">
-        <!-- Лицевая сторона -->
         <div class="card-face card-front">
           <div class="card-content">
             <p class="context">
               {{ card.context_with_blank }}
             </p>
 
-            <div class="hint-area">
+            <div v-if="card.phonetic_hint" class="hint-area">
               <button v-if="!getCardState(index).showHint" class="btn-hint" @click.stop="showHint(index)">
                 👁 {{ t('board.hint') }}
               </button>
-              <p v-else class="pinyin-hint">
-                {{ card.pinyin_hint }}
+              <p v-else class="phonetic-hint">
+                {{ card.phonetic_hint }}
               </p>
             </div>
           </div>
@@ -55,14 +54,13 @@ function parseMarkdown(text: string) {
           </button>
         </div>
 
-        <!-- Обратная сторона -->
         <div class="card-face card-back">
           <div class="card-content">
             <h3 class="answer">
               {{ card.answer }}
             </h3>
-            <p class="pinyin-answer">
-              {{ card.pinyin_hint }}
+            <p v-if="card.phonetic_hint" class="phonetic-answer">
+              {{ card.phonetic_hint }}
             </p>
             <div class="explanation markdown-body" v-html="parseMarkdown(card.explanation)" />
           </div>
@@ -85,7 +83,7 @@ function parseMarkdown(text: string) {
 .flashcard-container {
   width: 100%;
   max-width: 500px;
-  height: 300px;
+  height: 350px;
   perspective: 1000px;
 }
 .flashcard {
@@ -111,13 +109,13 @@ function parseMarkdown(text: string) {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Важно для предотвращения выпадения контента за границы карточки */
 }
 .card-back {
   transform: rotateY(180deg);
   background: var(--bg-accent-overlay-color);
   border-color: var(--border-accent-color);
 }
-
 .card-content {
   flex: 1;
   display: flex;
@@ -125,11 +123,14 @@ function parseMarkdown(text: string) {
   justify-content: center;
   align-items: center;
   text-align: center;
+  min-height: 0; /* Разрешаем блоку ужиматься, чтобы работал скролл во внутреннем элементе */
+  width: 100%;
 }
 .context {
   font-size: 1.5em;
   color: var(--fg-primary-color);
   margin-bottom: 24px;
+  font-family: var(--lang-font, inherit);
 }
 .hint-area {
   height: 40px;
@@ -148,35 +149,36 @@ function parseMarkdown(text: string) {
 .btn-hint:hover {
   background: var(--bg-accent-color);
 }
-.pinyin-hint {
+.phonetic-hint {
   color: var(--fg-secondary-color);
   font-family: monospace;
   font-size: 1.2em;
 }
-
 .answer {
   font-size: 3em;
   color: var(--fg-primary-color);
   margin: 0;
-  font-family: 'Maple Mono CN';
+  font-family: var(--lang-font, inherit);
 }
-.pinyin-answer {
+.phonetic-answer {
   color: var(--fg-accent-color);
   margin-bottom: 16px;
+  font-family: monospace;
 }
 .explanation {
   font-size: 0.9em;
   color: var(--fg-secondary-color);
   text-align: left;
   width: 100%;
+  flex: 1;
   overflow-y: auto;
-  max-height: 120px;
   padding: 8px;
   background: var(--bg-primary-color);
   border-radius: 8px;
+  margin-bottom: 16px;
 }
-
 .btn-flip {
+  flex-shrink: 0;
   width: 100%;
   padding: 12px;
   background: var(--bg-secondary-color);
@@ -190,12 +192,7 @@ function parseMarkdown(text: string) {
 .btn-flip:hover {
   background: var(--bg-hover-color);
 }
-
-/* Адаптив карточек */
 @media (max-width: 768px) {
-  .flashcard-container {
-    height: 350px; /* Больше высоты для текста на узком экране */
-  }
   .context {
     font-size: 1.2em;
   }

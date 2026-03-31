@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { BuilderData } from '../types'
+import type { BuilderData } from '../../types'
 import { marked } from 'marked'
 import { computed, ref, watch } from 'vue'
-import { usePluginI18n } from '../i18n'
-import { tbActions } from '../store/textbook.store'
+import { usePluginI18n } from '../../i18n'
+import { tbActions } from '../../store/textbook.store'
 
 const props = defineProps<{ data: BuilderData }>()
 const { t } = usePluginI18n()
@@ -38,6 +38,12 @@ function checkResult() {
   }
 }
 
+function showAnswer() {
+  selected.value = [...props.data.tokens]
+  available.value = []
+  showLogic.value = true
+}
+
 const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
 </script>
 
@@ -51,7 +57,6 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
       </p>
     </div>
 
-    <!-- Выбранные блоки -->
     <div class="drop-zone" :class="{ 'is-correct': showLogic }">
       <div v-if="selected.length === 0" class="placeholder">
         Кликай по блокам ниже...
@@ -65,7 +70,6 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
       </div>
     </div>
 
-    <!-- Доступные блоки -->
     <div v-if="!showLogic" class="pool-zone">
       <div
         v-for="(t, i) in available" :key="i"
@@ -75,9 +79,14 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
       </div>
     </div>
 
-    <button v-if="!showLogic" class="btn-primary" :disabled="available.length > 0" @click="checkResult">
-      {{ t('board.check') }}
-    </button>
+    <div v-if="!showLogic" class="actions-row">
+      <button class="btn-primary" :disabled="available.length > 0" @click="checkResult">
+        {{ t('board.check') }}
+      </button>
+      <button class="btn-secondary" @click="showAnswer">
+        {{ t('board.showAnswer') }}
+      </button>
+    </div>
 
     <Transition name="fade">
       <div v-if="showLogic" class="logic-explanation">
@@ -86,6 +95,7 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
           <span v-for="(t, idx) in data.tokens" :key="idx" class="chain-item">
             <span class="chain-tag">{{ t.logic_tag }}</span>
             <span class="chain-text">{{ t.text }}</span>
+            <span v-if="t.transcription" class="chain-transcription">{{ t.transcription }}</span>
           </span>
         </div>
         <div class="markdown-body" v-html="parsedGrammar" />
@@ -179,17 +189,34 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   white-space: nowrap;
 }
 
-.btn-primary {
-  background: var(--bg-action-hover-color);
-  color: var(--fg-inverted-color);
+.actions-row {
+  display: flex;
+  gap: 12px;
+}
+.btn-primary,
+.btn-secondary {
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: bold;
-  align-self: flex-start;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--bg-action-hover-color);
+  color: var(--fg-inverted-color);
+  border: none;
 }
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--fg-secondary-color);
+  border: 1px solid var(--border-secondary-color);
+}
+.btn-secondary:hover {
+  background: var(--bg-hover-color);
+  color: var(--fg-primary-color);
 }
 
 .logic-explanation {
@@ -220,13 +247,18 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   font-size: 1.2em;
   font-weight: bold;
 }
+.chain-transcription {
+  font-size: 0.9em;
+  color: var(--fg-secondary-color);
+  font-family: monospace;
+  margin-top: 2px;
+}
 
 .markdown-body {
   color: var(--fg-secondary-color);
   line-height: 1.6;
 }
 
-/* Адаптив Builder */
 @media (max-width: 768px) {
   .token {
     font-size: 1em;

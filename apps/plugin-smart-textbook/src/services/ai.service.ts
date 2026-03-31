@@ -1,6 +1,7 @@
 import type { ScenarioType } from '../types'
 import { usePluginI18n } from '../i18n'
-import { tbActions, tbState } from '../store/textbook.store'
+import { buildSystemPrompt } from '../prompts'
+import { activeScenario, tbActions, tbState, TOPIC_REGISTRY } from '../store/textbook.store'
 
 function isDataValid(scenario: ScenarioType, data: any): boolean {
   if (!data)
@@ -13,19 +14,38 @@ function isDataValid(scenario: ScenarioType, data: any): boolean {
     case 'review':
       return Array.isArray(data.cards)
     case 'speaking':
-      return typeof data.grammatical === 'string' && Array.isArray(data.possible_replies)
-    case 'translation':
-      return Array.isArray(data.paragraphs)
+      return !!data.grammatical && Array.isArray(data.possible_replies)
     default:
       return false
   }
+}
+
+/**
+ * Формирует дополнительную подсказку для AI,
+ * если выбрана языко-специфичная тема.
+ */
+function getTopicHint(topicId: string): string {
+  const topic = TOPIC_REGISTRY.find(t => t.id === topicId)
+  if (!topic || !topic.languages || topic.languages.length === 0)
+    return ''
+
+  const hints: Record<string, string> = {
+    'stpmvo-analysis': 'Focus on breaking the sentence using the Chinese STPMVO word-order model (Subject, Time, Place, Manner, Verb, Object). Highlight the role of each token according to STPMVO.',
+    'declension-practice': 'Focus on Russian noun/adjective declension. Generate flashcards where the student must fill in the correct grammatical case form.',
+    'measure-words': 'Focus on Chinese measure words (量词). Each card should test the correct measure word for a given noun.',
+    'chengyu-idioms': 'Generate a dialogue that naturally uses Chinese chengyu (成语). Explain the origin and meaning of each idiom used.',
+    'phrasal-verbs': 'Focus on English phrasal verbs. Show how different particles change the meaning of the base verb.',
+    'aspect-pairs': 'Focus on Russian aspect pairs (видовые пары). For each verb, show both perfective and imperfective forms and contexts where each is used.',
+  }
+
+  return hints[topicId] || ''
 }
 
 export async function generateContent() {
   if (!tbState.currentInput.trim() || tbState.isLoading)
     return
 
-  const { t } = usePluginI18n()
+  const { t, locale } = usePluginI18n()
 
   if (!tbState.apiKey) {
     tbState.isSettingsOpen = true
@@ -35,9 +55,15 @@ export async function generateContent() {
 
   tbState.isLoading = true
   const prompt = tbState.currentInput
-  const scenario = tbState.activeScenario
+  const scenario = activeScenario.value
+  const targetLang = tbState.targetLanguage
 
-  const systemPrompt = t(`prompts.${scenario}`)
+  let systemPrompt = buildSystemPrompt(scenario, targetLang, locale.value)
+
+  const topicHint = getTopicHint(tbState.activeTopic)
+  if (topicHint) {
+    systemPrompt += `\n\nAdditional focus: ${topicHint}`
+  }
 
   try {
     const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {
@@ -86,7 +112,7 @@ export async function generateFollowUp() {
   if (!tbState.followUpInput.trim() || tbState.isFollowUpLoading)
     return
 
-  const { t } = usePluginI18n()
+  const { t, locale } = usePluginI18n()
   const activeItem = tbState.history.find(h => h.id === tbState.activeHistoryId)
   if (!activeItem)
     return
@@ -100,8 +126,9 @@ export async function generateFollowUp() {
   tbState.isFollowUpLoading = true
   const prompt = tbState.followUpInput
   const scenario = activeItem.scenario
+  const targetLang = activeItem.targetLang
 
-  const systemPrompt = t(`prompts.${scenario}`)
+  const systemPrompt = buildSystemPrompt(scenario, targetLang, locale.value)
 
   try {
     const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {

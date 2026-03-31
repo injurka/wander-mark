@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SpeakingData } from '../types'
+import type { SpeakingData } from '../../types'
 import { ref } from 'vue'
-import { usePluginI18n } from '../i18n'
+import { usePluginI18n } from '../../i18n'
 
 defineProps<{ data: SpeakingData }>()
 const { t } = usePluginI18n()
@@ -33,7 +33,10 @@ const showReplies = ref(false)
 
       <div class="tab-content">
         <p class="translated-text">
-          {{ data[activeTab] }}
+          {{ typeof data[activeTab] === 'string' ? data[activeTab] : data[activeTab].text }}
+        </p>
+        <p v-if="typeof data[activeTab] !== 'string' && data[activeTab].transcription" class="transcription-text">
+          {{ data[activeTab].transcription }}
         </p>
       </div>
     </div>
@@ -47,7 +50,12 @@ const showReplies = ref(false)
         <div v-if="showReplies" class="accordion-body">
           <ul class="reply-list">
             <li v-for="(reply, idx) in data.possible_replies" :key="idx">
-              {{ reply }}
+              <div class="reply-text">
+                {{ typeof reply === 'string' ? reply : reply.text }}
+              </div>
+              <div v-if="typeof reply !== 'string' && reply.transcription" class="reply-transcription">
+                {{ reply.transcription }}
+              </div>
             </li>
           </ul>
         </div>
@@ -117,6 +125,12 @@ const showReplies = ref(false)
   font-family: 'Maple Mono CN', sans-serif;
   color: var(--fg-primary-color);
 }
+.transcription-text {
+  color: var(--fg-accent-color);
+  font-family: monospace;
+  font-size: 1.2em;
+  margin-top: 8px;
+}
 
 .replies-accordion {
   background: var(--bg-secondary-color);
@@ -157,6 +171,7 @@ const showReplies = ref(false)
 .accordion-body {
   padding: 0 24px 24px 24px;
   max-height: 500px;
+  overflow-y: auto;
 }
 .reply-list {
   list-style: none;
@@ -171,7 +186,17 @@ const showReplies = ref(false)
   padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--border-primary-color);
+}
+.reply-text {
   color: var(--fg-primary-color);
+  font-size: 1.1em;
+  font-family: var(--lang-font, inherit);
+}
+.reply-transcription {
+  color: var(--fg-accent-color);
+  font-family: monospace;
+  font-size: 0.9em;
+  margin-top: 4px;
 }
 
 @media (max-width: 768px) {
