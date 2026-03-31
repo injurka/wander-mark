@@ -1,0 +1,57 @@
+{
+  "tb": {
+    "title": "智能教科书",
+    "history": "会话历史",
+    "loading": "正在生成学习材料...",
+    "emptyState": "请选择场景并输入提示词",
+    "delete": "删除",
+    "generate": "生成",
+    "placeholder": "描述一个场景、一个句子或粘贴文本...",
+    "newQuery": "新查询",
+    "send": "发送",
+    "hide": "隐藏"
+  },
+  "scenario": {
+    "situational": "情景对话",
+    "builder": "句子构造器",
+    "review": "复习 (抽认卡)",
+    "speaking": "口语练习",
+    "translation": "透视翻译"
+  },
+  "board": {
+    "literal": "字面意思:",
+    "builderTitle": "组装句子",
+    "translatePrompt": "翻译:",
+    "check": "检查",
+    "logicTitle": "构造逻辑:",
+    "wrongAnswer": "回答错误，请重试！",
+    "xrayToggle": "开启“透视”（字面直译）",
+    "litTranslation": "意译:",
+    "cultureNote": "文化说明:",
+    "hint": "提示 (拼音)",
+    "flipCard": "翻转卡片",
+    "grammatical": "语法正确",
+    "colloquial": "地道口语",
+    "formal": "正式/礼貌",
+    "possibleReplies": "对方可能的回答:"
+  },
+  "prompts": {
+    "situational": "你是一名中文老师。请根据用户提供的情景生成对话。请严格回复有效的JSON对象，不要使用markdown格式（```json），格式如下：{\"messages\":[{\"speaker\":\"名字\",\"original\":\"汉字\",\"pinyin\":\"结合语境带声调的拼音（词语之间务必用空格隔开）\",\"translation\":\"常规翻译\",\"literal\":\"字面直译\",\"keywords\":[{\"word\":\"台词中的生词\",\"explanation\":\"简短的释义\"}]}]}",
+    "builder": "分析用户提供的句子并将其翻译为中文。请严格回复有效的JSON：{\"target\":\"汉字完整目标句子\",\"grammar_rule\":\"详细的语法解释（可使用markdown）\",\"tokens\":[{\"text\":\"词语/汉字\",\"role\":\"成分（主语/时间/谓语/宾语）\",\"logic_tag\":\"逻辑标签（谁/什么时候/在哪里/什么）\"}]}",
+    "review": "根据提供的文本或词汇创建测试（记忆抽认卡）。请严格回复有效的JSON：{\"cards\":[{\"context_with_blank\":\"带有空格'___'的汉字句子（代替目标词）\",\"pinyin_hint\":\"缺失词语的拼音\",\"answer\":\"正确的汉字词语\",\"explanation\":\"解释为什么使用这个词（可使用markdown）\"}]}",
+    "speaking": "用户输入一句话。请提供不同的翻译版本及对方可能的回答。请严格回复有效的JSON：{\"original\":\"用户输入\",\"grammatical\":\"语法正确的汉字翻译\",\"colloquial\":\"地道口语表达（俚语/自然流畅）\",\"formal\":\"正式或礼貌用语\",\"possible_replies\":[\"对方可能的回答1\",\"对方可能的回答2\"]}",
+    "translation": "对中文文本进行深度的语言学解析（透视翻译）。请严格回复有效的JSON：{\"paragraphs\":[{\"original\":\"原句或段落\",\"translation\":\"意译\",\"literal\":\"逐字直译\",\"cultural_note\":\"成语或文化背景解释（如果有，否则为null）\",\"words\":[{\"word\":\"汉字/词语\",\"literal\":\"字面意思（例如：电脑 - 带电的脑子）\"}]}]}"
+  },
+  "settings": {
+    "title": "设置",
+    "model": "模型",
+    "apiKey": "API 密钥",
+    "loadConfig": "加载配置",
+    "loading": "加载中...",
+    "close": "关闭",
+    "configSuccess": "配置加载成功！",
+    "configEmpty": "配置为空或格式无效",
+    "configError": "加载配置失败: ",
+    "apiKeyMissing": "请在设置中提供 API 密钥。"
+  }
+}

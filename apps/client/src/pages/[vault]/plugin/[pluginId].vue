@@ -63,7 +63,7 @@ const pluginComponent = computed(() => {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: calc(100vh - 50px);
+  min-height: calc(100dvh - 50px);
   padding: 0;
 }
 .plugin-page-not-found {

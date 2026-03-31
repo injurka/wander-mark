@@ -235,7 +235,7 @@ const {
 
 <style lang="scss" scoped>
 .landing-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg-primary-color);
   position: relative;
   overflow-y: auto;

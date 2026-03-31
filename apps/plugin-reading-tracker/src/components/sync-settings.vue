@@ -139,13 +139,12 @@ async function handleSync() {
 .rt-desc {
   color: var(--fg-muted-color);
   font-size: 0.9rem;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 .rt-sync-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 600px;
 }
 .rt-form-group {
   display: flex;

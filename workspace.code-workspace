@@ -19,6 +19,9 @@
 			"path": "apps/plugin-reading-tracker"
 		},
 		{
+			"path": "apps/plugin-smart-textbook"
+		},
+		{
 			"path": "apps/plugin-chinese-dictionary"
 		},
 		{

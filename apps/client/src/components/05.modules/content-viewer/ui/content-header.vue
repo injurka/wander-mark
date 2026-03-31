@@ -1,13 +1,19 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { KitBtn } from '~/components/01.kit'
 import ViewerSettingsMenu from './viewer-settings-menu.vue'
 
 interface Props {
   visible: boolean
+  showMenuToggle?: boolean
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showMenuToggle: true,
+})
 
 const emit = defineEmits<{
   (e: 'openSearch'): void
@@ -16,24 +22,50 @@ const emit = defineEmits<{
 const menu = defineModel('menu', { required: true })
 
 const route = useRoute()
+const router = useRouter()
+const { t } = useI18n()
 
 const breadcrumbsTrackRef = ref<HTMLElement | null>(null)
 
 const breadcrumbs = computed(() => {
   const vault = route.params.vault as string
-  const pwd = (Array.isArray(route.params.pwd) ? route.params.pwd : [route.params.pwd].filter(Boolean)) as string[]
-
   let currentPath = `/${vault}`
-  const items = [] as {
-    title: string
-    to: string
-    disabled: boolean
-  }[]
 
-  pwd.forEach((segment, index) => {
-    currentPath += `/${segment}`
-    items.push({ title: segment, to: currentPath, disabled: index === pwd.length - 1 })
+  const items: { title: string, to: string, disabled: boolean }[] = []
+
+  items.push({
+    title: vault,
+    to: currentPath,
+    disabled: route.name === 'VaultIndex' && !route.params.pwd && !route.params.pluginId,
   })
+
+  if (route.name === 'PluginPage') {
+    const pluginId = route.params.pluginId as string
+    if (pluginId) {
+      currentPath += `/plugin/${pluginId}`
+      const pluginPathRaw = route.params.pluginPath
+      const pluginPath = (Array.isArray(pluginPathRaw) ? pluginPathRaw : [pluginPathRaw].filter(Boolean)) as string[]
+
+      items.push({
+        title: `plugin:${pluginId}`,
+        to: currentPath,
+        disabled: pluginPath.length === 0,
+      })
+
+      pluginPath.forEach((segment, index) => {
+        currentPath += `/${segment}`
+        items.push({ title: segment, to: currentPath, disabled: index === pluginPath.length - 1 })
+      })
+    }
+  }
+  else if (route.params.pwd) {
+    const pwd = (Array.isArray(route.params.pwd) ? route.params.pwd : [route.params.pwd].filter(Boolean)) as string[]
+
+    pwd.forEach((segment, index) => {
+      currentPath += `/${segment}`
+      items.push({ title: segment, to: currentPath, disabled: index === pwd.length - 1 })
+    })
+  }
 
   return items
 })
@@ -56,24 +88,35 @@ const currentVault = computed(() => route.params.vault as string)
   <header class="content-header" :class="{ 'is-hidden': !visible }">
     <div class="header-left">
       <KitBtn
+        v-if="props.showMenuToggle"
         variant="text"
         size="sm"
         :icon="menu ? 'mdi:arrow-left' : 'mdi:menu'"
         class="menu-btn flex-shrink-0"
         @click="menu = !menu"
       />
+      <KitBtn
+        v-else-if="route.name !== 'VaultIndex'"
+        variant="text"
+        size="sm"
+        icon="mdi:home-outline"
+        class="menu-btn flex-shrink-0"
+        :title="t('sidebar.vaultHome')"
+        @click="router.push(`/${currentVault}`)"
+      />
 
       <nav class="breadcrumbs">
         <div ref="breadcrumbsTrackRef" class="breadcrumb-track">
           <template v-for="(item, i) in breadcrumbs" :key="i">
             <Icon v-if="i > 0" icon="mdi:chevron-right" size="14" class="separator" />
-            <span
+            <component
+              :is="item.disabled ? 'span' : 'router-link'"
+              :to="item.disabled ? undefined : item.to"
               class="breadcrumb-item"
-              :class="{ 'is-active': item.disabled }"
+              :class="{ 'is-active': item.disabled, 'breadcrumb-link': !item.disabled }"
             >
-
               <span>{{ item.title }}</span>
-            </span>
+            </component>
           </template>
         </div>
       </nav>
@@ -184,6 +227,7 @@ const currentVault = computed(() => route.params.vault as string)
   transition: all 0.2s ease;
   font-weight: 500;
   flex-shrink: 0;
+  text-decoration: none;
 
   &.is-active {
     background-color: var(--bg-secondary-color);
@@ -195,7 +239,7 @@ const currentVault = computed(() => route.params.vault as string)
 
 .breadcrumb-link {
   color: inherit;
-  text-decoration: none;
+  cursor: pointer;
 
   &:hover {
     color: var(--fg-primary-color);

@@ -147,7 +147,7 @@ function stopResize() {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
+    height: 100dvh;
     z-index: 9999;
     border-right: none;
 

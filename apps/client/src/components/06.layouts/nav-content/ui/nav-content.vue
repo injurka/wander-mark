@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
-import { ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
@@ -10,7 +10,7 @@ import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
 import { useConfirm } from '~/shared/composables/use-confirm'
-
+import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { isNative } from '~/shared/services/fs.client'
@@ -30,20 +30,14 @@ const { confirm } = useConfirm()
 const { t } = useI18n()
 const { currentLocale } = useLocale()
 
-const menu = ref(route.name !== 'VaultIndex' && route.name !== 'PluginPage')
+// Читаем мета-данные роута
+const isSidebarEnabled = computed(() => !route.meta.hideSidebar)
+
+const menu = ref(isSidebarEnabled.value && typeof window !== 'undefined' && window.innerWidth >= 768)
 const searchOpen = ref(false)
 const scrollableRef = ref<HTMLElement | null>(null)
 const mainAreaRef = ref<HTMLElement | null>(null)
 const isSwipingOnScrollable = ref(false)
-
-watch(() => route.name, (newName, oldName) => {
-  if (newName === 'VaultIndex' || newName === 'PluginPage') {
-    menu.value = false
-  }
-  else if ((oldName === 'VaultIndex' || oldName === 'PluginPage') && typeof window !== 'undefined' && window.innerWidth >= 768) {
-    menu.value = true
-  }
-})
 
 const isHeaderVisible = ref(true)
 const lastScrollTop = ref(0)
@@ -67,12 +61,24 @@ useSwipe(mainAreaRef, {
   passive: true,
   onSwipeStart: (e) => { isSwipingOnScrollable.value = !!(e.target as HTMLElement).closest('table') },
   onSwipeEnd: (_, direction) => {
-    if (!isSwipingOnScrollable.value && !menu.value && direction === 'right')
+    // Разрешаем свайп только если сайдбар разрешен
+    if (!isSwipingOnScrollable.value && !menu.value && direction === 'right' && isSidebarEnabled.value)
       menu.value = true
   },
 })
 
 useEventListener(scrollableRef, 'scroll', handleScroll)
+
+// При смене пути контролируем сайдбар и скролл
+watch(() => route.path, () => {
+  if (!isSidebarEnabled.value) {
+    menu.value = false
+  }
+  else if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+    menu.value = true
+  }
+  scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
+})
 
 watch(() => params.value.vault, async (vault) => {
   if (!vault)
@@ -167,8 +173,6 @@ useHead(() => ({
   link: localStyles.value,
 }))
 
-watch(() => route.path, () => scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' }))
-
 watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
   if (!vault || status.value === 'pending')
     return
@@ -222,11 +226,12 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
   <div class="layout-container">
     <PageLoader v-if="status === 'pending'" />
     <div v-else class="layout-content">
-      <ContentViewerNavigation v-model:menu="menu" :items="data.nav" />
+      <ContentViewerNavigation v-if="isSidebarEnabled" v-model:menu="menu" :items="data.nav" />
       <main ref="mainAreaRef" class="main-area">
         <ContentViewerHeader
           :menu="menu"
           :visible="isHeaderVisible"
+          :show-menu-toggle="isSidebarEnabled"
           @update:menu="menu = $event"
           @open-search="searchOpen = true"
           @open-plugins="pluginsDialogOpen = true"
@@ -252,7 +257,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 
 <style lang="scss" scoped>
 .layout-container {
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background-color: var(--bg-primary-color);
   overflow: hidden;

@@ -1,0 +1,57 @@
+{
+  "tb": {
+    "title": "Smart Textbook",
+    "history": "Session History",
+    "loading": "Generating learning material...",
+    "emptyState": "Select a scenario and enter your prompt",
+    "delete": "Delete",
+    "generate": "Generate",
+    "placeholder": "Describe a situation, sentence, or paste text...",
+    "newQuery": "New Query",
+    "send": "Send",
+    "hide": "Hide"
+  },
+  "scenario": {
+    "situational": "Situation (Dialog)",
+    "builder": "Sentence Builder",
+    "review": "Review (Flashcards)",
+    "speaking": "Speaking Practice",
+    "translation": "X-Ray Translation"
+  },
+  "board": {
+    "literal": "Literal:",
+    "builderTitle": "Build the sentence",
+    "translatePrompt": "Translate:",
+    "check": "Check",
+    "logicTitle": "Construction Logic:",
+    "wrongAnswer": "Incorrect, try again!",
+    "xrayToggle": "Enable 'X-Ray' (Literal Translation)",
+    "litTranslation": "Literary:",
+    "cultureNote": "Culture:",
+    "hint": "Hint (Pinyin)",
+    "flipCard": "Flip Card",
+    "grammatical": "Grammatically Correct",
+    "colloquial": "Colloquial (Native)",
+    "formal": "Formal",
+    "possibleReplies": "Possible replies from interlocutor:"
+  },
+  "prompts": {
+    "situational": "You are a Chinese language teacher. Generate a dialogue based on the user's situation. Reply STRICTLY with a valid JSON object without markdown formatting (```json) using this schema: {\"messages\":[{\"speaker\":\"Name\",\"original\":\"Chinese characters\",\"pinyin\":\"context-aware pinyin with tones (strictly separate words with spaces)\",\"translation\":\"literary translation\",\"literal\":\"literal translation\",\"keywords\":[{\"word\":\"complex character from the line\",\"explanation\":\"short explanation of meaning\"}]}]}",
+    "builder": "Analyze the user's sentence for translation into Chinese. Reply STRICTLY with a valid JSON: {\"target\":\"Full target sentence in characters\",\"grammar_rule\":\"Detailed grammar explanation (markdown allowed)\",\"tokens\":[{\"text\":\"word/character\",\"role\":\"role (subject/time/verb/object)\",\"logic_tag\":\"logic tag (Who/When/Where/What)\"}]}",
+    "review": "Create a quiz (flashcards for memorization) based on the provided text or words. Reply STRICTLY with a valid JSON: {\"cards\":[{\"context_with_blank\":\"Sentence in characters with a blank '___' instead of the target word\",\"pinyin_hint\":\"pinyin of the missing word\",\"answer\":\"correct word in characters\",\"explanation\":\"Explanation of why this word is used (markdown allowed)\"}]}",
+    "speaking": "The user inputs a phrase. Provide translation options and possible replies from an interlocutor. Reply STRICTLY with a valid JSON: {\"original\":\"user input\",\"grammatical\":\"grammatically correct translation in characters\",\"colloquial\":\"how a native speaker would say it (slang/natural)\",\"formal\":\"formal or polite\",\"possible_replies\":[\"interlocutor reply option 1\",\"interlocutor reply option 2\"]}",
+    "translation": "Do a deep linguistic parsing (x-ray translation) of the Chinese text. Reply STRICTLY with a valid JSON: {\"paragraphs\":[{\"original\":\"original sentence or paragraph\",\"translation\":\"literary translation\",\"literal\":\"word-for-word literal translation\",\"cultural_note\":\"explanation of idioms (chengyu) or cultural context (if any, otherwise null)\",\"words\":[{\"word\":\"character/word\",\"literal\":\"literal meaning (e.g. 电脑 - electric brain)\"}]}]}"
+  },
+  "settings": {
+    "title": "Settings",
+    "model": "Model",
+    "apiKey": "API Key",
+    "loadConfig": "Load Config",
+    "loading": "Loading...",
+    "close": "Close",
+    "configSuccess": "Config loaded successfully!",
+    "configEmpty": "Config is empty or invalid",
+    "configError": "Failed to load config: ",
+    "apiKeyMissing": "Please provide an API key in the settings."
+  }
+}

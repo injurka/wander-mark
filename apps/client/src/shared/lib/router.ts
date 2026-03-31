@@ -16,11 +16,13 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'VaultIndex',
         component: () => import('~/pages/[vault]/index.vue'),
+        meta: { hideSidebar: true },
       },
       {
         path: 'plugin/:pluginId/:pluginPath(.*)*',
         name: 'PluginPage',
         component: () => import('~/pages/[vault]/plugin/[pluginId].vue'),
+        meta: { hideSidebar: true },
       },
       {
         path: 'recent',
