@@ -24,10 +24,10 @@ const showReplies = ref(false)
           {{ t('board.grammatical') }}
         </button>
         <button class="tab-btn" :class="{ active: activeTab === 'colloquial' }" @click="activeTab = 'colloquial'">
-          {{ t('board.colloquial') }} ⚡
+          {{ t('board.colloquial') }}
         </button>
         <button class="tab-btn" :class="{ active: activeTab === 'formal' }" @click="activeTab = 'formal'">
-          {{ t('board.formal') }} 👔
+          {{ t('board.formal') }}
         </button>
       </div>
 
@@ -56,6 +56,9 @@ const showReplies = ref(false)
               <div v-if="typeof reply !== 'string' && reply.transcription" class="reply-transcription">
                 {{ reply.transcription }}
               </div>
+              <div v-if="typeof reply !== 'string' && reply.translation" class="reply-translation">
+                {{ reply.translation }}
+              </div>
             </li>
           </ul>
         </div>
@@ -69,6 +72,7 @@ const showReplies = ref(false)
   display: flex;
   flex-direction: column;
   gap: 24px;
+  height: calc(100% - 78px);
 }
 .user-input-box {
   background: var(--bg-secondary-color);
@@ -197,6 +201,12 @@ const showReplies = ref(false)
   font-family: monospace;
   font-size: 0.9em;
   margin-top: 4px;
+}
+.reply-translation {
+  color: var(--fg-secondary-color);
+  font-size: 0.9em;
+  margin-top: 4px;
+  font-style: italic;
 }
 
 @media (max-width: 768px) {

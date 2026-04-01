@@ -1,20 +1,17 @@
+<!-- eslint-disable e18e/prefer-static-regex -->
 <script setup lang="ts">
 import type { SituationalData } from '../../types'
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import UiTooltip from '../ui-kit/ui-tooltip.vue'
 
 defineProps<{ data: SituationalData }>()
 const expandedIndexes = ref<Set<number>>(new Set())
 
-/** Активный тултип — управляется программно для корректного позиционирования */
-const activeTooltip = ref<{ text: string, x: number, y: number, visible: boolean, positioned: boolean }>({
+const activeTooltip = ref<{ text: string, visible: boolean, target: HTMLElement | null }>({
   text: '',
-  x: 0,
-  y: 0,
   visible: false,
-  positioned: false,
+  target: null,
 })
-
-const boardRef = ref<HTMLElement | null>(null)
 
 function toggle(index: number) {
   if (expandedIndexes.value.has(index))
@@ -23,106 +20,125 @@ function toggle(index: number) {
 }
 
 function renderOriginalWithTooltips(original: string, keywords: any[]) {
-  if (!keywords)
+  if (!keywords || !keywords.length)
     return original
+
+  // Сортируем по убыванию длины, чтобы слова не перекрывали друг друга
+  const sortedKeywords = [...keywords].sort((a, b) => b.word.length - a.word.length)
+
   let result = original
-  keywords.forEach((kw) => {
-    const tooltipText = kw.transcription ? `[${kw.transcription}] ${kw.explanation}` : kw.explanation
-    const safeText = tooltipText.replace(/"/g, '&quot;')
-    const tooltipHtml = `<span class="keyword" data-tooltip="${safeText}">${kw.word}</span>`
-    result = result.replace(new RegExp(kw.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tooltipHtml)
+  sortedKeywords.forEach((kw) => {
+    if (!kw.word)
+      return
+
+    // Экранируем кавычки только для текстовых данных, HTML здесь больше не формируем
+    const safePinyin = kw.transcription ? kw.transcription.replace(/"/g, '&quot;') : ''
+    const safeText = kw.explanation ? kw.explanation.replace(/"/g, '&quot;') : ''
+
+    // Передаем данные в чистом виде через data-атрибуты
+    const tooltipHtml = `<span class="keyword" data-pinyin="${safePinyin}" data-explanation="${safeText}">${kw.word}</span>`
+
+    // Разбиваем текст по HTML-тегам, чтобы производить замену только в тексте
+    const parts = result.split(/(<[^>]+>)/g)
+    for (let i = 0; i < parts.length; i++) {
+      if (!parts[i].startsWith('<')) {
+        parts[i] = parts[i].replace(new RegExp(kw.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tooltipHtml)
+      }
+    }
+    result = parts.join('')
   })
+
   return result
 }
 
-/**
- * Программное позиционирование тултипа.
- * Вычисляет координаты относительно viewport и прижимает к краям при необходимости.
- */
-function showTooltip(e: Event) {
-  const el = e.target as HTMLElement
-  if (!el.classList.contains('keyword'))
-    return
+// Вспомогательная функция для сборки HTML тултипа
+function buildTooltipHtml(el: HTMLElement): string {
+  const pinyin = el.getAttribute('data-pinyin') || ''
+  const explanation = el.getAttribute('data-explanation') || ''
 
-  const text = el.getAttribute('data-tooltip') || ''
-  if (!text)
-    return
+  if (!pinyin && !explanation)
+    return ''
 
-  const rect = el.getBoundingClientRect()
-
-  activeTooltip.value = {
-    text,
-    x: rect.left + rect.width / 2,
-    y: rect.top,
-    visible: true,
-    positioned: false,
+  let htmlText = ''
+  if (pinyin) {
+    htmlText += `<span style="color:var(--fg-accent-color);font-family:monospace;font-size:0.95em;font-weight:600;">[${pinyin}]</span><br/>`
   }
+  htmlText += explanation
 
-  // После рендера — вычислить финальные координаты
-  nextTick(() => {
-    const tip = document.getElementById('kw-tooltip')
-    if (!tip)
-      return
-
-    const tipRect = tip.getBoundingClientRect()
-    const pad = 8
-
-    // Горизонтальная коррекция
-    let left = activeTooltip.value.x - tipRect.width / 2
-    if (left < pad)
-      left = pad
-    if (left + tipRect.width > window.innerWidth - pad)
-      left = window.innerWidth - pad - tipRect.width
-
-    // Вертикальная: если не помещается сверху — показать снизу
-    let top = activeTooltip.value.y - tipRect.height - 8
-    if (top < pad) {
-      top = rect.bottom + 8
-    }
-
-    tip.style.left = `${left}px`
-    tip.style.top = `${top}px`
-    activeTooltip.value.positioned = true
-  })
+  return htmlText
 }
 
-function hideTooltip(e: Event) {
+function handleMouseOver(e: MouseEvent) {
   const el = e.target as HTMLElement
-  if (el.classList.contains('keyword')) {
+  if (!el || !el.classList.contains('keyword'))
+    return
+
+  const htmlText = buildTooltipHtml(el)
+  if (!htmlText)
+    return
+
+  activeTooltip.value = {
+    text: htmlText,
+    visible: true,
+    target: el,
+  }
+}
+
+function handleMouseOut(e: MouseEvent) {
+  const el = e.target as HTMLElement
+  if (el && el.classList.contains('keyword')) {
     activeTooltip.value.visible = false
+    activeTooltip.value.target = null
   }
 }
 
 /** Touch-устройства: toggle по тапу */
 function handleTouch(e: Event) {
   const el = e.target as HTMLElement
-  if (!el.classList.contains('keyword'))
+  if (!el || !el.classList.contains('keyword'))
     return
 
   e.preventDefault()
 
-  if (activeTooltip.value.visible && activeTooltip.value.text === (el.getAttribute('data-tooltip') || '')) {
+  if (activeTooltip.value.visible && activeTooltip.value.target === el) {
     activeTooltip.value.visible = false
+    activeTooltip.value.target = null
   }
   else {
-    showTooltip(e)
+    const htmlText = buildTooltipHtml(el)
+    if (!htmlText)
+      return
+
+    activeTooltip.value = {
+      text: htmlText,
+      visible: true,
+      target: el,
+    }
   }
 }
 
 /** Закрытие тултипа по клику вне keyword */
-function handleGlobalClick(e: MouseEvent) {
+function handleGlobalClick(e: MouseEvent | TouchEvent) {
   const el = e.target as HTMLElement
-  if (!el.closest('.keyword') && !el.closest('#kw-tooltip')) {
+  if (!el.closest('.keyword')) {
     activeTooltip.value.visible = false
+    activeTooltip.value.target = null
   }
 }
 
-onMounted(() => document.addEventListener('click', handleGlobalClick))
-onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
+onMounted(() => {
+  document.addEventListener('click', handleGlobalClick)
+  document.addEventListener('touchstart', handleGlobalClick, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleGlobalClick)
+  document.removeEventListener('touchstart', handleGlobalClick)
+})
 </script>
 
 <template>
-  <div ref="boardRef" class="chat-board">
+  <div class="chat-board">
     <div
       v-for="(msg, i) in data.messages" :key="i"
       class="msg-wrapper" :class="{ 'is-user': i % 2 !== 0 }"
@@ -136,9 +152,9 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
           <!-- eslint-disable vue/no-v-html -->
           <div
             class="original"
-            @mouseenter.capture="showTooltip"
-            @mouseleave.capture="hideTooltip"
-            @touchstart.capture="handleTouch"
+            @mouseover="handleMouseOver"
+            @mouseout="handleMouseOut"
+            @touchstart="handleTouch"
             v-html="renderOriginalWithTooltips(msg.original, msg.keywords)"
           />
           <!-- eslint-enable vue/no-v-html -->
@@ -175,23 +191,11 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
       </div>
     </div>
 
-    <!-- Глобальный тултип, рендерится в fixed-позиции -->
-    <Teleport to="body">
-      <Transition name="tooltip-fade">
-        <div
-          v-if="activeTooltip.visible"
-          id="kw-tooltip"
-          class="kw-tooltip"
-          :style="{
-            left: activeTooltip.positioned ? undefined : `${activeTooltip.x}px`,
-            top: activeTooltip.positioned ? undefined : `${activeTooltip.y}px`,
-            opacity: activeTooltip.positioned ? 1 : 0,
-          }"
-        >
-          {{ activeTooltip.text }}
-        </div>
-      </Transition>
-    </Teleport>
+    <UiTooltip
+      :visible="activeTooltip.visible"
+      :text="activeTooltip.text"
+      :target="activeTooltip.target"
+    />
   </div>
 </template>
 
@@ -200,7 +204,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: calc(100% - 60px);
+  height: calc(100% - 78px);
 }
 .msg-wrapper {
   display: flex;
@@ -227,7 +231,6 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
   flex-direction: row-reverse;
 }
 
-/* ── Eye Button (SVG вместо emoji) ── */
 .eye-btn {
   background: var(--bg-tertiary-color);
   border: 1px solid var(--border-secondary-color);
@@ -241,7 +244,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
   color: var(--fg-muted-color);
   transition: all 0.2s;
   flex-shrink: 0;
-  margin-top: 8px;
+  margin-top: 14px;
   padding: 0;
 }
 .eye-btn:hover {
@@ -271,8 +274,19 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
 }
 
 :deep(.keyword) {
-  border-bottom: 1px dashed var(--fg-accent-color);
+  border-bottom: 2px dotted var(--fg-accent-color);
   cursor: help;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  border-radius: 4px;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+
+:deep(.keyword:hover) {
+  background-color: var(--bg-accent-overlay-color, rgba(128, 128, 128, 0.15));
+  color: var(--fg-accent-color);
 }
 
 .slide-enter-active,
@@ -314,34 +328,5 @@ onBeforeUnmount(() => document.removeEventListener('click', handleGlobalClick))
   .msg-wrapper {
     max-width: 95%;
   }
-}
-</style>
-
-<!-- Глобальные стили для тултипа (он рендерится через Teleport в body) -->
-<style>
-.kw-tooltip {
-  position: fixed;
-  background: var(--bg-inverted-color, #1a1a2e);
-  color: var(--fg-inverted-color, #fff);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.4;
-  max-width: min(360px, calc(100vw - 16px));
-  width: max-content;
-  z-index: 9999;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  word-wrap: break-word;
-  white-space: normal;
-}
-
-.tooltip-fade-enter-active,
-.tooltip-fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.tooltip-fade-enter-from,
-.tooltip-fade-leave-to {
-  opacity: 0;
 }
 </style>

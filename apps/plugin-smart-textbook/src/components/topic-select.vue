@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import type { TopicDefinition } from '../types'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { usePluginI18n } from '../i18n'
 import { filteredTopics, tbState, TOPIC_REGISTRY } from '../store/textbook.store'
+
+const emit = defineEmits<{ (e: 'selected'): void }>()
 
 const { t } = usePluginI18n()
 
@@ -9,30 +12,29 @@ const isOpen = ref(false)
 const search = ref('')
 const rootEl = ref<HTMLElement | null>(null)
 const searchEl = ref<HTMLInputElement | null>(null)
+const dropUp = ref(false)
 
-/** Текущая выбранная тема — лейбл */
 const selectedLabel = computed(() => {
-  const topic = TOPIC_REGISTRY.find(tp => tp.id === tbState.activeTopic)
+  const topic = TOPIC_REGISTRY.find((tp: TopicDefinition) => tp.id === tbState.activeTopic)
+
   return topic ? t(topic.labelKey) : t('topicSelect.placeholder')
 })
 
-/** Название текущего языка для заголовка группы */
 const langLabel = computed(() => t(`langs.${tbState.targetLanguage}`))
 
-/** Отфильтрованные группы с учётом поискового запроса */
 const groups = computed(() => {
   const { universal, langSpecific } = filteredTopics.value
   const q = search.value.trim().toLowerCase()
+  const filterFn = (items: TopicDefinition[]) =>
+    typeof universal !== undefined && q
+      ? items.filter((tp: TopicDefinition) => t(tp.labelKey).toLowerCase().includes(q))
+      : items
 
-  const filterFn = (items: typeof universal) =>
-    q ? items.filter(tp => t(tp.labelKey).toLowerCase().includes(q)) : items
-
-  const result: { key: string, label: string, items: typeof universal }[] = []
+  const result: { key: string, label: string, items: TopicDefinition[] }[] = []
 
   const uFiltered = filterFn(universal)
-  if (uFiltered.length > 0) {
+  if (uFiltered.length > 0)
     result.push({ key: 'universal', label: t('topicGroup.universal'), items: uFiltered })
-  }
 
   const lFiltered = filterFn(langSpecific)
   if (lFiltered.length > 0) {
@@ -43,11 +45,24 @@ const groups = computed(() => {
   return result
 })
 
+function checkDropDirection() {
+  if (!rootEl.value)
+    return
+  const rect = rootEl.value.getBoundingClientRect()
+  const spaceBelow = window.innerHeight - rect.bottom
+  const isMobile = window.innerWidth <= 768
+  dropUp.value = isMobile || spaceBelow < 320
+}
+
 function toggle() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     search.value = ''
+    checkDropDirection()
     nextTick(() => searchEl.value?.focus())
+  }
+  else {
+    search.value = ''
   }
 }
 
@@ -55,9 +70,9 @@ function select(id: string) {
   tbState.activeTopic = id
   isOpen.value = false
   search.value = ''
+  emit('selected')
 }
 
-/** Закрытие по клику вне */
 function onClickOutside(e: MouseEvent) {
   if (rootEl.value && !rootEl.value.contains(e.target as Node)) {
     isOpen.value = false
@@ -65,7 +80,6 @@ function onClickOutside(e: MouseEvent) {
   }
 }
 
-/** Закрытие по Escape */
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && isOpen.value) {
     isOpen.value = false
@@ -77,12 +91,12 @@ onMounted(() => {
   document.addEventListener('mousedown', onClickOutside)
   document.addEventListener('keydown', onKeydown)
 })
+
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onClickOutside)
   document.removeEventListener('keydown', onKeydown)
 })
 
-/** Сброс при смене языка, если дропдаун открыт */
 watch(() => tbState.targetLanguage, () => {
   search.value = ''
 })
@@ -102,7 +116,7 @@ watch(() => tbState.targetLanguage, () => {
     </button>
 
     <Transition name="dropdown">
-      <div v-if="isOpen" class="topic-dropdown">
+      <div v-if="isOpen" class="topic-dropdown" :class="{ 'drop-up': dropUp }">
         <div class="dropdown-search">
           <svg
             xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
@@ -126,7 +140,8 @@ watch(() => tbState.targetLanguage, () => {
               {{ group.label }}
             </div>
             <button
-              v-for="topic in group.items" :key="topic.id"
+              v-for="topic in group.items"
+              :key="topic.id"
               class="topic-option"
               :class="{ active: tbState.activeTopic === topic.id }"
               @click="select(topic.id)"
@@ -212,6 +227,13 @@ watch(() => tbState.targetLanguage, () => {
   max-height: 320px;
 }
 
+/* Открытие вверх */
+.topic-dropdown.drop-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.15);
+}
+
 .dropdown-search {
   display: flex;
   align-items: center;
@@ -291,5 +313,11 @@ watch(() => tbState.targetLanguage, () => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+/* Анимация вверх */
+.drop-up.dropdown-enter-from,
+.drop-up.dropdown-leave-to {
+  transform: translateY(4px);
 }
 </style>

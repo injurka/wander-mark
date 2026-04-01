@@ -1,29 +1,72 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { usePluginI18n } from '../i18n'
+import { getRandomPrompt } from '../prompts/index'
 import { generateContent } from '../services/ai.service'
 import { tbState } from '../store/textbook.store'
 import TopicSelect from './topic-select.vue'
 
 const { t } = usePluginI18n()
+
+const textareaEl = ref<HTMLTextAreaElement | null>(null)
+
+function focusTextarea() {
+  textareaEl.value?.focus()
+}
+
+function generateRandom() {
+  const topic = tbState.activeTopic
+  tbState.currentInput = getRandomPrompt(topic)
+  focusTextarea()
+}
+
+async function handleGenerate() {
+  if (!tbState.currentInput.trim() || tbState.isLoading)
+    return
+
+  const genPromise = generateContent()
+
+  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+    tbState.isSidebarOpen = false
+  }
+
+  await genPromise
+}
 </script>
 
 <template>
   <div class="input-zone">
-    <TopicSelect />
+    <TopicSelect @selected="focusTextarea" />
 
     <textarea
+      ref="textareaEl"
       v-model="tbState.currentInput"
       class="tb-textarea"
       :placeholder="t('tb.placeholder')"
-      @keydown.ctrl.enter.prevent="generateContent"
+      @keydown.ctrl.enter.prevent="handleGenerate"
     />
 
     <div class="actions-row">
+      <!-- Кнопка случайного промпта -->
+      <button
+        class="icon-btn random-btn"
+        :title="t('tb.randomPrompt')"
+        :disabled="tbState.isLoading"
+        @click="generateRandom"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 3 21 3 21 8" />
+          <line x1="4" y1="20" x2="21" y2="3" />
+          <polyline points="21 16 21 21 16 21" />
+          <line x1="15" y1="15" x2="21" y2="21" />
+        </svg>
+      </button>
+
       <button
         class="tb-btn main-btn"
         :class="{ 'is-loading': tbState.isLoading }"
         :disabled="tbState.isLoading || !tbState.currentInput.trim()"
-        @click="generateContent"
+        @click="handleGenerate"
       >
         {{ tbState.isLoading ? t('tb.loading') : t('tb.generate') }}
       </button>
@@ -85,6 +128,32 @@ const { t } = usePluginI18n()
 .tb-btn:not(:disabled):hover {
   opacity: 0.9;
 }
+
+/* Кнопка случайного промпта */
+.random-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  flex-shrink: 0;
+  background: var(--bg-tertiary-color);
+  color: var(--fg-secondary-color);
+  border: 1px solid var(--border-primary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.random-btn:hover:not(:disabled) {
+  background: var(--bg-hover-color);
+  color: var(--fg-primary-color);
+  border-color: var(--border-focus-color);
+  transform: rotate(90deg);
+}
+.random-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .icon-btn.mobile-only {
   display: none;
   align-items: center;

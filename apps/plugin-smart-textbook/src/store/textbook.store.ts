@@ -4,8 +4,6 @@ import { computed, reactive, watch } from 'vue'
 export const MODELS = [
   'gemini-3.1-flash-lite-preview',
   'gemini-3-flash-preview',
-  'gpt-5.4-nano',
-  'qwen3.5-397b-a17b',
 ]
 
 export const TARGET_LANGUAGES: TargetLanguage[] = [
@@ -16,8 +14,8 @@ export const TARGET_LANGUAGES: TargetLanguage[] = [
 
 /**
  * Реестр тем.
- * Темы без `languages` — общие (видны для любого языка).
- * Темы с `languages: [...]` — видны только при выборе соответствующего языка.
+ * Каждая тема имеет собственный scenario, определяющий компонент, промпт и валидацию.
+ * Темы без `languages` — общие. Темы с `languages` — видны только для указанных языков.
  */
 export const TOPIC_REGISTRY: TopicDefinition[] = [
   // ── Общие (все языки) ──
@@ -26,13 +24,17 @@ export const TOPIC_REGISTRY: TopicDefinition[] = [
   { id: 'review', labelKey: 'scenario.review', scenario: 'review' },
   { id: 'speaking', labelKey: 'scenario.speaking', scenario: 'speaking' },
 
-  // ── Привязанные к языку ──
-  { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'builder', languages: ['Chinese'] },
-  { id: 'declension-practice', labelKey: 'scenario.declensionPractice', scenario: 'review', languages: ['Russian'] },
-  { id: 'measure-words', labelKey: 'scenario.measureWords', scenario: 'review', languages: ['Chinese'] },
-  { id: 'chengyu-idioms', labelKey: 'scenario.chengyuIdioms', scenario: 'situational', languages: ['Chinese'] },
-  { id: 'phrasal-verbs', labelKey: 'scenario.phrasalVerbs', scenario: 'speaking', languages: ['English'] },
-  { id: 'aspect-pairs', labelKey: 'scenario.aspectPairs', scenario: 'builder', languages: ['Russian'] },
+  // ── Китайский ──
+  { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'stpmvo', languages: ['Chinese'] },
+  { id: 'measure-words', labelKey: 'scenario.measureWords', scenario: 'measure-words', languages: ['Chinese'] },
+  { id: 'chengyu-idioms', labelKey: 'scenario.chengyuIdioms', scenario: 'chengyu', languages: ['Chinese'] },
+
+  // ── Русский ──
+  { id: 'declension-practice', labelKey: 'scenario.declensionPractice', scenario: 'declension', languages: ['Russian'] },
+  { id: 'aspect-pairs', labelKey: 'scenario.aspectPairs', scenario: 'aspect-pairs', languages: ['Russian'] },
+
+  // ── Английский ──
+  { id: 'phrasal-verbs', labelKey: 'scenario.phrasalVerbs', scenario: 'phrasal-verbs', languages: ['English'] },
 ]
 
 export const tbState = reactive({

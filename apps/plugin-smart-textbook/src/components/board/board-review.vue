@@ -79,6 +79,7 @@ function parseMarkdown(text: string) {
   flex-wrap: wrap;
   gap: 24px;
   justify-content: center;
+  height: calc(100% - 78px);
 }
 .flashcard-container {
   width: 100%;
@@ -109,11 +110,11 @@ function parseMarkdown(text: string) {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Важно для предотвращения выпадения контента за границы карточки */
+  overflow: hidden;
 }
 .card-back {
   transform: rotateY(180deg);
-  background: var(--bg-accent-overlay-color);
+  background: var(--bg-accent-color);
   border-color: var(--border-accent-color);
 }
 .card-content {
@@ -123,7 +124,7 @@ function parseMarkdown(text: string) {
   justify-content: center;
   align-items: center;
   text-align: center;
-  min-height: 0; /* Разрешаем блоку ужиматься, чтобы работал скролл во внутреннем элементе */
+  min-height: 0;
   width: 100%;
 }
 .context {
@@ -176,6 +177,10 @@ function parseMarkdown(text: string) {
   background: var(--bg-primary-color);
   border-radius: 8px;
   margin-bottom: 16px;
+
+  p {
+    margin: 0;
+  }
 }
 .btn-flip {
   flex-shrink: 0;

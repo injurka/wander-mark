@@ -3,16 +3,29 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { main as runMigrator } from './migrator'
 
-async function copyMetaFiles(config: ProjectConfig) {
-  const sourceMetaDir = path.resolve(process.cwd(), config.paths.metaSource)
-  const destMetaDir = path.resolve(process.cwd(), config.paths.outputMetaRoot)
+async function copyVaultMetaFiles(config: ProjectConfig, sourcePath: string, exportDirName: string) {
+  const sourceMetaRoot = path.resolve(process.cwd(), config.paths.metaSource)
+  const destMetaRoot = path.resolve(process.cwd(), config.paths.outputMetaRoot)
 
-  try {
-    await fs.access(sourceMetaDir)
-    await fs.cp(sourceMetaDir, destMetaDir, { recursive: true, force: true })
-    console.log(`📁 Предварительные Meta-данные и иконки скопированы.`)
+  const destMetaDir = path.join(destMetaRoot, exportDirName)
+  const sourceBasename = path.basename(sourcePath)
+
+  const possibleSources = [
+    path.join(sourceMetaRoot, exportDirName),
+    path.join(sourceMetaRoot, sourceBasename),
+  ]
+
+  for (const src of possibleSources) {
+    try {
+      const stat = await fs.stat(src)
+      if (stat.isDirectory()) {
+        await fs.cp(src, destMetaDir, { recursive: true, force: true })
+        console.log(`📁 Meta-данные для "${exportDirName}" успешно скопированы.`)
+        return
+      }
+    }
+    catch { /* ignore */ }
   }
-  catch { /* ignore */ }
 }
 
 async function copyPluginsFiles(config: ProjectConfig) {
@@ -38,12 +51,13 @@ export async function runAutoGeneration(config: ProjectConfig) {
   const metaPathRoot = path.resolve(process.cwd(), config.paths.outputMetaRoot)
   const sourceNotesRoot = path.resolve(process.cwd(), config.paths.sourceNotesRoot)
 
-  // 1. Создаем папку контента и копируем статику
+  // 1. ПОЛНАЯ ОЧИСТКА перед сборкой (удаляем старые фантомные папки вроде Russian-CN)
+  await fs.rm(exportPathRoot, { recursive: true, force: true }).catch(() => { })
+  await fs.rm(metaPathRoot, { recursive: true, force: true }).catch(() => { })
   await fs.mkdir(exportPathRoot, { recursive: true })
   await fs.mkdir(metaPathRoot, { recursive: true })
 
-  // 2. Копируем meta-исходники (вместе с вашим оригинальным settings.json)
-  await copyMetaFiles(config)
+  // 2. Копируем глобальные плагины
   await copyPluginsFiles(config)
 
   if (!config.vaults || config.vaults.length === 0) {
@@ -53,12 +67,19 @@ export async function runAutoGeneration(config: ProjectConfig) {
 
   for await (const vault of config.vaults) {
     const currentSourcePath = path.join(sourceNotesRoot, vault.sourcePath)
-    const exportDirName = vault.exportPath || vault.sourcePath
+
+    // Надежно определяем имя папки (убираем начальные слэши, если они есть, например /Russian -> Russian)
+    let exportDirName = vault.exportPath || path.basename(vault.sourcePath)
+    exportDirName = exportDirName.replace(/^\/+/, '')
+
     const currentExportPath = path.join(exportPathRoot, exportDirName)
+
+    // 3. Адресно копируем meta-исходники для конкретного хранилища
+    await copyVaultMetaFiles(config, vault.sourcePath, exportDirName)
 
     let currentNavSysname = exportDirName
 
-    // 3. Читаем settings.json из уже скопированной папки meta, чтобы достать sysname
+    // 4. Читаем settings.json, чтобы достать sysname для правильных URL ссылок
     try {
       const settingsPath = path.join(metaPathRoot, exportDirName, 'settings.json')
       const settingsRaw = await fs.readFile(settingsPath, 'utf-8')
@@ -69,10 +90,10 @@ export async function runAutoGeneration(config: ProjectConfig) {
       }
     }
     catch {
-      console.log(`ℹ️ Файл settings.json для "${exportDirName}" не найден или пуст, используется системное имя папки.`)
+      console.log(`ℹ️ Файл settings.json для "${exportDirName}" не найден, используется имя папки.`)
     }
 
-    // 4. Запуск мигратора для хранилища
+    // 5. Запуск мигратора для хранилища
     try {
       await runMigrator(
         currentSourcePath,

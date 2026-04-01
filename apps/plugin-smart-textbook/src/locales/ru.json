@@ -9,7 +9,8 @@
     "placeholder": "Опишите ситуацию, предложение или скиньте текст...",
     "newQuery": "Новый запрос",
     "send": "Отправить",
-    "hide": "Скрыть"
+    "hide": "Скрыть",
+    "randomPrompt": "Случайный промпт"
   },
   "scenario": {
     "situational": "Ситуация (Диалог)",
@@ -18,8 +19,8 @@
     "speaking": "Разговорная практика",
     "stpmvoAnalysis": "Разбор по STPMVO",
     "declensionPractice": "Практика склонения",
-    "measureWords": "Счётные слова",
-    "chengyuIdioms": "Чэнъюй (идиомы)",
+    "measureWords": "Счётные слова (量词)",
+    "chengyuIdioms": "Чэнъюй (成语)",
     "phrasalVerbs": "Фразовые глаголы",
     "aspectPairs": "Видовые пары глаголов"
   },
@@ -65,6 +66,29 @@
     "formal": "Официально",
     "possibleReplies": "Возможные ответы:",
     "cultureNote": "Культурная заметка",
-    "xrayToggle": "Рентген-режим"
+    "xrayToggle": "Рентген-режим",
+    "correct": "Правильно!",
+    "wrong": "Неверно",
+    "next": "Далее",
+    "prev": "Назад",
+    "progress": "{current} из {total}",
+    "grammarNotes": "Грамматические заметки",
+    "legend": "Легенда",
+    "translation": "Перевод",
+    "meaning": "Значение:",
+    "origin": "История",
+    "example": "Пример",
+    "usageNotes": "Заметки по использованию",
+    "chooseMeasureWord": "Выбери правильное счётное слово:",
+    "targetCase": "Какой падеж?",
+    "fullTable": "Таблица склонения",
+    "imperfective": "НСВ (несовершенный)",
+    "perfective": "СВ (совершенный)",
+    "formationRule": "Правило образования",
+    "usageWhen": "Когда используется",
+    "studyMode": "Изучение",
+    "quizMode": "Тренировка",
+    "baseVerb": "Базовый глагол",
+    "fillBlank": "Заполни пропуск:"
   }
 }

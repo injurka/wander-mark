@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
+import type { ScenarioType } from '../types'
 import { computed, onMounted, ref, watch } from 'vue'
+import BoardAspectPairs from '../components/board/board-aspect-pairs.vue'
 import BoardBuilder from '../components/board/board-builder.vue'
+import BoardChengyu from '../components/board/board-chengyu.vue'
+import BoardDeclension from '../components/board/board-declension.vue'
+import BoardMeasureWords from '../components/board/board-measure-words.vue'
+import BoardPhrasalVerbs from '../components/board/board-phrasal-verbs.vue'
 import BoardReview from '../components/board/board-review.vue'
 import BoardSituational from '../components/board/board-situational.vue'
 import BoardSpeaking from '../components/board/board-speaking.vue'
+import BoardStpmvo from '../components/board/board-stpmvo.vue'
 import InputZone from '../components/input-zone.vue'
 import Settings from '../components/settings.vue'
 import { usePluginI18n } from '../i18n'
@@ -14,17 +22,25 @@ const { t } = usePluginI18n()
 
 onMounted(() => initTbStore())
 
+/** Маппинг scenario -> компонент */
+const SCENARIO_COMPONENTS: Record<ScenarioType, Component> = {
+  'situational': BoardSituational,
+  'builder': BoardBuilder,
+  'review': BoardReview,
+  'speaking': BoardSpeaking,
+  'stpmvo': BoardStpmvo,
+  'measure-words': BoardMeasureWords,
+  'chengyu': BoardChengyu,
+  'declension': BoardDeclension,
+  'aspect-pairs': BoardAspectPairs,
+  'phrasal-verbs': BoardPhrasalVerbs,
+}
+
 const activeComponent = computed(() => {
   const item = tbState.history.find(h => h.id === tbState.activeHistoryId)
   if (!item)
     return null
-  switch (item.scenario) {
-    case 'situational': return BoardSituational
-    case 'builder': return BoardBuilder
-    case 'review': return BoardReview
-    case 'speaking': return BoardSpeaking
-    default: return null
-  }
+  return SCENARIO_COMPONENTS[item.scenario] ?? null
 })
 
 const activeLangClass = computed(() => {
@@ -77,6 +93,12 @@ function scenarioIcon(scenario: string): string {
     case 'builder': return '🧩'
     case 'review': return '🃏'
     case 'speaking': return '🗣'
+    case 'stpmvo': return '📊'
+    case 'measure-words': return '📏'
+    case 'chengyu': return '🎭'
+    case 'declension': return '📝'
+    case 'aspect-pairs': return '🔀'
+    case 'phrasal-verbs': return '🔗'
     default: return '📄'
   }
 }
@@ -369,10 +391,9 @@ function scenarioIcon(scenario: string): string {
   background: rgba(255, 59, 48, 0.1);
 }
 
-/* ── Board ── */
 .tb-board {
   flex: 1;
-  padding: 80px 40px 40px 64px;
+  padding: 80px 40px 32px 40px;
   overflow-y: auto;
   position: relative;
   transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -515,7 +536,7 @@ function scenarioIcon(scenario: string): string {
     position: absolute;
     left: 0;
     top: 0;
-    height: 100%;
+    height: calc(100dvh - 50px);
     width: 100%;
     min-width: unset;
     margin-left: 0 !important;

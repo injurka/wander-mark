@@ -5,8 +5,6 @@ import { usePluginI18n } from '../i18n'
 export const MODELS = [
   'gemini-3.1-flash-lite-preview',
   'gemini-3-flash-preview',
-  'gpt-5.4-nano',
-  'qwen3.5-397b-a17b',
 ]
 
 export const aiState = reactive({

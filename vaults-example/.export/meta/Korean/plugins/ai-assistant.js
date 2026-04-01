@@ -2404,8 +2404,6 @@ const ut = {
     right: 0 !important; 
     bottom: 0 !important; 
     width: 100vw !important; 
-    
-    height: 100vh !important;
     height: 100dvh !important; 
     
     max-width: none !important; 
@@ -2624,7 +2622,7 @@ const ut = {
 .ai-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 50px);
+  height: calc(100dvh - 50px);
   gap: 8px;
   padding: 8px 0 0 0;
 }

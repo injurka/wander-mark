@@ -19,22 +19,42 @@ watch(() => props.data, (newData) => {
 }, { immediate: true })
 
 function selectToken(token: any, index: number) {
+  if (showLogic.value)
+    return
   available.value.splice(index, 1)
   selected.value.push(token)
 }
 
 function deselectToken(token: any, index: number) {
+  if (showLogic.value)
+    return
   selected.value.splice(index, 1)
   available.value.push(token)
 }
 
+/**
+ * Проверка ответа.
+ * Нормализуем обе строки: убираем лишние пробелы и сравниваем.
+ * Также проверяем совпадение порядка токенов.
+ */
 function checkResult() {
-  const currentStr = selected.value.map(t => t.text).join('')
-  if (currentStr === props.data.target) {
+  // Сравниваем по порядку токенов (самый надёжный способ)
+  const isCorrect = selected.value.length === props.data.tokens.length
+    && selected.value.every((tok, i) => tok.text === props.data.tokens[i].text)
+
+  if (isCorrect) {
     showLogic.value = true
   }
   else {
-    tbActions.notify(t('board.wrongAnswer'), 'warning')
+    // Запасная проверка: конкатенация текстов
+    const currentStr = selected.value.map(tok => tok.text).join('').replace(/\s+/g, '')
+    const targetStr = props.data.target.replace(/\s+/g, '')
+    if (currentStr === targetStr) {
+      showLogic.value = true
+    }
+    else {
+      tbActions.notify(t('board.wrongAnswer'), 'warning')
+    }
   }
 }
 
@@ -62,20 +82,22 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
         Кликай по блокам ниже...
       </div>
       <div
-        v-for="(t, i) in selected" :key="i"
-        class="token selected" @click="deselectToken(t, i)"
+        v-for="(tok, i) in selected" :key="i"
+        class="token selected"
+        :class="{ locked: showLogic }"
+        @click="deselectToken(tok, i)"
       >
-        <span v-if="showLogic" class="logic-tag">{{ t.logic_tag }}</span>
-        {{ t.text }}
+        <span v-if="showLogic" class="logic-tag">{{ tok.logic_tag }}</span>
+        {{ tok.text }}
       </div>
     </div>
 
     <div v-if="!showLogic" class="pool-zone">
       <div
-        v-for="(t, i) in available" :key="i"
-        class="token" @click="selectToken(t, i)"
+        v-for="(tok, i) in available" :key="i"
+        class="token" @click="selectToken(tok, i)"
       >
-        {{ t.text }}
+        {{ tok.text }}
       </div>
     </div>
 
@@ -92,10 +114,10 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
       <div v-if="showLogic" class="logic-explanation">
         <h3>{{ t('board.logicTitle') }}</h3>
         <div class="logic-chain">
-          <span v-for="(t, idx) in data.tokens" :key="idx" class="chain-item">
-            <span class="chain-tag">{{ t.logic_tag }}</span>
-            <span class="chain-text">{{ t.text }}</span>
-            <span v-if="t.transcription" class="chain-transcription">{{ t.transcription }}</span>
+          <span v-for="(tok, idx) in data.tokens" :key="idx" class="chain-item">
+            <span class="chain-tag">{{ tok.logic_tag }}</span>
+            <span class="chain-text">{{ tok.text }}</span>
+            <span v-if="tok.transcription" class="chain-transcription">{{ tok.transcription }}</span>
           </span>
         </div>
         <div class="markdown-body" v-html="parsedGrammar" />
@@ -109,6 +131,7 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: calc(100% - 78px);
 }
 .target-card {
   background: var(--bg-secondary-color);
@@ -132,7 +155,7 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   min-height: 80px;
   border: 2px dashed var(--border-primary-color);
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px 16px 16px;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -166,7 +189,7 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   transition: all 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-.token:hover {
+.token:hover:not(.locked) {
   background: var(--bg-hover-color);
   transform: translateY(-2px);
   border-color: var(--border-focus-color);
@@ -175,18 +198,28 @@ const parsedGrammar = computed(() => marked.parse(props.data.grammar_rule))
   background: var(--bg-accent-color);
   border-color: var(--border-accent-color);
 }
+.token.locked {
+  cursor: default;
+  pointer-events: none;
+}
 
+/* logic-tag — плавающий тег над токеном.
+   max-width ограничен, чтобы не заезжал на соседей. */
 .logic-tag {
   position: absolute;
-  top: -12px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 9px;
   background: var(--bg-inverted-color);
   color: var(--fg-inverted-color);
-  padding: 2px 6px;
+  padding: 1px 6px;
   border-radius: 10px;
   white-space: nowrap;
+  max-width: calc(100% + 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
 .actions-row {

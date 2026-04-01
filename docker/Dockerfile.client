@@ -10,6 +10,9 @@ COPY . .
 RUN bun install --ignore-scripts
 RUN bun --cwd=apps/client run build
 
+ARG V_CLIENT="dev"
+ENV VITE_APP_VERSION=$V_CLIENT
+
 # =================================================================
 # Этап 2: "release" - Создание финального образа с Nginx
 # =================================================================

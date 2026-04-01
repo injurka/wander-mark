@@ -9,7 +9,8 @@
     "placeholder": "描述一个场景、一个句子或粘贴文本...",
     "newQuery": "新查询",
     "send": "发送",
-    "hide": "隐藏"
+    "hide": "隐藏",
+    "randomPrompt": "随机提示"
   },
   "scenario": {
     "situational": "情景对话",
@@ -65,6 +66,29 @@
     "formal": "正式/礼貌",
     "possibleReplies": "对方可能的回答:",
     "cultureNote": "文化注释",
-    "xrayToggle": "X光模式"
+    "xrayToggle": "X光模式",
+    "correct": "正确！",
+    "wrong": "错误",
+    "next": "下一个",
+    "prev": "上一个",
+    "progress": "{current} / {total}",
+    "grammarNotes": "语法笔记",
+    "legend": "图例",
+    "translation": "翻译",
+    "meaning": "含义：",
+    "origin": "起源",
+    "example": "例子",
+    "usageNotes": "使用说明",
+    "chooseMeasureWord": "选择正确的量词：",
+    "targetCase": "哪种格？",
+    "fullTable": "变格表",
+    "imperfective": "未完成体",
+    "perfective": "完成体",
+    "formationRule": "构词规则",
+    "usageWhen": "使用场景",
+    "studyMode": "学习",
+    "quizMode": "练习",
+    "baseVerb": "基本动词",
+    "fillBlank": "填空："
   }
 }

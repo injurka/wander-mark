@@ -46,6 +46,7 @@ const xRayMode = ref(false)
   display: flex;
   flex-direction: column;
   gap: 24px;
+  height: calc(100% - 78px);
 }
 
 .xray-toggle {

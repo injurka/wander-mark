@@ -1,7 +1,20 @@
 import type { ScenarioType } from '../types'
 import { usePluginI18n } from '../i18n'
 import { buildSystemPrompt } from '../prompts'
-import { activeScenario, tbActions, tbState, TOPIC_REGISTRY } from '../store/textbook.store'
+import { activeScenario, tbActions, tbState } from '../store/textbook.store'
+
+/**
+ * Очищает ответ AI от маркдаун-обёртки и мусорных символов.
+ * Некоторые модели добавляют ```json ... ```, другие оставляют одиночные `` в конце.
+ */
+function cleanAiJson(raw: string): string {
+  let s = raw.trim()
+  // Убираем открывающий ```json
+  s = s.replace(/^```(?:json)?\s*/i, '')
+  // Убираем закрывающий ``` (или `` или ` — неполные остатки)
+  s = s.replace(/`{1,3}\s*$/, '')
+  return s.trim()
+}
 
 function isDataValid(scenario: ScenarioType, data: any): boolean {
   if (!data)
@@ -15,30 +28,24 @@ function isDataValid(scenario: ScenarioType, data: any): boolean {
       return Array.isArray(data.cards)
     case 'speaking':
       return !!data.grammatical && Array.isArray(data.possible_replies)
+
+    // ── Языко-специфичные ──
+    case 'stpmvo':
+      return typeof data.sentence === 'string' && Array.isArray(data.components)
+    case 'measure-words':
+      return Array.isArray(data.exercises) && data.exercises.length > 0
+    case 'chengyu':
+      return Array.isArray(data.idioms) && data.idioms.length > 0
+    case 'declension':
+      return Array.isArray(data.exercises) && data.exercises.length > 0
+    case 'aspect-pairs':
+      return Array.isArray(data.pairs) && data.pairs.length > 0
+    case 'phrasal-verbs':
+      return typeof data.base_verb === 'string' && Array.isArray(data.variations)
+
     default:
       return false
   }
-}
-
-/**
- * Формирует дополнительную подсказку для AI,
- * если выбрана языко-специфичная тема.
- */
-function getTopicHint(topicId: string): string {
-  const topic = TOPIC_REGISTRY.find(t => t.id === topicId)
-  if (!topic || !topic.languages || topic.languages.length === 0)
-    return ''
-
-  const hints: Record<string, string> = {
-    'stpmvo-analysis': 'Focus on breaking the sentence using the Chinese STPMVO word-order model (Subject, Time, Place, Manner, Verb, Object). Highlight the role of each token according to STPMVO.',
-    'declension-practice': 'Focus on Russian noun/adjective declension. Generate flashcards where the student must fill in the correct grammatical case form.',
-    'measure-words': 'Focus on Chinese measure words (量词). Each card should test the correct measure word for a given noun.',
-    'chengyu-idioms': 'Generate a dialogue that naturally uses Chinese chengyu (成语). Explain the origin and meaning of each idiom used.',
-    'phrasal-verbs': 'Focus on English phrasal verbs. Show how different particles change the meaning of the base verb.',
-    'aspect-pairs': 'Focus on Russian aspect pairs (видовые пары). For each verb, show both perfective and imperfective forms and contexts where each is used.',
-  }
-
-  return hints[topicId] || ''
 }
 
 export async function generateContent() {
@@ -58,12 +65,7 @@ export async function generateContent() {
   const scenario = activeScenario.value
   const targetLang = tbState.targetLanguage
 
-  let systemPrompt = buildSystemPrompt(scenario, targetLang, locale.value)
-
-  const topicHint = getTopicHint(tbState.activeTopic)
-  if (topicHint) {
-    systemPrompt += `\n\nAdditional focus: ${topicHint}`
-  }
+  const systemPrompt = buildSystemPrompt(scenario, targetLang, locale.value)
 
   try {
     const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {
@@ -88,8 +90,7 @@ export async function generateContent() {
     const data = await res.json()
     const content = data.choices?.[0]?.message?.content
 
-    // eslint-disable-next-line e18e/prefer-static-regex
-    const cleanJson = content.replace(/```json\n?|\n?```/g, '').trim()
+    const cleanJson = cleanAiJson(content)
     const parsedData = JSON.parse(cleanJson)
 
     if (!isDataValid(scenario, parsedData)) {
@@ -155,8 +156,7 @@ export async function generateFollowUp() {
     const data = await res.json()
     const content = data.choices?.[0]?.message?.content
 
-    // eslint-disable-next-line e18e/prefer-static-regex
-    const cleanJson = content.replace(/```json\n?|\n?```/g, '').trim()
+    const cleanJson = cleanAiJson(content)
     const parsedData = JSON.parse(cleanJson)
 
     if (!isDataValid(scenario, parsedData)) {

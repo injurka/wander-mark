@@ -9,7 +9,8 @@
     "placeholder": "Describe a situation, sentence, or paste text...",
     "newQuery": "New Query",
     "send": "Send",
-    "hide": "Hide"
+    "hide": "Hide",
+    "randomPrompt": "Random prompt"
   },
   "scenario": {
     "situational": "Situation (Dialog)",
@@ -18,8 +19,8 @@
     "speaking": "Speaking Practice",
     "stpmvoAnalysis": "STPMVO Sentence Analysis",
     "declensionPractice": "Declension Practice",
-    "measureWords": "Measure Words",
-    "chengyuIdioms": "Chengyu (Idioms)",
+    "measureWords": "Measure Words (量词)",
+    "chengyuIdioms": "Chengyu Idioms (成语)",
     "phrasalVerbs": "Phrasal Verbs",
     "aspectPairs": "Aspect Pairs (Perfective / Imperfective)"
   },
@@ -65,6 +66,29 @@
     "formal": "Formal",
     "possibleReplies": "Possible replies from interlocutor:",
     "cultureNote": "Cultural Note",
-    "xrayToggle": "X-Ray mode"
+    "xrayToggle": "X-Ray mode",
+    "correct": "Correct!",
+    "wrong": "Incorrect",
+    "next": "Next",
+    "prev": "Previous",
+    "progress": "{current} of {total}",
+    "grammarNotes": "Grammar Notes",
+    "legend": "Legend",
+    "translation": "Translation",
+    "meaning": "Meaning:",
+    "origin": "Origin",
+    "example": "Example",
+    "usageNotes": "Usage Notes",
+    "chooseMeasureWord": "Choose the correct measure word:",
+    "targetCase": "Which case?",
+    "fullTable": "Declension Table",
+    "imperfective": "Imperfective (НСВ)",
+    "perfective": "Perfective (СВ)",
+    "formationRule": "Formation Rule",
+    "usageWhen": "When to use",
+    "studyMode": "Study",
+    "quizMode": "Quiz",
+    "baseVerb": "Base Verb",
+    "fillBlank": "Fill in the blank:"
   }
 }

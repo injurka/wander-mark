@@ -22,8 +22,8 @@ export async function main(
 
   console.log(`--- Инициализация: ${navigationSysname} ---`)
 
-  // Очистка
-  await fs.rm(absoluteExportDir, { recursive: true, force: true })
+  // Очистка директории контента
+  await fs.rm(absoluteExportDir, { recursive: true, force: true }).catch(() => { })
   await fs.mkdir(absoluteExportDir, { recursive: true })
   await fs.mkdir(absoluteImageDestPath, { recursive: true })
 
@@ -60,7 +60,9 @@ export async function main(
     // 5. Сохранение META данных
     if (metaRootDir) {
       const absoluteMetaRootDir = path.resolve(metaRootDir)
-      const vaultMetaDir = path.join(absoluteMetaRootDir, navigationSysname)
+
+      const vaultFolderName = path.basename(absoluteExportDir)
+      const vaultMetaDir = path.join(absoluteMetaRootDir, vaultFolderName)
 
       await fs.mkdir(vaultMetaDir, { recursive: true })
 
