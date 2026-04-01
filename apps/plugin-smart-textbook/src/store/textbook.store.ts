@@ -2,8 +2,8 @@ import type { GenerationHistory, PluginContext, ScenarioType, TargetLanguage, To
 import { computed, reactive, watch } from 'vue'
 
 export const MODELS = [
-  'gemini-3.1-flash-lite-preview',
   'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite-preview',
 ]
 
 export const TARGET_LANGUAGES: TargetLanguage[] = [

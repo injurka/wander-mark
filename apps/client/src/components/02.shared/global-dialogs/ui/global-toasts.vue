@@ -58,7 +58,7 @@ const icons: Record<string, string> = {
 
 .toast-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 12px;
