@@ -53,7 +53,7 @@ export function useTextDetection() {
 
     // 2. Находим контейнер и "плоский" текст
     const element = textNode.parentElement
-    const blockContainer = element?.closest('p, li, blockquote, div.callout-content, h1, h2, h3, h4, h5, h6') as HTMLElement
+    const blockContainer = element?.closest('p, li, blockquote, div.callout-content, h1, h2, h3, h4, h5, h6, td, th') as HTMLElement
 
     if (!blockContainer)
       return null
