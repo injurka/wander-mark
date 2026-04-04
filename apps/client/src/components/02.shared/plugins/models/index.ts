@@ -4,13 +4,21 @@ import type { Composer, Locale } from 'vue-i18n'
 // ─── Слоты, в которые плагин может встраивать компоненты ───
 export type PluginSlotName
   = | 'toolbar' // Верхняя панель (рядом с кнопками header)
-    | 'sidebar-top' // Верх боковой навигации
-    | 'sidebar-bottom' // Низ боковой навигации
-    | 'content-before' // Перед контентом заметки
-    | 'content-after' // После контента заметки (перед backlinks)
-    | 'footer' // Нижняя часть страницы
-    | 'overlay' // Оверлей поверх всего (модалки, панели)
-    | 'vault-index' // Слот на главной странице хранилища (для кнопок плагинов и т.д.)
+  | 'sidebar-top' // Верх боковой навигации
+  | 'sidebar-bottom' // Низ боковой навигации
+  | 'content-before' // Перед контентом заметки
+  | 'content-after' // После контента заметки (перед backlinks)
+  | 'footer' // Нижняя часть страницы
+  | 'overlay' // Оверлей поверх всего (модалки, панели)
+  | 'vault-index' // Слот на главной странице хранилища (для кнопок плагинов и т.д.)
+
+export interface TextInterceptor {
+  id: string
+  // Функция проверки: плагин сам решает, подходит ли ему символ под курсором
+  isValidChar: (char: string) => boolean
+  // Компонент, который будет отрендерен внутри тултипа
+  tooltipComponent: Component
+}
 
 // ─── Контекст, который хост передаёт плагину ───
 export interface PluginContext {
@@ -34,6 +42,9 @@ export interface PluginContext {
   locale: Ref<Locale>
   /** Функция перевода из инстанса i18n хоста */
   t: Composer['t']
+
+  registerTextInterceptor: (interceptor: TextInterceptor) => void
+  unregisterTextInterceptor: (id: string) => void
 }
 
 // ─── Манифест плагина (то, что экспортирует ES-модуль) ───
@@ -74,7 +85,7 @@ export interface WanderMarkPlugin {
   activate?: (ctx: PluginContext) => void | Promise<void>
 
   /** Вызывается при деактивации */
-  deactivate?: () => void | Promise<void>
+  deactivate?: (ctx: PluginContext) => void | Promise<void>
 }
 
 // ─── Запись о плагине в store (персистентные данные) ───

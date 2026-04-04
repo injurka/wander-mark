@@ -242,7 +242,7 @@ watch(currentIndex, () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 
 /* Empty state */

@@ -72,7 +72,7 @@ const showReplies = ref(false)
   display: flex;
   flex-direction: column;
   gap: 24px;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 .user-input-box {
   background: var(--bg-secondary-color);

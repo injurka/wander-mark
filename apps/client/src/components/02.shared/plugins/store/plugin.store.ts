@@ -1,12 +1,8 @@
-import type { LoadedPlugin, PluginContext, PluginRecord, PluginSlotName, WanderMarkPlugin } from '../models'
+import type { LoadedPlugin, PluginContext, PluginRecord, PluginSlotName, TextInterceptor, WanderMarkPlugin } from '../models'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, markRaw, ref, shallowRef } from 'vue'
 import { injectPluginStyles, loadPluginModule, removePluginStyles } from '../lib'
 
-/**
- * Ключ localStorage формируется per-vault:
- * `wm-plugins::<vaultId>` → PluginRecord[]
- */
 function storageKey(vaultId: string) {
   return `wm-plugins::${vaultId}`
 }
@@ -15,11 +11,20 @@ export const usePluginStore = defineStore('plugins', () => {
   const currentVaultId = ref<string>('')
   const registry = ref<PluginRecord[]>([])
   const loaded = ref<Map<string, LoadedPlugin>>(new Map())
-  const context = ref<PluginContext | null>(null)
   const errors = ref<Map<string, string>>(new Map())
+  const textInterceptors = ref<TextInterceptor[]>([])
+  const context = shallowRef<PluginContext | null>(null)
 
   const plugins = computed(() => registry.value)
   const enabledPlugins = computed(() => registry.value.filter(p => p.enabled))
+
+  function registerTextInterceptor(interceptor: TextInterceptor) {
+    textInterceptors.value.push(interceptor)
+  }
+
+  function unregisterTextInterceptor(id: string) {
+    textInterceptors.value = textInterceptors.value.filter(i => i.id !== id)
+  }
 
   const getSlotComponents = (slot: PluginSlotName) => {
     return computed(() => {
@@ -39,12 +44,19 @@ export const usePluginStore = defineStore('plugins', () => {
 
   const getError = (pluginId: string) => errors.value.get(pluginId)
 
-  async function init(vaultId: string, ctx: PluginContext) {
+  async function init(vaultId: string, ctx: Omit<PluginContext, 'registerTextInterceptor' | 'unregisterTextInterceptor'>) {
     await deactivateAll()
 
     currentVaultId.value = vaultId
-    context.value = ctx
+
+    context.value = {
+      ...ctx,
+      registerTextInterceptor,
+      unregisterTextInterceptor,
+    } as PluginContext
+
     errors.value.clear()
+    textInterceptors.value = []
 
     const stored = localStorage.getItem(storageKey(vaultId))
     registry.value = stored ? JSON.parse(stored) : []
@@ -112,7 +124,7 @@ export const usePluginStore = defineStore('plugins', () => {
     const lp = loaded.value.get(pluginId)
     if (lp) {
       try {
-        await lp.module.deactivate?.()
+        await lp.module.deactivate?.(context.value!)
       }
       catch (e) {
         console.warn(`[PluginStore] Error deactivating "${pluginId}":`, e)
@@ -154,7 +166,7 @@ export const usePluginStore = defineStore('plugins', () => {
   async function deactivateAll() {
     for (const [id, lp] of loaded.value) {
       try {
-        await lp.module.deactivate?.()
+        await lp.module.deactivate?.(context.value!)
       }
       catch (e) {
         console.warn(`[PluginStore] Error deactivating "${id}":`, e)
@@ -165,6 +177,7 @@ export const usePluginStore = defineStore('plugins', () => {
       }
     }
     loaded.value.clear()
+    textInterceptors.value = []
   }
 
   function persist() {
@@ -182,6 +195,7 @@ export const usePluginStore = defineStore('plugins', () => {
     registry,
     loaded,
     errors,
+    textInterceptors,
 
     // Getters
     plugins,

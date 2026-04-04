@@ -172,7 +172,7 @@ function renderMarkdown(md: string): string {
   flex-direction: column;
   gap: 16px;
   padding: 4px 0;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 
 .chengyu-card {

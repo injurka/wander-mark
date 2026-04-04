@@ -139,7 +139,7 @@ function renderMarkdown(text: string): string {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 
 .empty-state {

@@ -165,7 +165,7 @@ const renderedGrammarNotes = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 
 /* ── Sentence header ── */

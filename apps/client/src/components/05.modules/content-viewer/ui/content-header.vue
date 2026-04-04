@@ -158,6 +158,7 @@ const currentVault = computed(() => route.params.vault as string)
   z-index: 10;
   gap: 16px;
   flex-shrink: 0;
+  z-index: 1;
 
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;

@@ -79,7 +79,7 @@ function parseMarkdown(text: string) {
   flex-wrap: wrap;
   gap: 24px;
   justify-content: center;
-  height: calc(100% - 78px);
+  min-height: calc(100% - 78px);
 }
 .flashcard-container {
   width: 100%;

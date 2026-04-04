@@ -6,9 +6,10 @@ import { useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useVaultService } from '~/shared/services/vault.service'
-import { useHanziDetection } from '../composables/use-hanzi-detection'
+import { usePluginStore } from '../../plugins'
+import { useTextDetection } from '../composables/use-text-detection'
 import { createMarkdownRenderer } from '../lib'
-import HanziTooltip from './hanzi-tooltip.vue'
+import InteractiveTooltip from './interactive-tooltip.vue'
 
 interface Props {
   content: string
@@ -19,15 +20,16 @@ interface Props {
 const props = defineProps<Props>()
 const { theme } = useChangeTheme()
 const vaultService = useVaultService()
-const { getHanziFromEvent } = useHanziDetection()
+const pluginStore = usePluginStore()
+const { getWordFromEvent } = useTextDetection()
+
 const router = useRouter()
 
 const renderedContent = ref<string>('')
 const mdInstance = ref<MarkdownIt | null>(null)
 const isLoading = ref<boolean>(true)
 const currentImages = ref<string[]>([])
-
-const hanziTooltipRef = ref<InstanceType<typeof HanziTooltip> | null>(null)
+const tooltipRef = ref<InstanceType<typeof InteractiveTooltip> | null>(null)
 
 const shikiTheme = computed(() => {
   return theme.value === ThemesVariant.Light ? 'catppuccin-latte' : 'catppuccin-mocha'
@@ -129,16 +131,18 @@ function openImageViewer() {
 
 function handleContentClick(event: MouseEvent) {
   const target = event.target as HTMLElement
-  const hanziPhrase = getHanziFromEvent(event)
 
-  if (hanziPhrase) {
-    hanziTooltipRef.value?.open(event.clientX, event.clientY, hanziPhrase)
-    event.preventDefault()
-    event.stopPropagation()
-    return
+  for (const interceptor of pluginStore.textInterceptors) {
+    const word = getWordFromEvent(event, interceptor.isValidChar)
+    if (word) {
+      tooltipRef.value?.open(event.clientX, event.clientY, word, interceptor.tooltipComponent)
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
   }
 
-  hanziTooltipRef.value?.close()
+  tooltipRef.value?.close()
 
   const link = target.closest('a')
   if (link && link.getAttribute('href')?.startsWith('/')) {
@@ -168,7 +172,7 @@ function handleContentClick(event: MouseEvent) {
 <template>
   <PageLoader v-if="isLoading" />
   <div v-else class="markdown-wrapper">
-    <HanziTooltip ref="hanziTooltipRef" />
+    <InteractiveTooltip ref="tooltipRef" />
     <div
       class="markdown-body"
       @click="handleContentClick"
