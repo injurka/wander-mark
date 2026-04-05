@@ -14,7 +14,7 @@ import App from './app.vue'
 import '~/assets/scss/global.scss'
 import '~/assets/scss/normalize.scss'
 
-;
+  ;
 
 (window as any).Vue = Vue
 
@@ -36,9 +36,9 @@ async function bootstrap() {
   app.mount('#app')
 
   if (!isTauri && 'serviceWorker' in navigator) {
-    import('virtual:pwa-register')
-      .then(({ registerSW }) => {
-        registerSW({ immediate: true })
+    import('~/shared/services/pwa.service')
+      .then(({ initializePwaUpdater }) => {
+        initializePwaUpdater(pinia)
       })
       .catch((err) => {
         console.warn('PWA plugin not found or failed to register:', err)

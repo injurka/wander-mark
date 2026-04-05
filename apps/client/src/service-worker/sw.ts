@@ -142,9 +142,6 @@ self.addEventListener('message', async (event) => {
   const { type, payload } = event.data as ServiceWorkerMessage
   const port = event.ports[0]
 
-  if (!port)
-    return
-
   const handler = messageHandlers[type]
   if (handler) {
     try {
@@ -152,17 +149,21 @@ self.addEventListener('message', async (event) => {
     }
     catch (error) {
       console.error(`Ошибка при обработке сообщения "${type}":`, error)
-      port.postMessage({
-        type: 'ERROR',
-        payload: { message: `Внутренняя ошибка при обработке: ${type}` },
-      })
+      if (port) {
+        port.postMessage({
+          type: 'ERROR',
+          payload: { message: `Внутренняя ошибка при обработке: ${type}` },
+        })
+      }
     }
   }
   else {
-    port.postMessage({
-      type: 'ERROR',
-      payload: { message: `Неизвестный тип сообщения: ${type}` },
-    })
+    if (port) {
+      port.postMessage({
+        type: 'ERROR',
+        payload: { message: `Неизвестный тип сообщения: ${type}` },
+      })
+    }
   }
 })
 
