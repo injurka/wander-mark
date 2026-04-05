@@ -15,6 +15,8 @@ export default {
         id: 'ru-speech-interceptor',
         // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-obscure-range
         isValidChar: (char: string) => /[а-яА-ЯёЁ\-]/.test(char),
+        // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-obscure-range
+        isValidText: (text: string) => /[а-яА-ЯёЁ]/.test(text),
         tooltipComponent: markRaw(RussianTooltip),
       })
       // eslint-disable-next-line no-console

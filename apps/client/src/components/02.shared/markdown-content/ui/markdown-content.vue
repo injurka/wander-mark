@@ -129,8 +129,36 @@ function openImageViewer() {
   console.log('Open image viewer with:', currentImages.value)
 }
 
+function handleSelection(event: MouseEvent) {
+  const selection = window.getSelection()
+  const selectedText = selection?.toString().trim()
+
+  // Если ничего не выделено, просто выходим
+  if (!selectedText) {
+    return
+  }
+
+  // Проверяем, может ли какой-то плагин обработать выделенный текст
+  for (const interceptor of pluginStore.textInterceptors) {
+    const isValid = interceptor.isValidText
+      ? interceptor.isValidText(selectedText)
+      : selectedText.split('').some(interceptor.isValidChar)
+
+    if (isValid) {
+      // Открываем тултип в координатах, где мы отпустили мышку
+      tooltipRef.value?.open(event.clientX, event.clientY, selectedText, interceptor.tooltipComponent)
+      return
+    }
+  }
+}
+
 function handleContentClick(event: MouseEvent) {
   const target = event.target as HTMLElement
+
+  const selection = window.getSelection()
+  if (selection && selection.toString().trim().length > 0) {
+    return
+  }
 
   for (const interceptor of pluginStore.textInterceptors) {
     const word = getWordFromEvent(event, interceptor.isValidChar)
@@ -176,6 +204,7 @@ function handleContentClick(event: MouseEvent) {
     <div
       class="markdown-body"
       @click="handleContentClick"
+      @mouseup="handleSelection"
       v-html="renderedContent"
     />
   </div>

@@ -3,6 +3,7 @@ import type { Component, Ref } from 'vue'
 export interface TextInterceptor {
   id: string
   isValidChar: (char: string) => boolean
+  isValidText: (text: string) => boolean
   tooltipComponent: Component
 }
 

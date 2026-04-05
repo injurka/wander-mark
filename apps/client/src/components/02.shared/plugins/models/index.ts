@@ -14,9 +14,8 @@ export type PluginSlotName
 
 export interface TextInterceptor {
   id: string
-  // Функция проверки: плагин сам решает, подходит ли ему символ под курсором
   isValidChar: (char: string) => boolean
-  // Компонент, который будет отрендерен внутри тултипа
+  isValidText?: (text: string) => boolean
   tooltipComponent: Component
 }
 
