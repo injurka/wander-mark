@@ -315,6 +315,29 @@ Schema:
     }
   ]
 }`
+    case 'sorting':
+      return `${baseInstructions}
+Create a vocabulary or grammar sorting game based on the user's topic.
+Generate 2 or 3 distinct categories. Generate 10 to 15 items in total that belong to these categories.
+
+Schema:
+{
+  "title": "Short descriptive title of the sorting task in ${explanationLang}",
+  "categories": [
+    {
+      "id": "cat1",
+      "name": "Category name in ${explanationLang} or ${targetLang}",
+      "explanation": "Briefly explain what belongs in this category in ${explanationLang} (revealed when completed)"
+    }
+  ],
+  "items": [
+    {
+      "text": "The word or short phrase in ${targetLang}",
+      "subtext": "Translation or phonetics/pinyin in ${explanationLang}",
+      "category_id": "Must exactly match one of the category ids (e.g., 'cat1')"
+    }
+  ]
+}`
 
     case 'phrasal-verbs':
       return `${baseInstructions}
@@ -418,6 +441,13 @@ const RANDOM_PROMPTS_BY_TOPIC: Record<string, string[]> = {
     'Сгенерируй предложения с изменениями тона у слов 一 (yi) и 不 (bu)',
     'Дай скороговорку для тренировки тонов (например, про 4 и 10)',
     'Обычный диалог в ресторане, чтобы потренировать тоны',
+  ],
+  'sorting': [
+    'Сделай сортировку на позитивные и негативные эмоции',
+    'Сортировка: исчисляемые и неисчисляемые существительные (еда)',
+    'Сортировка: глаголы движения против глаголов состояния',
+    'Сортировка лексики: Фрукты, Овощи и Ягоды',
+    'Раздели слова на формальный и неформальный стиль общения',
   ],
 }
 

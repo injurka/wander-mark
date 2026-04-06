@@ -25,6 +25,8 @@ function isDataValid(scenario: ScenarioType, data: any): boolean {
       return !!data.grammatical && Array.isArray(data.possible_replies)
     case 'quiz':
       return Array.isArray(data.questions) && data.questions.length > 0
+    case 'sorting':
+      return Array.isArray(data.categories) && data.categories.length > 0 && Array.isArray(data.items)
 
     // ── Языко-специфичные ──
     case 'stpmvo':

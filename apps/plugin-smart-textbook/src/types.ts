@@ -34,6 +34,7 @@ export type ScenarioType
   | 'review'
   | 'speaking'
   | 'quiz'
+  | 'sorting'
   | 'stpmvo'
   | 'measure-words'
   | 'radicals'
@@ -42,6 +43,25 @@ export type ScenarioType
   | 'declension'
   | 'aspect-pairs'
   | 'phrasal-verbs'
+
+export interface SortingItem {
+  text: string
+  subtext?: string
+  category_id: string
+  _id?: string 
+}
+
+export interface SortingCategory {
+  id: string
+  name: string
+  explanation?: string
+}
+
+export interface SortingData {
+  title: string
+  categories: SortingCategory[]
+  items: SortingItem[]
+}
 
 /** Тренажер тонов (Tone Guesser) для китайского */
 export interface ToneGuesserData {

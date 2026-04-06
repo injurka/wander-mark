@@ -19,6 +19,7 @@ export const TOPIC_REGISTRY: TopicDefinition[] = [
   { id: 'review', labelKey: 'scenario.review', scenario: 'review' },
   { id: 'speaking', labelKey: 'scenario.speaking', scenario: 'speaking' },
   { id: 'quiz', labelKey: 'scenario.quiz', scenario: 'quiz' },
+  { id: 'sorting', labelKey: 'scenario.sorting', scenario: 'sorting' },
 
   // ── Китайский ──
   { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'stpmvo', languages: ['Chinese'] },

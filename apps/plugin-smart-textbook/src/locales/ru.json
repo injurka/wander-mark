@@ -25,7 +25,8 @@
     "measureWords": "Счётные слова (量词)",
     "chengyuIdioms": "Чэнъюй (成语)",
     "phrasalVerbs": "Фразовые глаголы",
-    "aspectPairs": "Видовые пары глаголов"
+    "aspectPairs": "Видовые пары глаголов",
+    "sorting": "Сортировка слов"
   },
   "topicGroup": {
     "universal": "Общие",
@@ -54,6 +55,9 @@
     "Russian": "Русский"
   },
   "board": {
+    "sortingInstructions": "Перетащи слова в правильные колонки (или нажми на слово, затем на колонку)",
+    "dropHere": "Перетащи сюда...",
+    "sortingComplete": "Отличная работа! Все слова отсортированы верно.",
     "etymology": "Этимология и История",
     "components": "Компоненты (Ключи)",
     "roleSemantic": "Смысл",

@@ -6,6 +6,7 @@ import BoardBuilder from '../components/board/all/board-builder.vue'
 import BoardQuiz from '../components/board/all/board-quiz.vue'
 import BoardReview from '../components/board/all/board-review.vue'
 import BoardSituational from '../components/board/all/board-situational.vue'
+import BoardSorting from '../components/board/all/board-sorting.vue'
 import BoardSpeaking from '../components/board/all/board-speaking.vue'
 import BoardPhrasalVerbs from '../components/board/en/board-phrasal-verbs.vue'
 import BoardAspectPairs from '../components/board/ru/board-aspect-pairs.vue'
@@ -40,6 +41,7 @@ const SCENARIO_COMPONENTS: Record<ScenarioType, Component> = {
   'phrasal-verbs': BoardPhrasalVerbs,
   'radicals': BoardRadicals,
   'tone-guesser': BoardToneGuesser,
+  'sorting': BoardSorting,
 }
 
 const activeComponent = computed(() => {
@@ -106,6 +108,7 @@ function scenarioIcon(scenario: string): string {
     case 'phrasal-verbs': return '🔗'
     case 'radicals': return '🧱'
     case 'tone-guesser': return '🎵'
+     case 'sorting': return '🗂️'
     default: return '📄'
   }
 }

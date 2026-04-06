@@ -13,6 +13,7 @@
     "randomPrompt": "随机提示"
   },
   "scenario": {
+    "sorting": "词汇分类",
     "toneGuesser": "声调练习 (Tone Guesser)",
     "radicalDeconstructor": "汉字拆解 (部首)",
     "situational": "情景对话",
@@ -54,6 +55,9 @@
     "Russian": "俄语"
   },
   "board": {
+    "sortingInstructions": "将单词拖放到正确的列中（或点击单词，然后点击列）",
+    "dropHere": "拖放到这里...",
+    "sortingComplete": "干得好！所有单词分类正确。",
     "etymology": "字源与故事",
     "components": "部件 (部首)",
     "roleSemantic": "形旁 (表意)",
