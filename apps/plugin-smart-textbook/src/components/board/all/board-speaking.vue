@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SpeakingData } from '../../types'
+import type { SpeakingData } from '../../../types'
 import { ref } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 defineProps<{ data: SpeakingData }>()
 const { t } = usePluginI18n()

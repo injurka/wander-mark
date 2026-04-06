@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { AspectPairsData } from '../../types'
+import type { AspectPairsData } from '../../../types'
 import { marked } from 'marked'
 import { ref } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 const props = defineProps<{ data: AspectPairsData }>()
 

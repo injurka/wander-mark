@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { DeclensionData } from '../../types'
+import type { DeclensionData } from '../../../types'
 import { marked } from 'marked'
 import { computed, ref, watch } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 const props = defineProps<{ data: DeclensionData }>()
 

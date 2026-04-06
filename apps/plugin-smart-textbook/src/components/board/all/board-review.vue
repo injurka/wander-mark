@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ReviewData } from '../../types'
+import type { ReviewData } from '../../../types'
 import { marked } from 'marked'
 import { ref } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 defineProps<{ data: ReviewData }>()
 const { t } = usePluginI18n()

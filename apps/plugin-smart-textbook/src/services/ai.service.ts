@@ -1,17 +1,12 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { ScenarioType } from '../types'
 import { usePluginI18n } from '../i18n'
 import { buildSystemPrompt } from '../prompts'
 import { activeScenario, tbActions, tbState } from '../store/textbook.store'
 
-/**
- * Очищает ответ AI от маркдаун-обёртки и мусорных символов.
- * Некоторые модели добавляют ```json ... ```, другие оставляют одиночные `` в конце.
- */
 function cleanAiJson(raw: string): string {
   let s = raw.trim()
-  // Убираем открывающий ```json
   s = s.replace(/^```(?:json)?\s*/i, '')
-  // Убираем закрывающий ``` (или `` или ` — неполные остатки)
   s = s.replace(/`{1,3}\s*$/, '')
   return s.trim()
 }
@@ -28,6 +23,8 @@ function isDataValid(scenario: ScenarioType, data: any): boolean {
       return Array.isArray(data.cards)
     case 'speaking':
       return !!data.grammatical && Array.isArray(data.possible_replies)
+    case 'quiz':
+      return Array.isArray(data.questions) && data.questions.length > 0
 
     // ── Языко-специфичные ──
     case 'stpmvo':

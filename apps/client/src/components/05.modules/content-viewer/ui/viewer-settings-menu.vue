@@ -74,6 +74,7 @@ function handleOpenPlugins() {
           {{ t('settings.interface') }}
         </div>
         <div class="settings-group">
+          <KitCheckbox v-model="contentViewerStore.pinHeaderEnabled" :label="t('settings.pinHeader')" />
           <KitCheckbox v-model="contentViewerStore.borderlessViewEnabled" :label="t('settings.borderless')" />
           <KitCheckbox v-model="contentViewerStore.coloredFoldersEnabled" :label="t('settings.coloredFolders')" />
           <KitCheckbox v-model="contentViewerStore.showIconsEnabled" :label="t('settings.showIcons')" />

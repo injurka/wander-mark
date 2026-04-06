@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { ChengyuData } from '../../types'
+import type { ChengyuData } from '../../../types'
 import { marked } from 'marked'
 import { reactive } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
-const props = defineProps<{ data: ChengyuData }>()
+defineProps<{ data: ChengyuData }>()
 
 const { t } = usePluginI18n()
 
@@ -32,7 +32,6 @@ function renderMarkdown(md: string): string {
       :key="idx"
       class="chengyu-card"
     >
-      <!-- Card header: characters + pinyin -->
       <div class="card-header">
         <div class="chengyu-chars">
           {{ idiom.chengyu }}
@@ -42,7 +41,6 @@ function renderMarkdown(md: string): string {
         </div>
       </div>
 
-      <!-- Core info table -->
       <div class="chengyu-info-grid">
         <div class="info-row">
           <span class="info-label">{{ t('board.literal') }}</span>
@@ -54,9 +52,7 @@ function renderMarkdown(md: string): string {
         </div>
       </div>
 
-      <!-- Expandable sections -->
       <div class="expandable-sections">
-        <!-- History / Origin -->
         <div class="expand-section" :class="{ open: openSections[idx]?.origin }">
           <button
             class="expand-trigger"
@@ -87,7 +83,6 @@ function renderMarkdown(md: string): string {
           </Transition>
         </div>
 
-        <!-- Example sentence -->
         <div class="expand-section" :class="{ open: openSections[idx]?.example }">
           <button
             class="expand-trigger"
@@ -126,7 +121,6 @@ function renderMarkdown(md: string): string {
           </Transition>
         </div>
 
-        <!-- Usage notes -->
         <div class="expand-section last" :class="{ open: openSections[idx]?.notes }">
           <button
             class="expand-trigger"

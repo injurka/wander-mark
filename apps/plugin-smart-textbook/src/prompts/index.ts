@@ -102,6 +102,32 @@ Schema:
   ]
 }`
 
+    case 'quiz':
+      return `${baseInstructions}
+Create a multiple-choice mini-test based on the user's topic or text to learn ${targetLang}.
+Generate exactly 4-5 questions. Mix different types of questions: 
+- Translate a word to ${targetLang}
+- Translate a word from ${targetLang} to ${explanationLang}
+- Fill in the blank in a sentence
+- Choose the grammatically correct sentence
+
+IMPORTANT: Provide exactly 3 or 4 string items in the "options" array. The "correct_answer" MUST exactly match one of the items in the "options" array.
+
+Schema:
+{
+  "title": "Short descriptive title for the quiz in ${explanationLang}",
+  "questions": [
+    {
+      "type": "Short label for question type (e.g., 'Vocabulary', 'Grammar', 'Fill in the blank') in ${explanationLang}",
+      "question": "The question text (can be in ${explanationLang} or ${targetLang})",
+      "phonetic_hint": "Optional phonetics/pinyin if the question involves a difficult word in ${targetLang}",
+      "options": ["option 1", "option 2", "option 3"],
+      "correct_answer": "The exact string from options that is correct",
+      "explanation": "Explanation of the correct answer and why others are wrong in ${explanationLang} (markdown allowed)"
+    }
+  ]
+}`
+
     // ── Языко-специфичные сценарии ──
 
     case 'stpmvo':
@@ -263,6 +289,12 @@ IMPORTANT: Provide exactly 4 particle_options per variation. Only one is correct
 }
 
 const RANDOM_PROMPTS_BY_TOPIC: Record<string, string[]> = {
+  quiz: [
+    'Проверь мои знания по теме "Еда и напитки"',
+    'Сделай тест из 5 вопросов на случайные разговорные фразы',
+    'Дай тест на базовую грамматику (времена и предлоги)',
+    'Смешанный тест: перевод слов и заполнение пропусков в предложениях',
+  ],
   review: [
     'Дай мне неожиданный вопрос для самопроверки по этой теме, который большинство учеников упускают',
     'Придумай мини-тест из 3 вопросов с возрастающей сложностью по этой теме',

@@ -156,9 +156,7 @@ const currentVault = computed(() => route.params.vault as string)
   background-color: rgba(var(--bg-header-color), 0.85);
   backdrop-filter: blur(12px);
   z-index: 10;
-  gap: 16px;
   flex-shrink: 0;
-  z-index: 1;
 
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { BuilderData } from '../../types'
+import type { BuilderData } from '../../../types'
 import { marked } from 'marked'
 import { computed, ref, watch } from 'vue'
-import { usePluginI18n } from '../../i18n'
-import { tbActions } from '../../store/textbook.store'
+import { usePluginI18n } from '../../../i18n'
+import { tbActions } from '../../../store/textbook.store'
 
 const props = defineProps<{ data: BuilderData }>()
 const { t } = usePluginI18n()

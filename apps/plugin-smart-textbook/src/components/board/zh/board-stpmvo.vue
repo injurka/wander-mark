@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { StpmvoData } from '../../types'
+import type { StpmvoData } from '../../../types'
 import { marked } from 'marked'
 import { computed, ref } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 const props = defineProps<{ data: StpmvoData }>()
 
@@ -53,7 +53,6 @@ const renderedGrammarNotes = computed(() => {
 
 <template>
   <div class="stpmvo-board">
-    <!-- Full sentence display -->
     <div class="sentence-header">
       <div class="sentence-ruby">
         <ruby v-for="(comp, i) in data.components" :key="i" class="sentence-ruby-item">
@@ -69,7 +68,6 @@ const renderedGrammarNotes = computed(() => {
       </div>
     </div>
 
-    <!-- Legend -->
     <div class="legend-bar">
       <div v-for="role in legendRoles" :key="role.key" class="legend-item">
         <span class="legend-dot" :style="{ background: roleColors[role.key].bg, border: `2px solid ${roleColors[role.key].border}` }" />
@@ -77,7 +75,6 @@ const renderedGrammarNotes = computed(() => {
       </div>
     </div>
 
-    <!-- Component chain -->
     <div class="component-chain">
       <div
         v-for="(comp, i) in data.components"
@@ -115,7 +112,6 @@ const renderedGrammarNotes = computed(() => {
       </div>
     </div>
 
-    <!-- Detail panel -->
     <Transition name="detail-slide">
       <div v-if="activeIndex !== null" :key="activeIndex" class="detail-panel">
         <div class="detail-header">
@@ -141,7 +137,6 @@ const renderedGrammarNotes = computed(() => {
       </div>
     </Transition>
 
-    <!-- Grammar notes -->
     <div class="grammar-notes-section">
       <div class="grammar-notes-title">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -168,7 +163,6 @@ const renderedGrammarNotes = computed(() => {
   min-height: calc(100% - 78px);
 }
 
-/* ── Sentence header ── */
 .sentence-header {
   text-align: center;
   padding: 20px 16px;
@@ -219,7 +213,6 @@ const renderedGrammarNotes = computed(() => {
   font-style: italic;
 }
 
-/* ── Legend ── */
 .legend-bar {
   display: flex;
   flex-wrap: wrap;
@@ -245,7 +238,6 @@ const renderedGrammarNotes = computed(() => {
   flex-shrink: 0;
 }
 
-/* ── Component chain ── */
 .component-chain {
   display: flex;
   flex-wrap: wrap;
@@ -322,7 +314,6 @@ const renderedGrammarNotes = computed(() => {
   margin-top: 2px;
 }
 
-/* ── Detail panel ── */
 .detail-panel {
   position: relative;
   background: var(--bg-secondary-color);
@@ -391,7 +382,6 @@ const renderedGrammarNotes = computed(() => {
   background: var(--bg-hover-color);
 }
 
-/* ── Detail transition ── */
 .detail-slide-enter-active,
 .detail-slide-leave-active {
   transition:
@@ -404,7 +394,6 @@ const renderedGrammarNotes = computed(() => {
   transform: translateY(-6px);
 }
 
-/* ── Grammar notes ── */
 .grammar-notes-section {
   background: var(--bg-secondary-color);
   border-radius: 10px;
@@ -459,7 +448,6 @@ const renderedGrammarNotes = computed(() => {
   margin: 6px 0;
 }
 
-/* ── Mobile ── */
 @media (max-width: 768px) {
   .stpmvo-board {
     padding: 14px;

@@ -26,7 +26,7 @@ const groups = computed(() => {
   const { universal, langSpecific } = filteredTopics.value
   const q = search.value.trim().toLowerCase()
   const filterFn = (items: TopicDefinition[]) =>
-    typeof universal !== undefined && q
+    typeof universal !== 'undefined' && q
       ? items.filter((tp: TopicDefinition) => t(tp.labelKey).toLowerCase().includes(q))
       : items
 

@@ -1,8 +1,8 @@
 <!-- eslint-disable e18e/prefer-static-regex -->
 <script setup lang="ts">
-import type { SituationalData } from '../../types'
+import type { SituationalData } from '../../../types'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import UiTooltip from '../ui-kit/ui-tooltip.vue'
+import UiTooltip from '../../ui-kit/ui-tooltip.vue'
 
 defineProps<{ data: SituationalData }>()
 const expandedIndexes = ref<Set<number>>(new Set())
@@ -23,7 +23,6 @@ function renderOriginalWithTooltips(original: string, keywords: any[]) {
   if (!keywords || !keywords.length)
     return original
 
-  // Сортируем по убыванию длины, чтобы слова не перекрывали друг друга
   const sortedKeywords = [...keywords].sort((a, b) => b.word.length - a.word.length)
 
   let result = original
@@ -31,14 +30,11 @@ function renderOriginalWithTooltips(original: string, keywords: any[]) {
     if (!kw.word)
       return
 
-    // Экранируем кавычки только для текстовых данных, HTML здесь больше не формируем
     const safePinyin = kw.transcription ? kw.transcription.replace(/"/g, '&quot;') : ''
     const safeText = kw.explanation ? kw.explanation.replace(/"/g, '&quot;') : ''
 
-    // Передаем данные в чистом виде через data-атрибуты
     const tooltipHtml = `<span class="keyword" data-pinyin="${safePinyin}" data-explanation="${safeText}">${kw.word}</span>`
 
-    // Разбиваем текст по HTML-тегам, чтобы производить замену только в тексте
     const parts = result.split(/(<[^>]+>)/g)
     for (let i = 0; i < parts.length; i++) {
       if (!parts[i].startsWith('<')) {
@@ -51,7 +47,6 @@ function renderOriginalWithTooltips(original: string, keywords: any[]) {
   return result
 }
 
-// Вспомогательная функция для сборки HTML тултипа
 function buildTooltipHtml(el: HTMLElement): string {
   const pinyin = el.getAttribute('data-pinyin') || ''
   const explanation = el.getAttribute('data-explanation') || ''
@@ -92,7 +87,6 @@ function handleMouseOut(e: MouseEvent) {
   }
 }
 
-/** Touch-устройства: toggle по тапу */
 function handleTouch(e: Event) {
   const el = e.target as HTMLElement
   if (!el || !el.classList.contains('keyword'))
@@ -117,7 +111,6 @@ function handleTouch(e: Event) {
   }
 }
 
-/** Закрытие тултипа по клику вне keyword */
 function handleGlobalClick(e: MouseEvent | TouchEvent) {
   const el = e.target as HTMLElement
   if (!el.closest('.keyword')) {
@@ -175,12 +168,10 @@ onBeforeUnmount(() => {
         </div>
 
         <button class="eye-btn" :class="{ active: expandedIndexes.has(i) }" title="Подробности" @click="toggle(i)">
-          <!-- Открытый глаз -->
           <svg v-if="expandedIndexes.has(i)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
             <circle cx="12" cy="12" r="3" />
           </svg>
-          <!-- Закрытый глаз -->
           <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
             <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />

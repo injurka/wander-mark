@@ -27,13 +27,13 @@ export interface TranslationData {
 
 /**
  * Расширенный тип сценария.
- * 4 базовых + 6 языко-специфичных, каждый со своей схемой данных и компонентом.
  */
 export type ScenarioType
   = | 'situational'
   | 'builder'
   | 'review'
   | 'speaking'
+  | 'quiz'
   | 'stpmvo'
   | 'measure-words'
   | 'chengyu'
@@ -43,18 +43,10 @@ export type ScenarioType
 
 export type TargetLanguage = 'Chinese' | 'English' | 'Russian'
 
-/** Определение темы с опциональной привязкой к языку */
 export interface TopicDefinition {
-  /** Уникальный ключ темы */
   id: string
-  /** i18n-ключ для отображаемого названия */
   labelKey: string
-  /** Тип сценария — определяет компонент, промпт и валидацию */
   scenario: ScenarioType
-  /**
-   * К каким языкам привязана тема.
-   * undefined / пустой массив = доступна для всех языков.
-   */
   languages?: TargetLanguage[]
 }
 
@@ -123,9 +115,20 @@ export interface SpeakingData {
   )[]
 }
 
+export interface QuizData {
+  title: string
+  questions: {
+    type: string
+    question: string
+    phonetic_hint?: string
+    options: string[]
+    correct_answer: string
+    explanation: string
+  }[]
+}
+
 // ── Языко-специфичные сценарии ──
 
-/** Разбор предложения по модели STPMVO (китайский) */
 export interface StpmvoData {
   sentence: string
   pinyin: string
@@ -140,7 +143,6 @@ export interface StpmvoData {
   grammar_notes: string
 }
 
-/** Тренажёр счётных слов 量词 (китайский) */
 export interface MeasureWordsData {
   exercises: {
     noun: string
@@ -156,7 +158,6 @@ export interface MeasureWordsData {
   }[]
 }
 
-/** Карточки идиом — чэнъюй 成语 (китайский) */
 export interface ChengyuData {
   idioms: {
     chengyu: string
@@ -171,7 +172,6 @@ export interface ChengyuData {
   }[]
 }
 
-/** Тренажёр падежей (русский) */
 export interface DeclensionData {
   exercises: {
     base_form: string
@@ -188,7 +188,6 @@ export interface DeclensionData {
   }[]
 }
 
-/** Видовые пары глаголов (русский) */
 export interface AspectPairsData {
   pairs: {
     imperfective: string
@@ -206,7 +205,6 @@ export interface AspectPairsData {
   }[]
 }
 
-/** Фразовые глаголы (английский) */
 export interface PhrasalVerbsData {
   base_verb: string
   base_meaning: string

@@ -1,5 +1,6 @@
 {
   "settings": {
+    "pinHeader": "Закрепить шапку",
     "appearance": "Оформление",
     "theme": "Тема",
     "themeLight": "Светлая",

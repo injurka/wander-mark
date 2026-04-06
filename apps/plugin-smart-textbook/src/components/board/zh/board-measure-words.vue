@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { MeasureWordsData } from '../../types'
+import type { MeasureWordsData } from '../../../types'
 import { computed, reactive, ref } from 'vue'
-import { usePluginI18n } from '../../i18n'
+import { usePluginI18n } from '../../../i18n'
 
 const props = defineProps<{ data: MeasureWordsData }>()
 
@@ -10,11 +10,8 @@ const { t } = usePluginI18n()
 const currentIndex = ref(0)
 const slideDir = ref('slide-left')
 
-// Track answered state per exercise: true = correct, false = guessed wrong at least once
 const answeredMap = reactive<Record<number, boolean>>({})
-// Per-exercise: set of disabled (wrong-guessed) option indices
 const disabledSets = reactive<Record<number, Set<number>>>({})
-// Per-exercise: shake animation target
 const shakingOption = ref<number | null>(null)
 
 const ex = computed(() => props.data.exercises[currentIndex.value])
@@ -92,7 +89,6 @@ function jumpTo(i: number) {
 
 <template>
   <div class="mw-board">
-    <!-- Progress bar -->
     <div class="mw-progress-header">
       <div class="mw-progress-label">
         {{ currentIndex + 1 }} / {{ data.exercises.length }}
@@ -120,10 +116,8 @@ function jumpTo(i: number) {
       </div>
     </div>
 
-    <!-- Card -->
     <Transition :name="slideDir" mode="out-in">
       <div :key="currentIndex" class="mw-card">
-        <!-- Noun display -->
         <div class="mw-noun-section">
           <div class="mw-noun-character">
             {{ ex.noun }}
@@ -136,12 +130,10 @@ function jumpTo(i: number) {
           </div>
         </div>
 
-        <!-- Prompt -->
         <div class="mw-prompt">
           {{ t('board.chooseMeasureWord') }}
         </div>
 
-        <!-- Options -->
         <div class="mw-options">
           <button
             v-for="(opt, oi) in ex.options"
@@ -166,14 +158,12 @@ function jumpTo(i: number) {
           </button>
         </div>
 
-        <!-- Show answer link -->
         <div v-if="!isAnswered" class="mw-reveal-row">
           <button class="mw-reveal-btn" @click="revealAnswer">
             {{ t('board.showAnswer') }}
           </button>
         </div>
 
-        <!-- Result reveal -->
         <Transition name="result-fade">
           <div v-if="isAnswered" class="mw-result">
             <div class="mw-result-sentence">
@@ -199,7 +189,6 @@ function jumpTo(i: number) {
       </div>
     </Transition>
 
-    <!-- Navigation -->
     <div class="mw-navigation">
       <button
         class="mw-nav-btn"
@@ -247,7 +236,6 @@ function jumpTo(i: number) {
   min-height: calc(100% - 78px);
 }
 
-/* ── Progress header ── */
 .mw-progress-header {
   display: flex;
   flex-direction: column;
@@ -311,7 +299,6 @@ function jumpTo(i: number) {
   border-color: var(--border-warning-color);
 }
 
-/* ── Card ── */
 .mw-card {
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-primary-color);
@@ -323,7 +310,6 @@ function jumpTo(i: number) {
   min-height: 260px;
 }
 
-/* ── Noun section ── */
 .mw-noun-section {
   text-align: center;
 }
@@ -349,7 +335,6 @@ function jumpTo(i: number) {
   font-style: italic;
 }
 
-/* ── Prompt ── */
 .mw-prompt {
   text-align: center;
   font-size: 0.88rem;
@@ -359,7 +344,6 @@ function jumpTo(i: number) {
   letter-spacing: 0.06em;
 }
 
-/* ── Options ── */
 .mw-options {
   display: flex;
   flex-wrap: wrap;
@@ -444,7 +428,6 @@ function jumpTo(i: number) {
   color: var(--fg-error-color, #ef4444);
 }
 
-/* Shake animation */
 @keyframes shake {
   0%,
   100% {
@@ -468,7 +451,6 @@ function jumpTo(i: number) {
   animation: shake 0.5s ease;
 }
 
-/* ── Reveal row ── */
 .mw-reveal-row {
   text-align: center;
 }
@@ -489,7 +471,6 @@ function jumpTo(i: number) {
   color: var(--fg-secondary-color);
 }
 
-/* ── Result ── */
 .mw-result {
   display: flex;
   flex-direction: column;
@@ -539,7 +520,6 @@ function jumpTo(i: number) {
   color: var(--fg-accent-color);
 }
 
-/* ── Result transition ── */
 .result-fade-enter-active,
 .result-fade-leave-active {
   transition:
@@ -552,7 +532,6 @@ function jumpTo(i: number) {
   transform: translateY(6px);
 }
 
-/* ── Navigation ── */
 .mw-navigation {
   display: flex;
   align-items: center;
@@ -613,7 +592,6 @@ function jumpTo(i: number) {
   color: var(--fg-muted-color);
 }
 
-/* ── Card slide transitions ── */
 .slide-left-enter-active,
 .slide-left-leave-active,
 .slide-right-enter-active,
@@ -641,7 +619,6 @@ function jumpTo(i: number) {
   transform: translateX(30px);
 }
 
-/* ── Mobile ── */
 @media (max-width: 768px) {
   .mw-board {
     padding: 14px;

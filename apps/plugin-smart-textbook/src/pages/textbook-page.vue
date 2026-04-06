@@ -2,16 +2,17 @@
 import type { Component } from 'vue'
 import type { ScenarioType } from '../types'
 import { computed, onMounted, ref, watch } from 'vue'
-import BoardAspectPairs from '../components/board/board-aspect-pairs.vue'
-import BoardBuilder from '../components/board/board-builder.vue'
-import BoardChengyu from '../components/board/board-chengyu.vue'
-import BoardDeclension from '../components/board/board-declension.vue'
-import BoardMeasureWords from '../components/board/board-measure-words.vue'
-import BoardPhrasalVerbs from '../components/board/board-phrasal-verbs.vue'
-import BoardReview from '../components/board/board-review.vue'
-import BoardSituational from '../components/board/board-situational.vue'
-import BoardSpeaking from '../components/board/board-speaking.vue'
-import BoardStpmvo from '../components/board/board-stpmvo.vue'
+import BoardBuilder from '../components/board/all/board-builder.vue'
+import BoardQuiz from '../components/board/all/board-quiz.vue'
+import BoardReview from '../components/board/all/board-review.vue'
+import BoardSituational from '../components/board/all/board-situational.vue'
+import BoardSpeaking from '../components/board/all/board-speaking.vue'
+import BoardPhrasalVerbs from '../components/board/en/board-phrasal-verbs.vue'
+import BoardAspectPairs from '../components/board/ru/board-aspect-pairs.vue'
+import BoardDeclension from '../components/board/ru/board-declension.vue'
+import BoardChengyu from '../components/board/zh/board-chengyu.vue'
+import BoardMeasureWords from '../components/board/zh/board-measure-words.vue'
+import BoardStpmvo from '../components/board/zh/board-stpmvo.vue'
 import InputZone from '../components/input-zone.vue'
 import Settings from '../components/settings.vue'
 import { usePluginI18n } from '../i18n'
@@ -28,6 +29,7 @@ const SCENARIO_COMPONENTS: Record<ScenarioType, Component> = {
   'builder': BoardBuilder,
   'review': BoardReview,
   'speaking': BoardSpeaking,
+  'quiz': BoardQuiz,
   'stpmvo': BoardStpmvo,
   'measure-words': BoardMeasureWords,
   'chengyu': BoardChengyu,
@@ -75,7 +77,6 @@ function handleTouchEnd(e: TouchEvent) {
   }
 }
 
-/** Форматирование даты для history-item */
 function formatDate(ts: number): string {
   const d = new Date(ts)
   const now = new Date()
@@ -86,13 +87,13 @@ function formatDate(ts: number): string {
   return `${d.toLocaleDateString([], { day: 'numeric', month: 'short' })} ${time}`
 }
 
-/** Иконка сценария */
 function scenarioIcon(scenario: string): string {
   switch (scenario) {
     case 'situational': return '💬'
     case 'builder': return '🧩'
     case 'review': return '🃏'
     case 'speaking': return '🗣'
+    case 'quiz': return '📝'
     case 'stpmvo': return '📊'
     case 'measure-words': return '📏'
     case 'chengyu': return '🎭'
@@ -196,6 +197,7 @@ function scenarioIcon(scenario: string): string {
 </template>
 
 <style scoped>
+/* Стили остаются без изменений */
 .lang-chinese {
   --lang-font: 'Maple Mono CN', sans-serif;
 }
@@ -305,7 +307,6 @@ function scenarioIcon(scenario: string): string {
   color: var(--fg-primary-color);
 }
 
-/* ── Redesigned History ── */
 .history-title {
   font-size: 0.75em;
   color: var(--fg-muted-color);

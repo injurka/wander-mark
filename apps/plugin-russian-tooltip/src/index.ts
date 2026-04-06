@@ -13,10 +13,10 @@ export default {
     if (ctx.registerTextInterceptor) {
       ctx.registerTextInterceptor({
         id: 'ru-speech-interceptor',
-        // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-obscure-range
-        isValidChar: (char: string) => /[а-яА-ЯёЁ\-]/.test(char),
-        // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-obscure-range
-        isValidText: (text: string) => /[а-яА-ЯёЁ]/.test(text),
+        // eslint-disable-next-line e18e/prefer-static-regex, no-misleading-character-class, regexp/no-obscure-range
+        isValidChar: (char: string) => /[а-яА-ЯёЁ\-\u0301]/.test(char),
+        // eslint-disable-next-line e18e/prefer-static-regex, no-misleading-character-class, regexp/no-obscure-range
+        isValidText: (text: string) => /[а-яА-ЯёЁ\-\u0301]/.test(text),
         tooltipComponent: markRaw(RussianTooltip),
       })
       // eslint-disable-next-line no-console

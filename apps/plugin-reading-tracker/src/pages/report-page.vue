@@ -70,7 +70,16 @@ const activeTab = ref('overview')
   display: flex;
   gap: 4px;
   border-bottom: 1px solid var(--border-secondary-color);
+
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.rt-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .rt-tab {
   background: transparent;
   border: none;
@@ -79,6 +88,9 @@ const activeTab = ref('overview')
   color: var(--fg-secondary-color);
   font-weight: 500;
   border-bottom: 2px solid transparent;
+
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .rt-tab:hover {
   color: var(--fg-primary-color);

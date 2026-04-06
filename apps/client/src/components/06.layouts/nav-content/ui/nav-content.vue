@@ -30,7 +30,6 @@ const { confirm } = useConfirm()
 const { t } = useI18n()
 const { currentLocale } = useLocale()
 
-// Читаем мета-данные роута
 const isSidebarEnabled = computed(() => !route.meta.hideSidebar)
 
 const menu = ref(isSidebarEnabled.value && typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -48,13 +47,36 @@ const data = ref<{ nav: any, settings: any, backlinks: any, searchIndex: any }>(
 function handleScroll() {
   if (!scrollableRef.value)
     return
-  const scrollTop = scrollableRef.value.scrollTop
+
+  const el = scrollableRef.value
+  const scrollTop = el.scrollTop
+  const scrollHeight = el.scrollHeight
+  const clientHeight = el.clientHeight
+
+  if (contentViewerStore.pinHeaderEnabled) {
+    isHeaderVisible.value = true
+    lastScrollTop.value = scrollTop
+    return
+  }
+
+  if (scrollTop <= 0) {
+    isHeaderVisible.value = true
+    lastScrollTop.value = 0
+    return
+  }
+
+  if (scrollTop + clientHeight >= scrollHeight - 1) {
+    lastScrollTop.value = scrollTop
+    return
+  }
+
   if (scrollTop < scrollThreshold)
     isHeaderVisible.value = true
   else if (scrollTop < lastScrollTop.value)
     isHeaderVisible.value = true
   else isHeaderVisible.value = false
-  lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop
+
+  lastScrollTop.value = scrollTop
 }
 
 useSwipe(mainAreaRef, {
@@ -275,9 +297,10 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 }
 .content-scrollable {
   flex: 1;
-  height: 100%;
+  min-height: 0;
   overflow-y: auto;
-  padding: 50px 0 0 0;
+  padding: 50px 0 env(safe-area-inset-bottom, 0) 0;
+  -webkit-overflow-scrolling: touch;
 
   &.borderless :deep(.content-viewer) {
     width: 100% !important;

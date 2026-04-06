@@ -9,6 +9,7 @@ const COOKIE_BORDERLESS_VIEW = 'ui_borderlessViewEnabled'
 const COOKIE_COLORED_FOLDERS = 'ui_coloredFoldersEnabled'
 const COOKIE_SHOW_ICONS = 'ui_showIconsEnabled'
 const COOKIE_SHOW_OUTLINE = 'ui_showOutlineEnabled'
+const COOKIE_PIN_HEADER = 'ui_pinHeaderEnabled'
 
 export const useContentViewerStore = defineStore('contentViewer', () => {
   const route = useRoute()
@@ -22,6 +23,7 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
   const coloredFoldersEnabled = useLocalStorage<boolean>(COOKIE_COLORED_FOLDERS, false)
   const showIconsEnabled = useLocalStorage<boolean>(COOKIE_SHOW_ICONS, true)
   const showOutlineEnabled = useLocalStorage<boolean>(COOKIE_SHOW_OUTLINE, true)
+  const pinHeaderEnabled = useLocalStorage<boolean>(COOKIE_PIN_HEADER, false)
 
   const activeItem = computed(() => {
     if (!navItems.value)
@@ -48,6 +50,7 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
     currentBacklinks,
     searchIndex,
     borderlessViewEnabled,
+    pinHeaderEnabled,
     coloredFoldersEnabled,
     showIconsEnabled,
     showOutlineEnabled,

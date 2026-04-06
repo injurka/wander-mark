@@ -12,17 +12,13 @@ export const TARGET_LANGUAGES: TargetLanguage[] = [
   'Russian',
 ]
 
-/**
- * Реестр тем.
- * Каждая тема имеет собственный scenario, определяющий компонент, промпт и валидацию.
- * Темы без `languages` — общие. Темы с `languages` — видны только для указанных языков.
- */
 export const TOPIC_REGISTRY: TopicDefinition[] = [
   // ── Общие (все языки) ──
   { id: 'situational', labelKey: 'scenario.situational', scenario: 'situational' },
   { id: 'builder', labelKey: 'scenario.builder', scenario: 'builder' },
   { id: 'review', labelKey: 'scenario.review', scenario: 'review' },
   { id: 'speaking', labelKey: 'scenario.speaking', scenario: 'speaking' },
+  { id: 'quiz', labelKey: 'scenario.quiz', scenario: 'quiz' },
 
   // ── Китайский ──
   { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'stpmvo', languages: ['Chinese'] },
@@ -45,7 +41,6 @@ export const tbState = reactive({
   isLoading: false,
   isSettingsOpen: false,
   isSidebarOpen: true,
-  /** Выбранная тема (id из TOPIC_REGISTRY) */
   activeTopic: 'situational' as string,
 
   currentInput: '',
@@ -65,10 +60,6 @@ export const tbState = reactive({
   confirm: null as any,
 })
 
-/**
- * Темы, отфильтрованные под текущий целевой язык,
- * разбитые на группы: общие и языковые.
- */
 export const filteredTopics = computed(() => {
   const lang = tbState.targetLanguage
   const universal: TopicDefinition[] = []
@@ -86,7 +77,6 @@ export const filteredTopics = computed(() => {
   return { universal, langSpecific }
 })
 
-/** Вычисляемый сценарий на основе выбранной темы */
 export const activeScenario = computed<ScenarioType>(() => {
   const topic = TOPIC_REGISTRY.find(t => t.id === tbState.activeTopic)
   return topic?.scenario ?? 'situational'
@@ -180,7 +170,6 @@ export function initTbStore() {
   watch(() => tbState.model, val => localStorage.setItem('wm-tb-model', val))
   watch(() => tbState.targetLanguage, (val) => {
     localStorage.setItem('wm-tb-targetlang', val)
-    // Если текущая тема не подходит под новый язык — сбрасываем на первую общую
     const topic = TOPIC_REGISTRY.find(t => t.id === tbState.activeTopic)
     if (topic?.languages && topic.languages.length > 0 && !topic.languages.includes(val)) {
       tbState.activeTopic = 'situational'
