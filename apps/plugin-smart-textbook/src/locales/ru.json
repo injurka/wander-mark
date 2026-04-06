@@ -13,6 +13,8 @@
     "randomPrompt": "Случайный промпт"
   },
   "scenario": {
+    "toneGuesser": "Тренажер тонов (Tone Guesser)",
+    "radicalDeconstructor": "Разбор иероглифов (Ключи)",
     "situational": "Ситуация (Диалог)",
     "builder": "Конструктор фраз",
     "review": "Повторение (Карточки)",
@@ -52,6 +54,11 @@
     "Russian": "Русский"
   },
   "board": {
+    "etymology": "Этимология и История",
+    "components": "Компоненты (Ключи)",
+    "roleSemantic": "Смысл",
+    "rolePhonetic": "Звук",
+    "roleStructural": "Структура",
     "literal": "Дословно:",
     "litTranslation": "Перевод:",
     "builderTitle": "Собери предложение",

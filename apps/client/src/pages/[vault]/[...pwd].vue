@@ -59,6 +59,7 @@ watch(params, async () => {
 <style scoped>
 .page-wrapper {
   width: 100%;
+  min-height: calc(100vh - 50px);
 }
 .loading-state {
   text-align: center;

@@ -31,7 +31,6 @@ const formattedDate = computed(() => {
   }
 })
 
-// Упрощенная логика плюрализации внутри компонента в зависимости от локали
 function getMinString(n: number) {
   if (locale.value === 'ru') {
     if (n % 10 === 1 && n % 100 !== 11)
@@ -87,7 +86,6 @@ function getMinString(n: number) {
   margin: 0 auto;
   width: 1200px;
   max-width: 100%;
-  min-height: 90vh;
 }
 
 .markdown-body-wrapper {

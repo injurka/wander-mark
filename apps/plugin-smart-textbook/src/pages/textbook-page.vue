@@ -12,9 +12,12 @@ import BoardAspectPairs from '../components/board/ru/board-aspect-pairs.vue'
 import BoardDeclension from '../components/board/ru/board-declension.vue'
 import BoardChengyu from '../components/board/zh/board-chengyu.vue'
 import BoardMeasureWords from '../components/board/zh/board-measure-words.vue'
+import BoardRadicals from '../components/board/zh/board-radicals.vue'
 import BoardStpmvo from '../components/board/zh/board-stpmvo.vue'
+import BoardToneGuesser from '../components/board/zh/board-tone-guesser.vue'
 import InputZone from '../components/input-zone.vue'
 import Settings from '../components/settings.vue'
+
 import { usePluginI18n } from '../i18n'
 import { generateFollowUp } from '../services/ai.service'
 import { initTbStore, tbActions, tbState } from '../store/textbook.store'
@@ -23,7 +26,6 @@ const { t } = usePluginI18n()
 
 onMounted(() => initTbStore())
 
-/** Маппинг scenario -> компонент */
 const SCENARIO_COMPONENTS: Record<ScenarioType, Component> = {
   'situational': BoardSituational,
   'builder': BoardBuilder,
@@ -36,6 +38,8 @@ const SCENARIO_COMPONENTS: Record<ScenarioType, Component> = {
   'declension': BoardDeclension,
   'aspect-pairs': BoardAspectPairs,
   'phrasal-verbs': BoardPhrasalVerbs,
+  'radicals': BoardRadicals,
+  'tone-guesser': BoardToneGuesser,
 }
 
 const activeComponent = computed(() => {
@@ -100,6 +104,8 @@ function scenarioIcon(scenario: string): string {
     case 'declension': return '📝'
     case 'aspect-pairs': return '🔀'
     case 'phrasal-verbs': return '🔗'
+    case 'radicals': return '🧱'
+    case 'tone-guesser': return '🎵'
     default: return '📄'
   }
 }

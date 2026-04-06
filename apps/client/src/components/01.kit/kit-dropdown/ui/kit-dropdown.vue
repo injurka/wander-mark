@@ -139,7 +139,6 @@ defineExpose({ close: () => isOpen.value = false, open: () => isOpen.value = tru
   gap: 2px;
   overflow: hidden;
   color: var(--fg-primary-color);
-  max-height: 400px;
 
   &::-webkit-scrollbar {
     width: 4px;

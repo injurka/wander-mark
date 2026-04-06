@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { SituationalData } from '../../../types'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { tbActions } from '../../../store/textbook.store'
 import UiTooltip from '../../ui-kit/ui-tooltip.vue'
 
 defineProps<{ data: SituationalData }>()
@@ -13,16 +14,58 @@ const activeTooltip = ref<{ text: string, visible: boolean, target: HTMLElement 
   target: null,
 })
 
+const playingIndex = ref<number | null>(null)
+
 function toggle(index: number) {
   if (expandedIndexes.value.has(index))
     expandedIndexes.value.delete(index)
   else expandedIndexes.value.add(index)
 }
 
+function toggleAudio(text: string, index: number) {
+  if (!('speechSynthesis' in window)) {
+    tbActions.notify('Синтез речи не поддерживается в вашем браузере.', 'warning')
+    return
+  }
+
+  // Если нажали на ту же кнопку во время воспроизведения — останавливаем
+  if (playingIndex.value === index) {
+    window.speechSynthesis.cancel()
+    playingIndex.value = null
+    return
+  }
+
+  // Останавливаем предыдущую озвучку, если была
+  window.speechSynthesis.cancel()
+
+  // Очищаем текст от возможных HTML тегов на всякий случай
+  const rawText = text.replace(/<[^>]*>?/g, '')
+  const utterance = new SpeechSynthesisUtterance(rawText)
+
+  // Определяем язык для TTS на основе текущего языка карточки
+  const lang = tbActions.getActiveTargetLang()
+  const langMap: Record<string, string> = {
+    Chinese: 'zh-CN',
+    English: 'en-US',
+    Russian: 'ru-RU',
+  }
+  utterance.lang = langMap[lang] || 'en-US'
+
+  utterance.onstart = () => { playingIndex.value = index }
+  utterance.onend = () => {
+    if (playingIndex.value === index)
+      playingIndex.value = null
+  }
+  utterance.onerror = () => { playingIndex.value = null }
+
+  window.speechSynthesis.speak(utterance)
+}
+
 function renderOriginalWithTooltips(original: string, keywords: any[]) {
   if (!keywords || !keywords.length)
     return original
 
+  // Сортируем по убыванию длины, чтобы слова не перекрывали друг друга
   const sortedKeywords = [...keywords].sort((a, b) => b.word.length - a.word.length)
 
   let result = original
@@ -30,11 +73,13 @@ function renderOriginalWithTooltips(original: string, keywords: any[]) {
     if (!kw.word)
       return
 
+    // Экранируем кавычки только для текстовых данных
     const safePinyin = kw.transcription ? kw.transcription.replace(/"/g, '&quot;') : ''
     const safeText = kw.explanation ? kw.explanation.replace(/"/g, '&quot;') : ''
 
     const tooltipHtml = `<span class="keyword" data-pinyin="${safePinyin}" data-explanation="${safeText}">${kw.word}</span>`
 
+    // Разбиваем текст по HTML-тегам, чтобы производить замену только в тексте
     const parts = result.split(/(<[^>]+>)/g)
     for (let i = 0; i < parts.length; i++) {
       if (!parts[i].startsWith('<')) {
@@ -47,6 +92,7 @@ function renderOriginalWithTooltips(original: string, keywords: any[]) {
   return result
 }
 
+// Вспомогательная функция для сборки HTML тултипа
 function buildTooltipHtml(el: HTMLElement): string {
   const pinyin = el.getAttribute('data-pinyin') || ''
   const explanation = el.getAttribute('data-explanation') || ''
@@ -87,6 +133,7 @@ function handleMouseOut(e: MouseEvent) {
   }
 }
 
+/** Touch-устройства: toggle по тапу */
 function handleTouch(e: Event) {
   const el = e.target as HTMLElement
   if (!el || !el.classList.contains('keyword'))
@@ -111,6 +158,7 @@ function handleTouch(e: Event) {
   }
 }
 
+/** Закрытие тултипа по клику вне keyword */
 function handleGlobalClick(e: MouseEvent | TouchEvent) {
   const el = e.target as HTMLElement
   if (!el.closest('.keyword')) {
@@ -127,6 +175,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleGlobalClick)
   document.removeEventListener('touchstart', handleGlobalClick)
+
+  // Останавливаем озвучку при закрытии или смене режима
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
 })
 </script>
 
@@ -167,18 +220,37 @@ onBeforeUnmount(() => {
           </Transition>
         </div>
 
-        <button class="eye-btn" :class="{ active: expandedIndexes.has(i) }" title="Подробности" @click="toggle(i)">
-          <svg v-if="expandedIndexes.has(i)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
-            <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-            <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
-            <path d="m2 2 20 20" />
-          </svg>
-        </button>
+        <div class="msg-actions">
+          <!-- Кнопка озвучки -->
+          <button class="action-btn" :class="{ active: playingIndex === i }" title="Озвучить" @click="toggleAudio(msg.original, i)">
+            <!-- Квадрат паузы / остановки, если играет -->
+            <svg v-if="playingIndex === i" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" />
+            </svg>
+            <!-- Иконка динамика -->
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+          </button>
+
+          <!-- Кнопка подробностей (перевод) -->
+          <button class="action-btn" :class="{ active: expandedIndexes.has(i) }" title="Подробности" @click="toggle(i)">
+            <!-- Открытый глаз -->
+            <svg v-if="expandedIndexes.has(i)" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <!-- Закрытый глаз -->
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+              <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+              <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+              <path d="m2 2 20 20" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -222,31 +294,35 @@ onBeforeUnmount(() => {
   flex-direction: row-reverse;
 }
 
-.eye-btn {
+.msg-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.action-btn {
   background: var(--bg-tertiary-color);
   border: 1px solid var(--border-secondary-color);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--fg-muted-color);
   transition: all 0.2s;
-  flex-shrink: 0;
-  margin-top: 14px;
   padding: 0;
 }
-.eye-btn:hover {
+.action-btn:hover {
   background: var(--bg-hover-color);
   color: var(--fg-primary-color);
   border-color: var(--border-focus-color);
 }
-.eye-btn.active {
+.action-btn.active {
   color: var(--fg-accent-color);
   border-color: var(--border-accent-color);
-  background: var(--bg-accent-color);
+  background: var(--bg-accent-overlay-color);
 }
 
 .msg-bubble {

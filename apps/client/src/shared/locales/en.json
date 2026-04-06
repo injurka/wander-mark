@@ -32,7 +32,9 @@
   "sidebar": {
     "search": "Search...",
     "vaultHome": "Vault Home",
-    "allVaults": "All Vaults"
+    "allVaults": "All Vaults",
+    "collapseAll": "Collapse all",
+    "expandAll": "Expand all"
   },
   "vaultIndex": {
     "defaultDesc": "Vault home page",
@@ -79,6 +81,7 @@
     "noInstalled": "No installed plugins",
     "pasteHint": "Paste the plugin URL above to install",
     "enable": "Enable",
-    "disable": "Disable"
+    "disable": "Disable",
+    "requiredByVault": "Required by vault (cannot be removed)"
   }
 }

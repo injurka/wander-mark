@@ -19,6 +19,8 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
   const backlinks = ref<BacklinksMap | null>(null)
   const searchIndex = ref<SearchIndexItem[] | null>(null)
 
+  const openFolders = ref<Set<string>>(new Set())
+
   const borderlessViewEnabled = useLocalStorage<boolean>(COOKIE_BORDERLESS_VIEW, true)
   const coloredFoldersEnabled = useLocalStorage<boolean>(COOKIE_COLORED_FOLDERS, false)
   const showIconsEnabled = useLocalStorage<boolean>(COOKIE_SHOW_ICONS, true)
@@ -42,6 +44,25 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
     return backlinks.value[currentPath] || backlinks.value[currentPath.replace(/\/$/, '')] || []
   })
 
+  function toggleFolder(sysname: string) {
+    const newSet = new Set(openFolders.value)
+    if (newSet.has(sysname)) {
+      newSet.delete(sysname)
+    }
+    else {
+      newSet.add(sysname)
+    }
+    openFolders.value = newSet
+  }
+
+  function clearOpenFolders() {
+    openFolders.value = new Set()
+  }
+
+  function setOpenFolders(folders: string[]) {
+    openFolders.value = new Set(folders)
+  }
+
   return {
     navItems,
     vaultSettings,
@@ -54,5 +75,10 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
     coloredFoldersEnabled,
     showIconsEnabled,
     showOutlineEnabled,
+
+    openFolders,
+    toggleFolder,
+    clearOpenFolders,
+    setOpenFolders,
   }
 })

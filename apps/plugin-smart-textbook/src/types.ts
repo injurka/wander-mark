@@ -36,10 +36,50 @@ export type ScenarioType
   | 'quiz'
   | 'stpmvo'
   | 'measure-words'
+  | 'radicals'
   | 'chengyu'
+  | 'tone-guesser'
   | 'declension'
   | 'aspect-pairs'
   | 'phrasal-verbs'
+
+/** Тренажер тонов (Tone Guesser) для китайского */
+export interface ToneGuesserData {
+  exercises: {
+    translation: string
+    explanation: string
+    syllables: {
+      character: string
+      base_pinyin: string
+      correct_tone: number // 1, 2, 3, 4, 5(neutral)
+      full_pinyin: string
+    }[]
+  }[]
+}
+
+export interface RadicalComponent {
+  component: string
+  pinyin: string
+  meaning: string
+  role: 'semantic' | 'phonetic' | 'structural' | string
+  explanation: string
+}
+
+export interface CharacterDeconstruction {
+  character: string
+  pinyin: string
+  meaning: string
+  etymology: string
+  hsk_level?: string
+  components: RadicalComponent[]
+}
+
+export interface RadicalDeconstructorData {
+  word: string
+  word_pinyin: string
+  word_translation: string
+  characters: CharacterDeconstruction[]
+}
 
 export type TargetLanguage = 'Chinese' | 'English' | 'Russian'
 

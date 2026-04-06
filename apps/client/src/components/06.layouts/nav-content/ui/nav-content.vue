@@ -147,6 +147,7 @@ async function resolveAppUrl(vaultConfig: any, path: string) {
   if (path.startsWith('http') || path.startsWith('data:'))
     return path
 
+  // eslint-disable-next-line e18e/prefer-static-regex
   const cleanPath = path.replace(/^\//, '')
 
   if (vaultConfig.type === 'local' && vaultConfig.localPath) {
@@ -216,6 +217,8 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     t,
   })
 
+  const configPluginIds = new Set<string>()
+
   if (settings?.plugins && Array.isArray(settings.plugins)) {
     for (const p of settings.plugins) {
       const pId = typeof p === 'string' ? p : p.id
@@ -227,18 +230,31 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 
       const pluginUrl = await resolveAppUrl(vaultConfig, pUrl)
 
-      const alreadyInstalled = pluginStore.plugins.some(
+      const alreadyInstalled = pluginStore.plugins.find(
         installed => installed.id === pId || installed.sourceUrl === pluginUrl,
       )
 
       if (!alreadyInstalled) {
         try {
-          await pluginStore.install(pluginUrl, enabledByDefault)
+          const newPlugin = await pluginStore.install(pluginUrl, enabledByDefault, false)
+          configPluginIds.add(newPlugin.id)
         }
         catch (e) {
           console.warn(`[nav-content] Failed to auto-install plugin "${pId || pUrl}":`, e)
         }
       }
+      else {
+        configPluginIds.add(alreadyInstalled.id)
+        if (alreadyInstalled.removable !== false) {
+          pluginStore.setRemovable(alreadyInstalled.id, false)
+        }
+      }
+    }
+  }
+
+  for (const plugin of pluginStore.plugins) {
+    if (plugin.removable === false && !configPluginIds.has(plugin.id)) {
+      pluginStore.setRemovable(plugin.id, true)
     }
   }
 }, { immediate: true })

@@ -39,6 +39,10 @@ function isDataValid(scenario: ScenarioType, data: any): boolean {
       return Array.isArray(data.pairs) && data.pairs.length > 0
     case 'phrasal-verbs':
       return typeof data.base_verb === 'string' && Array.isArray(data.variations)
+    case 'radicals':
+      return typeof data.word === 'string' && Array.isArray(data.characters) && data.characters.length > 0
+    case 'tone-guesser':
+      return Array.isArray(data.exercises) && data.exercises.length > 0 && Array.isArray(data.exercises[0].syllables)
 
     default:
       return false

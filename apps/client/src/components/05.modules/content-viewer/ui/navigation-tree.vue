@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ContentNavItem } from '../models'
 import { Icon } from '@iconify/vue'
+import { computed } from 'vue'
 import { ContentNavItemType } from '../models'
 import { useContentViewerStore } from '../store'
 
@@ -19,12 +20,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['select'])
 const store = useContentViewerStore()
-const openFolders = ref<Set<string>>(new Set())
 
-function toggleFolder(sysname: string) {
-  if (openFolders.value.has(sysname))
-    openFolders.value.delete(sysname)
-  else openFolders.value.add(sysname)
+function isOpen(sysname: string) {
+  return !!props.searchQuery || store.openFolders.has(sysname)
 }
 
 const filteredItems = computed(() => {
@@ -42,8 +40,6 @@ const filteredItems = computed(() => {
         const children = item.children ? filter(item.children) : []
         if (matches || children.length > 0) {
           acc.push({ ...item, children })
-          if (children.length > 0)
-            openFolders.value.add(item.sysname)
         }
       }
       return acc
@@ -73,17 +69,17 @@ function getNextRootIndex(currentIndex: number) {
         class="tree-row folder-row"
         :class="[getColorClass(index)]"
         :style="{ paddingLeft: `${level * 16 + 2}px` }"
-        @click.stop="toggleFolder(item.sysname)"
+        @click.stop="props.searchQuery ? null : store.toggleFolder(item.sysname)"
       >
         <span class="tree-toggle-icon">
           <Icon
-            :icon="openFolders.has(item.sysname) ? 'mdi:chevron-down' : 'mdi:chevron-right'"
+            :icon="isOpen(item.sysname) ? 'mdi:chevron-down' : 'mdi:chevron-right'"
             size="16"
           />
         </span>
         <span v-if="store.showIconsEnabled" class="tree-icon flex-shrink-0">
           <Icon
-            :icon="openFolders.has(item.sysname) ? 'mdi:folder-open' : 'mdi:folder'"
+            :icon="isOpen(item.sysname) ? 'mdi:folder-open' : 'mdi:folder'"
             class="folder-icon"
           />
         </span>
@@ -105,7 +101,7 @@ function getNextRootIndex(currentIndex: number) {
       </div>
 
       <!-- Рекурсия (Дети) -->
-      <div v-if="item.type === ContentNavItemType.Directory && openFolders.has(item.sysname)" class="tree-children">
+      <div v-if="item.type === ContentNavItemType.Directory && isOpen(item.sysname)" class="tree-children">
         <div
           v-if="store.showOutlineEnabled"
           class="outline-guide"

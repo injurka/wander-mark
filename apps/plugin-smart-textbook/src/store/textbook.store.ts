@@ -24,6 +24,8 @@ export const TOPIC_REGISTRY: TopicDefinition[] = [
   { id: 'stpmvo-analysis', labelKey: 'scenario.stpmvoAnalysis', scenario: 'stpmvo', languages: ['Chinese'] },
   { id: 'measure-words', labelKey: 'scenario.measureWords', scenario: 'measure-words', languages: ['Chinese'] },
   { id: 'chengyu-idioms', labelKey: 'scenario.chengyuIdioms', scenario: 'chengyu', languages: ['Chinese'] },
+  { id: 'radical-deconstructor', labelKey: 'scenario.radicalDeconstructor', scenario: 'radicals', languages: ['Chinese'] },
+  { id: 'tone-guesser', labelKey: 'scenario.toneGuesser', scenario: 'tone-guesser', languages: ['Chinese'] },
 
   // ── Русский ──
   { id: 'declension-practice', labelKey: 'scenario.declensionPractice', scenario: 'declension', languages: ['Russian'] },

@@ -13,6 +13,8 @@
     "randomPrompt": "随机提示"
   },
   "scenario": {
+    "toneGuesser": "声调练习 (Tone Guesser)",
+    "radicalDeconstructor": "汉字拆解 (部首)",
     "situational": "情景对话",
     "builder": "句子构造器",
     "review": "复习 (抽认卡)",
@@ -52,6 +54,11 @@
     "Russian": "俄语"
   },
   "board": {
+    "etymology": "字源与故事",
+    "components": "部件 (部首)",
+    "roleSemantic": "形旁 (表意)",
+    "rolePhonetic": "声旁 (表音)",
+    "roleStructural": "结构",
     "literal": "字面意思:",
     "litTranslation": "翻译:",
     "builderTitle": "组装句子",

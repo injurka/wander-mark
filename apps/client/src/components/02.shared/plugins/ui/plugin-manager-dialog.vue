@@ -117,6 +117,16 @@ async function handleUninstall(pluginId: string) {
             {{ plugin.enabled ? t('plugins.disable') : t('plugins.enable') }}
           </KitBtn>
           <KitBtn
+            v-if="plugin.removable === false"
+            variant="text"
+            size="md"
+            density="compact"
+            icon="mdi:lock-outline"
+            disabled
+            :title="t('plugins.requiredByVault')"
+          />
+          <KitBtn
+            v-else
             variant="text"
             size="md"
             density="compact"

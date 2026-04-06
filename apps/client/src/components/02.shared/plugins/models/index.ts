@@ -100,6 +100,7 @@ export interface PluginRecord {
   description: string
   version: string
   icon: string
+  removable?: boolean
 }
 
 // ─── Загруженный в runtime плагин ───

@@ -32,7 +32,9 @@
   "sidebar": {
     "search": "搜索...",
     "vaultHome": "知识库首页",
-    "allVaults": "所有知识库"
+    "allVaults": "所有知识库",
+    "collapseAll": "全部折叠",
+    "expandAll": "全部展开"
   },
   "vaultIndex": {
     "defaultDesc": "知识库首页",
@@ -79,6 +81,7 @@
     "noInstalled": "没有已安装的插件",
     "pasteHint": "在上方粘贴插件 URL 以进行安装",
     "enable": "启用",
-    "disable": "禁用"
+    "disable": "禁用",
+    "requiredByVault": "知识库所需 (无法删除)"
   }
 }

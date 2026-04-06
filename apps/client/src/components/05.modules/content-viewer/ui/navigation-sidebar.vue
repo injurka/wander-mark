@@ -2,9 +2,13 @@
 import type { ContentNavItem } from '~/components/05.modules/content-viewer'
 import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { KitBtn, KitInput } from '~/components/01.kit'
 import { findPathBySysname } from '../lib/navigation'
+import { ContentNavItemType } from '../models'
+import { useContentViewerStore } from '../store'
 import NavigationTree from './navigation-tree.vue'
 
 interface Props {
@@ -17,6 +21,7 @@ const emit = defineEmits(['update:menu'])
 const menu = defineModel<boolean>('menu', { required: true })
 const router = useRouter()
 const { t } = useI18n()
+const store = useContentViewerStore()
 
 const sidebarRef = ref<HTMLElement | null>(null)
 const sidebarWidth = ref(300)
@@ -24,6 +29,27 @@ const resizing = ref(false)
 const searchQuery = ref('')
 
 const params = useTypedRouteParams()
+
+const isAnyFolderOpen = computed(() => store.openFolders.size > 0)
+
+function toggleExpandAll() {
+  if (isAnyFolderOpen.value) {
+    store.clearOpenFolders()
+  }
+  else {
+    const getDirs = (nodes: ContentNavItem[]): string[] => {
+      return nodes.reduce((acc, node) => {
+        if (node.type === ContentNavItemType.Directory) {
+          acc.push(node.sysname)
+          if (node.children)
+            acc.push(...getDirs(node.children))
+        }
+        return acc
+      }, [] as string[])
+    }
+    store.setOpenFolders(getDirs(props.items || []))
+  }
+}
 
 useSwipe(sidebarRef, {
   passive: true,
@@ -85,7 +111,7 @@ function stopResize() {
           variant="text"
           size="sm"
           icon="mdi:arrow-left"
-          class="mobile-close-btn"
+          class="mobile-close-btn flex-shrink-0"
           @click="menu = false"
         />
 
@@ -94,6 +120,15 @@ function stopResize() {
           variant="solo"
           :placeholder="t('sidebar.search')"
           rounded
+        />
+
+        <KitBtn
+          variant="text"
+          size="sm"
+          :icon="isAnyFolderOpen ? 'mdi:collapse-all-outline' : 'mdi:expand-all-outline'"
+          :title="isAnyFolderOpen ? t('sidebar.collapseAll') : t('sidebar.expandAll')"
+          class="expand-collapse-btn flex-shrink-0"
+          @click="toggleExpandAll"
         />
       </div>
 
@@ -283,6 +318,10 @@ function stopResize() {
 
 .mobile-close-btn {
   display: none;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
 }
 
 @include media-down(md) {

@@ -129,6 +129,36 @@ Schema:
 }`
 
     // ── Языко-специфичные сценарии ──
+    case 'radicals':
+      return `${baseInstructions}
+Analyze the Chinese character(s) provided by the user. Deconstruct each character into its radicals/components.
+Explain the etymology/mnemonic (why these parts form this character).
+If the user inputs a multi-character word, analyze each character separately.
+
+Schema:
+{
+  "word": "The full Chinese word/phrase",
+  "word_pinyin": "Pinyin for the full word",
+  "word_translation": "Translation in ${explanationLang}",
+  "characters": [
+    {
+      "character": "Single Chinese character",
+      "pinyin": "Pinyin",
+      "meaning": "Meaning of this single character in ${explanationLang}",
+      "etymology": "Etymology or mnemonic story explaining how the components create the meaning in ${explanationLang} (markdown allowed)",
+      "hsk_level": "HSK level (e.g., 'HSK 1', 'HSK 4', or 'None')",
+      "components": [
+        {
+          "component": "The radical or sub-character (e.g., 氵, 木, 月)",
+          "pinyin": "Pinyin of the component",
+          "meaning": "Meaning of the component in ${explanationLang}",
+          "role": "semantic, phonetic, or structural",
+          "explanation": "How this specific component contributes to the character in ${explanationLang}"
+        }
+      ]
+    }
+  ]
+}`
 
     case 'stpmvo':
       return `${baseInstructions}
@@ -259,6 +289,33 @@ Schema:
   ]
 }`
 
+    case 'tone-guesser':
+      return `${baseInstructions}
+Create a Chinese tone guessing quiz. Based on the user's input or topic, generate 3 to 5 Chinese sentences.
+For each sentence, break it down into characters. 
+Provide the base pinyin (WITHOUT tone marks) and the correct tone number (1, 2, 3, 4, or 5 for neutral tone).
+
+CRITICAL REQUIREMENT (TONE SANDHI): 
+You MUST provide the tone EXACTLY AS IT IS PRONOUNCED in the context of the sentence, applying Tone Sandhi rules (e.g., when two 3rd tones appear together, the first becomes a 2nd tone. Apply '一' and '不' rules correctly).
+
+Schema:
+{
+  "exercises": [
+    {
+      "translation": "Translation of the full sentence in ${explanationLang}",
+      "explanation": "Explain any Tone Sandhi applied here (e.g., 3-3 -> 2-3), or brief grammar notes in ${explanationLang}",
+      "syllables": [
+        {
+          "character": "汉",
+          "base_pinyin": "han",
+          "correct_tone": 4,
+          "full_pinyin": "hàn"
+        }
+      ]
+    }
+  ]
+}`
+
     case 'phrasal-verbs':
       return `${baseInstructions}
 Generate English phrasal verbs analysis. Based on the user's input, analyze a base verb and its phrasal variations.
@@ -289,66 +346,78 @@ IMPORTANT: Provide exactly 4 particle_options per variation. Only one is correct
 }
 
 const RANDOM_PROMPTS_BY_TOPIC: Record<string, string[]> = {
-  quiz: [
+  'quiz': [
     'Проверь мои знания по теме "Еда и напитки"',
     'Сделай тест из 5 вопросов на случайные разговорные фразы',
     'Дай тест на базовую грамматику (времена и предлоги)',
     'Смешанный тест: перевод слов и заполнение пропусков в предложениях',
   ],
-  review: [
+  'review': [
     'Дай мне неожиданный вопрос для самопроверки по этой теме, который большинство учеников упускают',
     'Придумай мини-тест из 3 вопросов с возрастающей сложностью по этой теме',
     'Сформулируй провокационное утверждение по теме, которое нужно опровергнуть или подтвердить',
   ],
-  translation: [
+  'translation': [
     'Предложи нестандартное предложение для перевода, где легко ошибиться в выборе слова',
     'Дай предложение с культурным контекстом, которое сложно перевести дословно',
     'Придумай предложение с идиомой, которую нужно адаптировать при переводе',
   ],
-  situational: [
+  'situational': [
     'Опиши неожиданную бытовую ситуацию, в которой нужно срочно объясниться',
     'Придумай диалог в нестандартном месте — например, в ремонтной мастерской или у врача',
     'Создай ситуацию с недопониманием, которое нужно разрешить вежливо',
   ],
-  speaking: [
+  'speaking': [
     'Предложи тему для монолога на 1 минуту, которая заставит думать на ходу',
     'Дай вопрос для дискуссии, где нет однозначного ответа',
     'Придумай ролевую игру: я — клиент, ты — сотрудник, с неожиданным поворотом',
   ],
-  builder: [
+  'builder': [
     'Составь предложение с редкой грамматической конструкцией этой темы',
     'Дай предложение, где порядок слов критически важен',
     'Придумай предложение с двумя возможными интерпретациями из-за пунктуации',
   ],
-  declension: [
+  'declension': [
     'Предложи существительное с нестандартным склонением для практики',
     'Дай предложение с несколькими словами в разных падежах одновременно',
     'Придумай фразу, где ошибка в падеже меняет смысл на противоположный',
   ],
-  aspectPairs: [
+  'aspectPairs': [
     'Придумай ситуацию, где выбор вида глагола (СВ/НСВ) меняет смысл предложения',
     'Дай пример, где оба вида формально возможны, но имеют разные оттенки',
     'Составь мини-рассказ, где важно чередовать совершенный и несовершенный вид',
   ],
-  phrasalVerbs: [
+  'phrasalVerbs': [
     'Дай предложение с фразовым глаголом, смысл которого нельзя угадать из частей',
     'Придумай контекст, где один фразовый глагол имеет два разных значения',
     'Составь диалог, где ключевую роль играет предлог при фразовом глаголе',
   ],
-  stpmvo: [
+  'stpmvo': [
     'Разбери предложение с необычным порядком членов предложения',
     'Придумай предложение, где подлежащее намеренно скрыто или подразумевается',
     'Дай пример сложного предложения с несколькими придаточными',
   ],
-  chengyu: [
+  'chengyu': [
     'Расскажи историю происхождения одного чэнъюй, связанного с едой или природой',
     'Придумай современный контекст употребления классического чэнъюй',
     'Дай чэнъюй, который часто путают с другим из-за схожих иероглифов',
   ],
-  measureWords: [
+  'measureWords': [
     'Придумай предложение, где выбор счётного слова принципиально важен для смысла',
     'Дай список из 5 существительных и попроси подобрать к ним счётные слова',
     'Составь вопрос-ловушку с двумя кажущимися правильными счётными словами',
+  ],
+  'radical-deconstructor': [
+    'Разбери иероглиф 聪 (умный) и расскажи его историю',
+    'Из каких частей состоит слово 谢谢 (спасибо)?',
+    'Разбери иероглиф 影 (тень), почему там эти ключи?',
+    'Покажи этимологию иероглифа 赢 (выигрывать), он очень сложный',
+  ],
+  'tone-guesser': [
+    'Дай предложения с правилом двух третьих тонов (Tone Sandhi 3-3)',
+    'Сгенерируй предложения с изменениями тона у слов 一 (yi) и 不 (bu)',
+    'Дай скороговорку для тренировки тонов (например, про 4 и 10)',
+    'Обычный диалог в ресторане, чтобы потренировать тоны',
   ],
 }
 

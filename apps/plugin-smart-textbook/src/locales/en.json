@@ -13,6 +13,8 @@
     "randomPrompt": "Random prompt"
   },
   "scenario": {
+    "toneGuesser": "Tone Guesser",
+    "radicalDeconstructor": "Radical Deconstructor",
     "situational": "Situation (Dialog)",
     "builder": "Sentence Builder",
     "review": "Review (Flashcards)",
@@ -52,6 +54,11 @@
     "Russian": "Russian"
   },
   "board": {
+    "etymology": "Etymology & Mnemonic",
+    "components": "Components (Radicals)",
+    "roleSemantic": "Meaning",
+    "rolePhonetic": "Sound",
+    "roleStructural": "Structure",
     "literal": "Literal:",
     "litTranslation": "Translation:",
     "builderTitle": "Build the sentence",

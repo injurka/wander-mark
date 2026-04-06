@@ -22,7 +22,10 @@
 			"path": "apps/plugin-smart-textbook"
 		},
 		{
-			"path": "apps/plugin-chinese-dictionary"
+			"path": "apps/plugin-russian-tooltip"
+		},
+		{
+			"path": "apps/plugin-chinese-tooltip"
 		},
 		{
 			"path": "vaults-example"

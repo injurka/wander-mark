@@ -68,7 +68,7 @@ export const usePluginStore = defineStore('plugins', () => {
     }
   }
 
-  async function install(sourceUrl: string, autoEnable = true): Promise<WanderMarkPlugin> {
+  async function install(sourceUrl: string, autoEnable = true, removable = true): Promise<WanderMarkPlugin> {
     const module = await loadPluginModule(sourceUrl)
 
     if (registry.value.some(r => r.id === module.id)) {
@@ -83,6 +83,7 @@ export const usePluginStore = defineStore('plugins', () => {
       description: module.description || '',
       version: module.version,
       icon: module.icon || 'mdi:puzzle-outline',
+      removable,
     }
 
     registry.value.push(record)
@@ -93,6 +94,14 @@ export const usePluginStore = defineStore('plugins', () => {
     }
 
     return module
+  }
+
+  function setRemovable(pluginId: string, removable: boolean) {
+    const record = registry.value.find(r => r.id === pluginId)
+    if (record && record.removable !== removable) {
+      record.removable = removable
+      persist()
+    }
   }
 
   async function uninstall(pluginId: string) {
@@ -209,5 +218,6 @@ export const usePluginStore = defineStore('plugins', () => {
     uninstall,
     enable,
     disable,
+    setRemovable,
   }
 })
