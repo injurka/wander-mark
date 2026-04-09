@@ -488,18 +488,6 @@ const {
 .mr-2 {
   margin-right: 8px;
 }
-.custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary-color);
-    border-radius: 4px;
-  }
-}
 
 .form-content {
   display: flex;

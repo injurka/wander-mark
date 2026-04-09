@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { get } from 'idb-keyval'
-import { deleteFilesByPrefix, getMediaUrl, isNative, readTextFile, writeBinaryFile, writeTextFile } from './fs.client'
+import { defineStore } from 'pinia'
+import { deleteFilesByPrefix, getMediaUrl, isNative, readTextFile, writeBinaryFile, writeTextFile } from '../services/fs.client'
 
 export interface VaultConfig {
   id: string
@@ -13,7 +14,7 @@ export interface VaultConfig {
   name?: string
 }
 
-export function useVaultService() {
+export const useVaultStore = defineStore('vault', () => {
   const vaults = useLocalStorage<VaultConfig[]>('app-vaults', [])
   const createdObjectUrls = new Set<string>()
 
@@ -76,7 +77,7 @@ export function useVaultService() {
     }
 
     try {
-      // Валидируем теперь по settings.json, так как он содержит метаданные
+      // Валидируем по settings.json, так как он содержит метаданные
       const validationUrl = `${cleanUrl}/meta/${id}/settings.json`
       const res = await fetch(validationUrl)
 
@@ -336,4 +337,4 @@ export function useVaultService() {
     getMediaUrl,
     clearBlobUrls,
   }
-}
+})

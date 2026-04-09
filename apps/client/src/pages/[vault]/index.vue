@@ -24,13 +24,7 @@ const rootSections = computed(() => {
   return (store.navItems || []).filter((item: ContentNavItem) => item.type === ContentNavItemType.Directory)
 })
 
-const recentFiles = computed(() => {
-  const allFiles = flattenNavItems(store.navItems || []).filter(item => item.type === ContentNavItemType.File)
-  return allFiles
-    .filter(item => item.meta?.lastModified)
-    .sort((a, b) => new Date(b.meta!.lastModified).getTime() - new Date(a.meta!.lastModified).getTime())
-    .slice(0, 10)
-})
+const recentFiles = computed(() => store.recentFiles.slice(0, 10))
 
 function navigateTo(path: string) {
   router.push(`/${params.value.vault}/${path}`)
@@ -463,18 +457,5 @@ function formatDate(dateStr?: string) {
   background-color: var(--bg-secondary-color);
   border-radius: 12px;
   border: 1px dashed var(--border-secondary-color);
-}
-
-.custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary-color);
-    border-radius: 4px;
-  }
 }
 </style>

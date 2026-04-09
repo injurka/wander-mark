@@ -3,21 +3,29 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ContentViewer, ContentViewerFooter, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
-import { useVaultService } from '~/shared/services/vault.service'
+import { useVaultStore } from '~/shared/store/vault.store'
 
 const store = useContentViewerStore()
 const params = useTypedRouteParams()
-const vaultService = useVaultService()
+const vaultStore = useVaultStore()
 const { t } = useI18n()
 
 const contentData = ref<string>('')
 const status = ref<'pending' | 'success' | 'error'>('pending')
 
-watch(params, async () => {
+watch(params, async (newParams, _oldParams, onCleanup) => {
+  let isCancelled = false
+  onCleanup(() => {
+    isCancelled = true
+  })
+
   status.value = 'pending'
   try {
-    const path = params.value.pwd.join('/')
-    const content = await vaultService.getFileContent(params.value.vault, `content/${params.value.vault}/${path}.md`)
+    const path = newParams.pwd.join('/')
+    const content = await vaultStore.getFileContent(newParams.vault, `content/${newParams.vault}/${path}.md`)
+
+    if (isCancelled)
+      return
 
     if (content) {
       contentData.value = content
@@ -27,7 +35,9 @@ watch(params, async () => {
       throw new Error('Not found')
     }
   }
-  catch (e) {
+  catch {
+    if (isCancelled)
+      return
     contentData.value = ''
     status.value = 'error'
   }

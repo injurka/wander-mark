@@ -516,15 +516,4 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
     transform: scale(0.96) translateY(-10px);
   }
 }
-
-.custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary-color);
-    border-radius: 4px;
-  }
-}
 </style>

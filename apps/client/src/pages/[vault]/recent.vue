@@ -4,8 +4,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { KitBtn } from '~/components/01.kit'
-import { ContentNavItemType, useContentViewerStore } from '~/components/05.modules/content-viewer'
-import { flattenNavItems } from '~/components/05.modules/content-viewer/lib/navigation'
+import { useContentViewerStore } from '~/components/05.modules/content-viewer'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 
 const store = useContentViewerStore()
@@ -13,10 +12,8 @@ const router = useRouter()
 const { t, locale } = useI18n()
 const params = useTypedRouteParams()
 
-const allFiles = computed(() => {
-  const files = flattenNavItems(store.navItems || []).filter(item => item.type === ContentNavItemType.File && item.meta?.lastModified)
-  return files.sort((a, b) => new Date(b.meta!.lastModified).getTime() - new Date(a.meta!.lastModified).getTime())
-})
+// Используем готовую логику из хранилища
+const allFiles = computed(() => store.recentFiles)
 
 const groupedFiles = computed(() => {
   const groups: { dateStr: string, files: typeof allFiles.value }[] = []
@@ -321,18 +318,5 @@ function formatTime(dateStr: string) {
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--border-secondary-color);
-}
-
-.custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border-secondary-color);
-    border-radius: 4px;
-  }
 }
 </style>

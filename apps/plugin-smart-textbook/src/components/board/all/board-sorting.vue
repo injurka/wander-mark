@@ -13,37 +13,36 @@ const buckets = ref<Record<string, SortingItem[]>>({})
 const errorItemId = ref<string | null>(null)
 const selectedItem = ref<SortingItem | null>(null)
 
-// Инициализация при получении новых данных
+// Режим подсказок (по умолчанию выключен, чтобы было сложно)
+const showHints = ref(false)
+
 watch(() => props.data, (newData) => {
   if (!newData)
     return
 
-  // Создаем пустые корзины
   const newBuckets: Record<string, SortingItem[]> = {}
   newData.categories.forEach((cat) => {
     newBuckets[cat.id] = []
   })
   buckets.value = newBuckets
 
-  // Перемешиваем слова и помещаем в пул
-  // Добавляем уникальный _id для удобства (если AI сгенерирует одинаковые слова)
   pool.value = Array.from(newData.items, (item, idx) => ({ ...item, _id: `${item.category_id}-${idx}` }))
     .sort(() => Math.random() - 0.5)
 
   selectedItem.value = null
   errorItemId.value = null
+  showHints.value = false // Сбрасываем подсказки при новом тесте
 }, { immediate: true })
 
 const isComplete = computed(() => pool.value.length === 0)
 
-// --- Логика Drag and Drop (для ПК) ---
-
+// --- Логика Drag and Drop ---
 function onDragStart(event: DragEvent, item: SortingItem) {
   if (isComplete.value)
     return
   event.dataTransfer?.setData('text/plain', item._id!)
   event.dataTransfer!.effectAllowed = 'move'
-  selectedItem.value = item // Синхронизируем с клик-логикой на всякий случай
+  selectedItem.value = item
 }
 
 function onDrop(event: DragEvent, categoryId: string) {
@@ -57,12 +56,10 @@ function onDrop(event: DragEvent, categoryId: string) {
   }
 }
 
-// --- Логика Click-to-Move (для Мобилок) ---
-
+// --- Логика Click-to-Move ---
 function onPoolItemClick(item: SortingItem) {
   if (isComplete.value)
     return
-  // Если кликнули по уже выбранному — снимаем выделение
   if (selectedItem.value?._id === item._id) {
     selectedItem.value = null
   }
@@ -77,17 +74,14 @@ function onCategoryClick(categoryId: string) {
   handleMoveAttempt(selectedItem.value, categoryId)
 }
 
-// --- Общая логика проверки ---
-
+// --- Проверка ---
 function handleMoveAttempt(item: SortingItem, categoryId: string) {
   if (item.category_id === categoryId) {
-    // Успех! Перемещаем в корзину
     pool.value = pool.value.filter(i => i._id !== item._id)
     buckets.value[categoryId].push(item)
     selectedItem.value = null
   }
   else {
-    // Ошибка! Анимация
     triggerError(item._id!)
     selectedItem.value = null
   }
@@ -99,7 +93,7 @@ function triggerError(itemId: string) {
     if (errorItemId.value === itemId) {
       errorItemId.value = null
     }
-  }, 600) // Длительность анимации
+  }, 600)
 }
 
 function renderMarkdown(text: string): string {
@@ -118,6 +112,15 @@ function renderMarkdown(text: string): string {
       <p class="subtitle">
         {{ t('board.sortingInstructions') }}
       </p>
+
+      <!-- Тумблер подсказок -->
+      <div v-if="!isComplete" class="hint-toggle-wrapper">
+        <label class="ui-toggle">
+          <input v-model="showHints" type="checkbox">
+          <span class="toggle-track" />
+          <span class="toggle-label">Показать переводы</span>
+        </label>
+      </div>
     </div>
 
     <!-- Корзины (Категории) -->
@@ -137,6 +140,7 @@ function renderMarkdown(text: string): string {
         </div>
         <div class="bucket-content">
           <TransitionGroup name="list">
+            <!-- В корзине перевод показывается ВСЕГДА (для закрепления) -->
             <div v-for="item in buckets[cat.id]" :key="item._id" class="sorted-item">
               <span class="item-text">{{ item.text }}</span>
               <span v-if="item.subtext" class="item-subtext">{{ item.subtext }}</span>
@@ -147,7 +151,6 @@ function renderMarkdown(text: string): string {
           </div>
         </div>
 
-        <!-- Показываем объяснение категории при завершении -->
         <Transition name="fade">
           <div v-if="isComplete && cat.explanation" class="bucket-explanation markdown-body" v-html="renderMarkdown(cat.explanation)" />
         </Transition>
@@ -170,7 +173,10 @@ function renderMarkdown(text: string): string {
           @click="onPoolItemClick(item)"
         >
           <span class="item-text">{{ item.text }}</span>
-          <span v-if="item.subtext" class="item-subtext">{{ item.subtext }}</span>
+          <!-- В пуле перевод скрыт, пока не включен тумблер -->
+          <Transition name="fade-height">
+            <span v-if="showHints && item.subtext" class="item-subtext">{{ item.subtext }}</span>
+          </Transition>
         </div>
       </TransitionGroup>
     </div>
@@ -200,16 +206,76 @@ function renderMarkdown(text: string): string {
 
 .sorting-header {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 .title {
   font-size: 1.4rem;
   color: var(--fg-primary-color);
-  margin: 0 0 4px 0;
+  margin: 0;
 }
 .subtitle {
   font-size: 0.9rem;
   color: var(--fg-secondary-color);
   margin: 0;
+}
+
+/* Тумблер подсказок */
+.hint-toggle-wrapper {
+  margin-top: 8px;
+}
+.ui-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: var(--bg-tertiary-color);
+  padding: 6px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border-secondary-color);
+  user-select: none;
+  transition: background 0.2s;
+}
+.ui-toggle:hover {
+  background: var(--bg-secondary-color);
+}
+.ui-toggle input {
+  display: none;
+}
+.toggle-track {
+  width: 32px;
+  height: 18px;
+  background: var(--bg-disabled-color);
+  border-radius: 12px;
+  position: relative;
+  transition: 0.3s;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--fg-inverted-color);
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.ui-toggle input:checked + .toggle-track {
+  background: var(--bg-action-hover-color);
+}
+.ui-toggle input:checked + .toggle-track::after {
+  transform: translateX(14px);
+}
+.toggle-label {
+  font-size: 0.85rem;
+  color: var(--fg-secondary-color);
+  font-weight: 500;
+}
+.ui-toggle input:checked ~ .toggle-label {
+  color: var(--fg-primary-color);
 }
 
 /* Корзины */
@@ -229,7 +295,7 @@ function renderMarkdown(text: string): string {
   flex-direction: column;
   transition: all 0.3s;
   overflow: hidden;
-  cursor: pointer; /* Для клика на мобилках */
+  cursor: pointer;
 }
 .bucket.highlight-bucket {
   border-color: var(--border-accent-color);
@@ -284,7 +350,7 @@ function renderMarkdown(text: string): string {
   justify-content: center;
 }
 
-/* Элементы (карточки слов) */
+/* Карточки */
 .pool-item,
 .sorted-item {
   display: flex;
@@ -302,6 +368,7 @@ function renderMarkdown(text: string): string {
     border-color 0.2s,
     background 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 80px;
 }
 .pool-item:active {
   cursor: grabbing;
@@ -339,7 +406,8 @@ function renderMarkdown(text: string): string {
 .item-subtext {
   font-size: 0.8rem;
   color: var(--fg-secondary-color);
-  margin-top: 2px;
+  margin-top: 4px;
+  text-align: center;
 }
 
 /* Баннер успеха */
@@ -413,6 +481,19 @@ function renderMarkdown(text: string): string {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.fade-height-enter-active,
+.fade-height-leave-active {
+  transition: all 0.2s ease;
+  max-height: 50px;
+  opacity: 1;
+}
+.fade-height-enter-from,
+.fade-height-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
 }
 
 @media (max-width: 768px) {

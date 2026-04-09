@@ -3,7 +3,8 @@ import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { findItemByPath } from '../lib/navigation'
+import { findItemByPath, flattenNavItems } from '../lib/navigation'
+import { ContentNavItemType } from '../models'
 
 const COOKIE_BORDERLESS_VIEW = 'ui_borderlessViewEnabled'
 const COOKIE_COLORED_FOLDERS = 'ui_coloredFoldersEnabled'
@@ -44,6 +45,15 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
     return backlinks.value[currentPath] || backlinks.value[currentPath.replace(/\/$/, '')] || []
   })
 
+  const recentFiles = computed(() => {
+    if (!navItems.value)
+      return []
+    const files = flattenNavItems(navItems.value).filter(
+      item => item.type === ContentNavItemType.File && item.meta?.lastModified,
+    )
+    return files.sort((a, b) => new Date(b.meta!.lastModified).getTime() - new Date(a.meta!.lastModified).getTime())
+  })
+
   function toggleFolder(sysname: string) {
     const newSet = new Set(openFolders.value)
     if (newSet.has(sysname)) {
@@ -69,6 +79,7 @@ export const useContentViewerStore = defineStore('contentViewer', () => {
     backlinks,
     activeItem,
     currentBacklinks,
+    recentFiles,
     searchIndex,
     borderlessViewEnabled,
     pinHeaderEnabled,

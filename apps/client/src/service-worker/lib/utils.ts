@@ -19,7 +19,7 @@ class AssetAnalyzer {
   static VENDOR_PATTERNS = [
     /node_modules/i,
     /vendor/i,
-    /lib/i,
+    /\/lib\//i,
     /cdn\./i,
     /unpkg\.com/i,
     /jsdelivr\.net/i,
@@ -35,7 +35,10 @@ class AssetAnalyzer {
 
   static getAssetType(url: string) {
     if (this.cache.has(url)) {
-      return this.cache.get(url)!
+      const existingType = this.cache.get(url)!
+      this.cache.delete(url)
+      this.cache.set(url, existingType)
+      return existingType
     }
 
     let type: 'hashed' | 'vendor' | 'regular' = 'regular'
@@ -45,8 +48,11 @@ class AssetAnalyzer {
     else if (this.isVendorAsset(url))
       type = 'vendor'
 
-    if (this.cache.size > 1000) {
-      this.cache.clear()
+    if (this.cache.size >= 1000) {
+      const oldestKey = this.cache.keys().next().value
+      if (oldestKey) {
+        this.cache.delete(oldestKey)
+      }
     }
 
     this.cache.set(url, type)

@@ -7,7 +7,7 @@ import router from '~/shared/lib/router'
 import { i18n } from '~/shared/plugins/i18n'
 import { isTauri } from '~/shared/services/fs.client'
 
-import { useVaultService } from '~/shared/services/vault.service'
+import { useVaultStore } from '~/shared/store/vault.store'
 
 import App from './app.vue'
 
@@ -19,9 +19,6 @@ import '~/assets/scss/normalize.scss'
 (window as any).Vue = Vue
 
 async function bootstrap() {
-  const vaultService = useVaultService()
-  await vaultService.initPredefinedVaults()
-
   const app = createApp(App)
   const pinia = createPinia()
   const head = createHead()
@@ -32,6 +29,9 @@ async function bootstrap() {
   app.use(head)
   app.use(router)
   app.use(i18n)
+
+  const vaultStore = useVaultStore()
+  await vaultStore.initPredefinedVaults()
 
   app.mount('#app')
 

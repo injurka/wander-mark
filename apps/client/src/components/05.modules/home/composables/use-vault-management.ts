@@ -1,10 +1,10 @@
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useVaultService } from '~/shared/services/vault.service'
+import { useVaultStore } from '~/shared/store/vault.store'
 
 export function useVaultManagement() {
   const router = useRouter()
-  const vaultService = useVaultService()
+  const vaultStore = useVaultStore()
 
   const progressMap = ref<Record<string, number>>({})
   const installingMap = ref<Record<string, boolean>>({})
@@ -13,12 +13,16 @@ export function useVaultManagement() {
   const iconUrls = ref<Record<string, string>>({})
   const iconErrors = ref<Record<string, boolean>>({})
 
-  watch(() => vaultService.vaults.value, async (vaults) => {
+  watch(() => vaultStore.vaults, async (vaults) => {
+    vaultStore.clearBlobUrls()
     for (const vault of vaults) {
-      iconUrls.value[vault.id] = await vaultService.resolveMediaUrl(vault.id, `meta/${vault.id}/images/icon.png`)
+      iconUrls.value[vault.id] = await vaultStore.resolveMediaUrl(vault.id, `meta/${vault.id}/images/icon.png`)
     }
   }, { immediate: true, deep: true })
 
+  onBeforeUnmount(() => {
+    vaultStore.clearBlobUrls()
+  })
   function handleIconError(vaultId: string) {
     iconErrors.value[vaultId] = true
   }
@@ -47,7 +51,7 @@ export function useVaultManagement() {
     }
 
     try {
-      await vaultService.addRemoteVault(id, url)
+      await vaultStore.addRemoteVault(id, url)
       isAddDialogVisible.value = false
     }
     catch (e: any) {
@@ -75,8 +79,7 @@ export function useVaultManagement() {
 
   async function proceedDelete() {
     if (vaultToDelete.value) {
-      await vaultService.deleteVault(vaultToDelete.value)
-      // Очищаем кеш иконок для удаленного хранилища
+      await vaultStore.deleteVault(vaultToDelete.value)
       delete iconUrls.value[vaultToDelete.value]
       delete iconErrors.value[vaultToDelete.value]
     }
@@ -92,11 +95,10 @@ export function useVaultManagement() {
     progressMap.value[vaultId] = 0
 
     try {
-      await vaultService.installVault(vaultId, (p) => {
+      await vaultStore.installVault(vaultId, (p) => {
         progressMap.value[vaultId] = p
       })
-      // Перезагружаем иконку после скачивания
-      iconUrls.value[vaultId] = await vaultService.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
+      iconUrls.value[vaultId] = await vaultStore.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
       iconErrors.value[vaultId] = false
     }
     catch (e: any) {
@@ -110,14 +112,14 @@ export function useVaultManagement() {
   }
 
   function openVault(vaultId: string) {
-    const vault = vaultService.getVault(vaultId)
+    const vault = vaultStore.getVault(vaultId)
     if (vault) {
       router.push(`/${vaultId}`)
     }
   }
 
   return {
-    vaults: vaultService.vaults,
+    vaults: computed(() => vaultStore.vaults),
     progressMap,
     installingMap,
     iconUrls,

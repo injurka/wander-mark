@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
@@ -14,11 +14,11 @@ import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { isNative } from '~/shared/services/fs.client'
-import { useVaultService } from '~/shared/services/vault.service'
+import { useVaultStore } from '~/shared/store/vault.store'
 
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
-const vaultService = useVaultService()
+const vaultStore = useVaultStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -91,7 +91,6 @@ useSwipe(mainAreaRef, {
 
 useEventListener(scrollableRef, 'scroll', handleScroll)
 
-// При смене пути контролируем сайдбар и скролл
 watch(() => route.path, () => {
   if (!isSidebarEnabled.value) {
     menu.value = false
@@ -102,13 +101,19 @@ watch(() => route.path, () => {
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
-watch(() => params.value.vault, async (vault) => {
+watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
+
+  let isCancelled = false
+  onCleanup(() => {
+    isCancelled = true
+  })
+
   status.value = 'pending'
   try {
     const parseJson = async (path: string) => {
-      const content = await vaultService.getFileContent(vault, path)
+      const content = await vaultStore.getFileContent(vault, path)
       return content ? JSON.parse(content) : null
     }
 
@@ -119,6 +124,9 @@ watch(() => params.value.vault, async (vault) => {
       parseJson(`meta/${vault}/search.json`),
     ])
 
+    if (isCancelled)
+      return
+
     data.value = {
       nav: navRes || [],
       settings: settingsRes,
@@ -127,7 +135,9 @@ watch(() => params.value.vault, async (vault) => {
     }
   }
   finally {
-    status.value = 'success'
+    if (!isCancelled) {
+      status.value = 'success'
+    }
   }
 }, { immediate: true })
 
@@ -142,28 +152,39 @@ watchEffect(() => {
 
 const localScripts = ref<any[]>([])
 const localStyles = ref<any[]>([])
+const appObjectUrls = new Set<string>()
+
+function clearAppObjectUrls() {
+  appObjectUrls.forEach(url => URL.revokeObjectURL(url))
+  appObjectUrls.clear()
+}
+
+onBeforeUnmount(() => {
+  clearAppObjectUrls()
+})
 
 async function resolveAppUrl(vaultConfig: any, path: string) {
   if (path.startsWith('http') || path.startsWith('data:'))
     return path
 
-  // eslint-disable-next-line e18e/prefer-static-regex
   const cleanPath = path.replace(/^\//, '')
 
   if (vaultConfig.type === 'local' && vaultConfig.localPath) {
-    return await vaultService.getMediaUrl(`${vaultConfig.localPath}/${cleanPath}`, true)
+    return await vaultStore.getMediaUrl(`${vaultConfig.localPath}/${cleanPath}`, true)
   }
 
   if (vaultConfig.isDownloaded) {
     if (isNative) {
-      return await vaultService.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
+      return await vaultStore.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
     }
     else {
-      const content = await vaultService.getFileContent(vaultConfig.id, cleanPath)
+      const content = await vaultStore.getFileContent(vaultConfig.id, cleanPath)
       if (content) {
         const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
         const blob = new Blob([content], { type: mimeType })
-        return URL.createObjectURL(blob)
+        const url = URL.createObjectURL(blob)
+        appObjectUrls.add(url)
+        return url
       }
     }
   }
@@ -171,24 +192,38 @@ async function resolveAppUrl(vaultConfig: any, path: string) {
   return `${vaultConfig.url}/${cleanPath}`
 }
 
-watch(() => data.value.settings, async (settings) => {
+watch(() => data.value.settings, async (settings, _oldSettings, onCleanup) => {
+  let isCancelled = false
+  onCleanup(() => {
+    isCancelled = true
+  })
+
+  clearAppObjectUrls()
+
   if (!settings) {
     localScripts.value = []
     localStyles.value = []
     return
   }
-  const vault = vaultService.getVault(params.value.vault)
+  const vault = vaultStore.getVault(params.value.vault)
   if (!vault)
     return
 
-  localScripts.value = await Promise.all((settings.scripts || []).map(async (src: string) => ({
+  const scripts = await Promise.all((settings.scripts || []).map(async (src: string) => ({
     src: await resolveAppUrl(vault, `meta/${params.value.vault}/${src}`),
     defer: true,
   })))
-  localStyles.value = await Promise.all((settings.styles || []).map(async (href: string) => ({
+
+  const styles = await Promise.all((settings.styles || []).map(async (href: string) => ({
     rel: 'stylesheet',
     href: await resolveAppUrl(vault, `meta/${params.value.vault}/${href}`),
   })))
+
+  if (isCancelled)
+    return
+
+  localScripts.value = scripts
+  localStyles.value = styles
 }, { immediate: true })
 
 useHead(() => ({
@@ -196,11 +231,16 @@ useHead(() => ({
   link: localStyles.value,
 }))
 
-watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings]) => {
+watch(() => [params.value.vault, data.value.settings] as const, async ([vault, settings], _oldVal, onCleanup) => {
+  let isCancelled = false
+  onCleanup(() => {
+    isCancelled = true
+  })
+
   if (!vault || status.value === 'pending')
     return
 
-  const vaultConfig = vaultService.getVault(vault)
+  const vaultConfig = vaultStore.getVault(vault)
   if (!vaultConfig)
     return
 
@@ -210,17 +250,23 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     searchIndex: data.value.searchIndex,
     navItems: data.value.nav,
     router,
-    getFileContent: (path: string) => vaultService.getFileContent(vault, path),
+    getFileContent: (path: string) => vaultStore.getFileContent(vault, path),
     showToast,
     confirm,
     locale: currentLocale,
     t,
   })
 
+  if (isCancelled)
+    return
+
   const configPluginIds = new Set<string>()
 
   if (settings?.plugins && Array.isArray(settings.plugins)) {
     for (const p of settings.plugins) {
+      if (isCancelled)
+        return
+
       const pId = typeof p === 'string' ? p : p.id
       const pUrl = typeof p === 'string' ? p : p.url
       const enabledByDefault = typeof p === 'string' ? true : (p.enabledByDefault ?? true)
@@ -229,6 +275,9 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
         continue
 
       const pluginUrl = await resolveAppUrl(vaultConfig, pUrl)
+
+      if (isCancelled)
+        return
 
       const alreadyInstalled = pluginStore.plugins.find(
         installed => installed.id === pId || installed.sourceUrl === pluginUrl,
@@ -251,6 +300,9 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       }
     }
   }
+
+  if (isCancelled)
+    return
 
   for (const plugin of pluginStore.plugins) {
     if (plugin.removable === false && !configPluginIds.has(plugin.id)) {

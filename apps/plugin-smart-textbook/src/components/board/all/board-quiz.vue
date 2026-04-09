@@ -10,7 +10,6 @@ const { t } = usePluginI18n()
 const currentIndex = ref(0)
 const slideDir = ref('slide-left')
 
-// Храним состояние каждого вопроса
 interface QuestionState {
   selected: string | null
   answered: boolean
@@ -34,7 +33,7 @@ watch(() => props.data, (newData) => {
   currentIndex.value = 0
   Object.keys(qStates).forEach(k => delete qStates[k as any])
   if (newData && newData.questions) {
-    newData.questions.forEach((_: unknown, i: number) => ensureState(i))
+    newData.questions.forEach((_, i) => ensureState(i))
   }
 }, { immediate: true })
 
@@ -87,10 +86,12 @@ function jumpTo(i: number) {
 
 <template>
   <div class="quiz-board">
+    <!-- Заголовок теста -->
     <div v-if="data.title" class="quiz-title-box">
       <h3>{{ data.title }}</h3>
     </div>
 
+    <!-- Прогресс бар -->
     <div class="quiz-progress-header">
       <div class="quiz-progress-label">
         {{ currentIndex + 1 }} / {{ data.questions.length }}
@@ -116,6 +117,7 @@ function jumpTo(i: number) {
       </div>
     </div>
 
+    <!-- Карточка вопроса -->
     <Transition :name="slideDir" mode="out-in">
       <div :key="currentIndex" class="quiz-card">
         <div class="question-header">
@@ -126,10 +128,7 @@ function jumpTo(i: number) {
           {{ currentQuestion.question }}
         </div>
 
-        <div v-if="currentQuestion.phonetic_hint" class="question-hint">
-          {{ currentQuestion.phonetic_hint }}
-        </div>
-
+        <!-- Варианты ответов -->
         <div class="options-grid">
           <button
             v-for="(opt, oi) in currentQuestion.options"
@@ -149,12 +148,14 @@ function jumpTo(i: number) {
           </button>
         </div>
 
+        <!-- Кнопка 'Показать ответ' -->
         <div v-if="!isAnswered" class="action-row">
           <button class="show-answer-btn" @click="showAnswer">
             {{ t('board.showAnswer') }}
           </button>
         </div>
 
+        <!-- Блок объяснения -->
         <Transition name="fade-down">
           <div v-if="isAnswered" class="explanation-box">
             <div class="exp-title">
@@ -166,6 +167,7 @@ function jumpTo(i: number) {
       </div>
     </Transition>
 
+    <!-- Навигация -->
     <div class="quiz-navigation">
       <button class="nav-btn" :disabled="currentIndex === 0" @click="navigate(-1)">
         ← {{ t('board.prev') }}
@@ -287,13 +289,6 @@ function jumpTo(i: number) {
   line-height: 1.4;
   text-align: center;
 }
-.question-hint {
-  text-align: center;
-  font-family: monospace;
-  color: var(--fg-secondary-color);
-  font-size: 0.95rem;
-  margin-top: -12px;
-}
 
 .options-grid {
   display: flex;
@@ -379,7 +374,6 @@ function jumpTo(i: number) {
   line-height: 1.5;
 }
 
-/* Навигация */
 .quiz-navigation {
   display: flex;
   align-items: center;

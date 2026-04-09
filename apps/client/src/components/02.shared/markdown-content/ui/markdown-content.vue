@@ -5,7 +5,7 @@ import mermaid from 'mermaid'
 import { useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
-import { useVaultService } from '~/shared/services/vault.service'
+import { useVaultStore } from '~/shared/store/vault.store'
 import { usePluginStore } from '../../plugins'
 import { useTextDetection } from '../composables/use-text-detection'
 import { createMarkdownRenderer } from '../lib'
@@ -19,7 +19,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { theme } = useChangeTheme()
-const vaultService = useVaultService()
+const vaultStore = useVaultStore()
 const pluginStore = usePluginStore()
 const { getWordFromEvent } = useTextDetection()
 
@@ -63,6 +63,7 @@ watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {
     if (md && newContent) {
+      vaultStore.clearBlobUrls()
       let html = md.render(newContent)
       html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
       renderedContent.value = html
@@ -94,7 +95,7 @@ watch(
               ? decodedSrc.replace(/^\//, '')
               : `content/${props.vault}/${decodedSrc}`
 
-            img.src = await vaultService.resolveMediaUrl(props.vault, mediaPath)
+            img.src = await vaultStore.resolveMediaUrl(props.vault, mediaPath)
           }
           else if (originalSrc) {
             img.src = originalSrc
@@ -122,6 +123,9 @@ watch(theme, () => {
 
 onMounted(() => {
   initRenderer()
+})
+onBeforeUnmount(() => {
+  vaultStore.clearBlobUrls()
 })
 
 function openImageViewer() {
