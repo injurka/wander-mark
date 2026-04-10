@@ -137,22 +137,26 @@ function handleSelection(event: MouseEvent) {
   const selection = window.getSelection()
   const selectedText = selection?.toString().trim()
 
-  // Если ничего не выделено, просто выходим
   if (!selectedText) {
     return
   }
 
-  // Проверяем, может ли какой-то плагин обработать выделенный текст
+  const matchedComponents: any[] = []
+
+  // Собираем все плагины, которые могут обработать выделенный текст
   for (const interceptor of pluginStore.textInterceptors) {
     const isValid = interceptor.isValidText
       ? interceptor.isValidText(selectedText)
       : selectedText.split('').some(interceptor.isValidChar)
 
     if (isValid) {
-      // Открываем тултип в координатах, где мы отпустили мышку
-      tooltipRef.value?.open(event.clientX, event.clientY, selectedText, interceptor.tooltipComponent)
-      return
+      matchedComponents.push(interceptor.tooltipComponent)
     }
+  }
+
+  // Если нашли хотя бы один плагин — открываем тултип
+  if (matchedComponents.length > 0) {
+    tooltipRef.value?.open(event.clientX, event.clientY, selectedText, matchedComponents)
   }
 }
 
@@ -164,18 +168,32 @@ function handleContentClick(event: MouseEvent) {
     return
   }
 
+  const matchedComponents: any[] = []
+  let detectedWord = ''
+
+  // Ищем все плагины, которые реагируют на клик
   for (const interceptor of pluginStore.textInterceptors) {
     const word = getWordFromEvent(event, interceptor.isValidChar)
     if (word) {
-      tooltipRef.value?.open(event.clientX, event.clientY, word, interceptor.tooltipComponent)
-      event.preventDefault()
-      event.stopPropagation()
-      return
+      matchedComponents.push(interceptor.tooltipComponent)
+      // Берем самое длинное совпадение, если плагины вернули разные слова
+      if (word.length > detectedWord.length) {
+        detectedWord = word
+      }
     }
+  }
+
+  // Если нашли плагины — открываем единый тултип
+  if (matchedComponents.length > 0 && detectedWord) {
+    tooltipRef.value?.open(event.clientX, event.clientY, detectedWord, matchedComponents)
+    event.preventDefault()
+    event.stopPropagation()
+    return
   }
 
   tooltipRef.value?.close()
 
+  // Обработка кликов по ссылкам
   const link = target.closest('a')
   if (link && link.getAttribute('href')?.startsWith('/')) {
     event.preventDefault()
@@ -186,6 +204,7 @@ function handleContentClick(event: MouseEvent) {
     return
   }
 
+  // Обработка кликов по картинкам
   if (target.tagName === 'IMG') {
     const img = target as HTMLImageElement
     if (target.closest('.callout-content') || target.closest('.markdown-body')) {

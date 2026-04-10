@@ -121,41 +121,50 @@ async function saveToDb() {
 </template>
 
 <style scoped>
+/* Обновленные стили для components/hanzi-tooltip.vue */
 .hz-tooltip-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 220px;
+  gap: 10px;
+  min-width: 240px;
+  font-family: inherit;
 }
 .hz-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-secondary-color);
-  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--border-secondary-color);
+  padding-bottom: 8px;
 }
 .hz-char {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: var(--fg-primary-color);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--fg-accent-color);
   font-family: 'Maple Mono CN', sans-serif;
+  line-height: 1;
 }
 .hz-settings-btn {
-  background: none;
-  border: none;
+  background: var(--bg-secondary-color);
+  color: var(--fg-secondary-color);
+  border: 1px solid var(--border-secondary-color);
+  border-radius: 6px;
+  padding: 4px;
   cursor: pointer;
-  opacity: 0.5;
+  transition: all 0.2s;
+  display: flex;
 }
 .hz-settings-btn:hover {
-  opacity: 1;
+  color: var(--fg-accent-color);
+  background: var(--bg-hover-color);
 }
 
 .hz-center {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px 0;
+  padding: 20px 0;
   color: var(--fg-secondary-color);
+  font-size: 0.9rem;
 }
 .hz-col {
   flex-direction: column;
@@ -165,84 +174,85 @@ async function saveToDb() {
 .hz-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .hz-pinyin {
-  color: var(--fg-accent-color);
-  font-weight: 600;
+  color: var(--fg-primary-color);
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 .hz-translation {
-  color: var(--fg-primary-color);
+  color: var(--fg-secondary-color);
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 .hz-components {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
+  margin-top: 4px;
 }
 .hz-tag {
-  background: var(--bg-secondary-color);
-  border: 1px solid var(--border-primary-color);
-  padding: 2px 6px;
+  background: var(--bg-primary-color);
+  border: 1px solid var(--border-secondary-color);
+  color: var(--fg-secondary-color);
+  padding: 2px 8px;
   border-radius: 4px;
-  font-size: 0.8em;
+  font-size: 0.8rem;
 }
 .hz-etymology {
-  font-size: 0.85em;
+  font-size: 0.85rem;
   color: var(--fg-muted-color);
-  margin: 4px 0 0 0;
-  max-height: 80px;
+  margin: 6px 0 0 0;
+  max-height: 100px;
   overflow-y: auto;
+  background: rgba(var(--bg-primary-color-rgb), 0.5);
+  padding: 8px;
+  border-radius: 6px;
 }
 
 .hz-footer {
-  margin-top: 8px;
+  margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
 }
 .hz-badge-db {
-  font-size: 0.8em;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--fg-success-color);
+  background: rgba(var(--bg-success-color-rgb), 0.3);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 .hz-btn {
   border: none;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
 }
 .hz-btn.primary {
-  background: var(--bg-action-hover-color);
-  color: #fff;
+  background: var(--fg-accent-color);
+  color: var(--bg-primary-color);
 }
 .hz-btn.success {
-  background: #22c55e;
+  background: var(--fg-success-color);
   color: #fff;
+}
+.hz-btn:hover {
+  opacity: 0.9;
 }
 
 .hz-error {
-  color: #ef4444;
-  font-size: 0.85em;
-  padding: 8px;
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--fg-error-color);
+  font-size: 0.85rem;
+  padding: 10px;
+  background: rgba(var(--bg-error-color-rgb), 0.3);
+  border: 1px solid var(--border-error-color);
   border-radius: 6px;
-}
-
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--fg-primary-color);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-right: 8px;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

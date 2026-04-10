@@ -8,13 +8,13 @@ const text = ref('')
 const position = ref({ x: 0, y: 0 })
 const tooltipRef = ref<HTMLElement | null>(null)
 
-// Используем shallowRef для компонентов, чтобы Vue не пытался делать их глубоко реактивными
-const activeComponent = shallowRef<Component | null>(null)
+// Теперь храним МАССИВ компонентов
+const activeComponents = shallowRef<Component[]>([])
 
-function open(x: number, y: number, content: string, component: Component) {
+function open(x: number, y: number, content: string, components: Component[]) {
   position.value = { x, y }
   text.value = content
-  activeComponent.value = component
+  activeComponents.value = components
   isVisible.value = true
 }
 
@@ -47,12 +47,17 @@ defineExpose({
         class="interactive-tooltip"
         :style="{ top: `${position.y}px`, left: `${position.x}px` }"
       >
-        <component
-          :is="activeComponent"
-          v-if="activeComponent"
-          :text="text"
-          @close="close"
-        />
+        <div class="tooltip-plugins-stack">
+          <!-- Рендерим все компоненты, которые среагировали на текст -->
+          <component
+            :is="comp"
+            v-for="(comp, index) in activeComponents"
+            :key="index"
+            :text="text"
+            class="tooltip-plugin-item"
+            @close="close"
+          />
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -64,38 +69,48 @@ defineExpose({
   z-index: 9999;
   background-color: var(--bg-tertiary-color);
   border: 1px solid var(--border-primary-color);
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: var(--s-l);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
   transform: translate(-50%, -115%) translateY(-10px);
   pointer-events: auto;
-  max-width: 300px;
+  max-width: 320px;
 
   &::after {
     content: '';
     position: absolute;
     top: 100%;
     left: 50%;
-    margin-left: -6px;
-    border-width: 6px;
+    margin-left: -8px;
+    border-width: 8px;
     border-style: solid;
     border-color: var(--border-primary-color) transparent transparent transparent;
   }
+}
+
+.tooltip-plugins-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Разделитель между плагинами, если их больше одного */
+.tooltip-plugin-item:not(:last-child) {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--border-secondary-color);
 }
 
 .tooltip-fade-enter-active,
 .tooltip-fade-leave-active {
   transition:
     opacity 0.2s,
-    transform 0.2s;
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tooltip-fade-enter-from,
 .tooltip-fade-leave-to {
   opacity: 0;
-  transform: translate(-50%, -140%) scale(0.95);
+  transform: translate(-50%, -130%) scale(0.95);
 }
 </style>
