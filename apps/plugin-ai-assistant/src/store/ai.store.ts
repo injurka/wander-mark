@@ -1,4 +1,5 @@
 import type { AiSystemPrompt, AiTopic, PluginContext } from '../types'
+import { get, set } from 'idb-keyval'
 import { reactive, watch } from 'vue'
 import { usePluginI18n } from '../i18n'
 
@@ -157,29 +158,30 @@ export function initAiStore() {
   }
   aiState.selectedPromptId = localStorage.getItem('wm-ai-selected-prompt') || aiState.systemPrompts[0].id
 
-  const savedTopics = localStorage.getItem('wm-ai-topics')
-  if (savedTopics) {
-    aiState.topics = JSON.parse(savedTopics)
-  }
-  else {
-    const oldHistory = localStorage.getItem('wm-ai-history')
-    if (oldHistory) {
-      aiState.topics = [{
-        id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
-        title: t('store.oldChat'),
-        history: JSON.parse(oldHistory),
-        updatedAt: Date.now(),
-      }]
+  get('wm-ai-topics').then((savedTopics) => {
+    if (savedTopics && Array.isArray(savedTopics)) {
+      aiState.topics = savedTopics
     }
-  }
+    else {
+      const oldHistory = localStorage.getItem('wm-ai-history')
+      if (oldHistory) {
+        aiState.topics = [{
+          id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+          title: t('store.oldChat'),
+          history: JSON.parse(oldHistory),
+          updatedAt: Date.now(),
+        }]
+      }
+    }
 
-  const lastTopicId = localStorage.getItem('wm-ai-current-topic')
-  if (lastTopicId && aiState.topics.some(t => t.id === lastTopicId)) {
-    aiState.currentTopicId = lastTopicId
-  }
-  else if (aiState.topics.length > 0) {
-    aiState.currentTopicId = aiState.topics[0].id
-  }
+    const lastTopicId = localStorage.getItem('wm-ai-current-topic')
+    if (lastTopicId && aiState.topics.some(t => t.id === lastTopicId)) {
+      aiState.currentTopicId = lastTopicId
+    }
+    else if (aiState.topics.length > 0) {
+      aiState.currentTopicId = aiState.topics[0].id
+    }
+  })
 
   aiState.isInitialized = true
 
@@ -189,7 +191,9 @@ export function initAiStore() {
   watch(() => aiState.systemPrompts, val => localStorage.setItem('wm-ai-prompts', JSON.stringify(val)), {
     deep: true,
   })
-  watch(() => aiState.topics, val => localStorage.setItem('wm-ai-topics', JSON.stringify(val)), {
+  watch(() => aiState.topics, (val) => {
+    set('wm-ai-topics', JSON.parse(JSON.stringify(val)))
+  }, {
     deep: true,
   })
   watch(() => aiState.currentTopicId, (val) => {

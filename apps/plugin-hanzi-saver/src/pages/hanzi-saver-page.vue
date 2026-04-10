@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import SettingsModal from '../components/settings-modal.vue' // Импортируем компонент настроек
 import { state } from '../store/hanzi-saver.store'
 
 const hanziList = ref<any[]>([])
@@ -35,9 +36,16 @@ onMounted(() => {
         <h1>Мой Словарь</h1>
         <span class="hz-count">{{ hanziList.length }} слов</span>
       </div>
-      <button class="hz-refresh-btn" :disabled="isLoading" @click="loadSavedHanzi">
-        🔄 Обновить
-      </button>
+
+      <!-- Блок с кнопками действий -->
+      <div class="hz-actions">
+        <button class="hz-btn-action" :disabled="isLoading" @click="loadSavedHanzi">
+          Обновить
+        </button>
+        <button class="hz-btn-action icon" title="Настройки" @click="state.isSettingsOpen = true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+        </button>
+      </div>
     </header>
 
     <div v-if="isLoading" class="hz-state">
@@ -81,6 +89,9 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно настроек -->
+    <SettingsModal v-if="state.isSettingsOpen" @close="state.isSettingsOpen = false" />
   </div>
 </template>
 
@@ -110,7 +121,17 @@ onMounted(() => {
   font-weight: bold;
   font-size: 0.9rem;
 }
-.hz-refresh-btn {
+
+/* Обновленные стили кнопок в шапке */
+.hz-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.hz-btn-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--bg-tertiary-color);
   color: var(--fg-primary-color);
   border: 1px solid var(--border-primary-color);
@@ -119,7 +140,10 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s;
 }
-.hz-refresh-btn:hover {
+.hz-btn-action.icon {
+  padding: 8px; /* Делаем кнопку с иконкой квадратной */
+}
+.hz-btn-action:hover {
   background: var(--bg-hover-color);
   border-color: var(--border-focus-color);
 }

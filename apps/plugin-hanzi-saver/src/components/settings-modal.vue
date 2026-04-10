@@ -73,15 +73,14 @@ async function loadConfig() {
 
 <style scoped>
 .hz-settings-overlay {
-  position: absolute;
-  inset: -10px;
+  position: fixed;
+  inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
-  border-radius: 12px;
+  z-index: 9999;
 }
 .hz-settings-card {
   background: var(--bg-primary-color);
