@@ -13,6 +13,9 @@
 			"path": "apps/cli"
 		},
 		{
+			"path": "apps/plugin-hanzi-saver"
+		},
+		{
 			"path": "apps/plugin-ai-assistant"
 		},
 		{

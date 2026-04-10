@@ -4,6 +4,9 @@ export const PORT = Number.parseInt(process.env.PORT || '4444')
 export const BASE_PATH = process.env.FS_BASE_PATH || ''
 export const DATA_DIR = process.env.SYNC_DATA_PATH || path.resolve(process.cwd(), 'data')
 
+// Добавляем путь к БД
+export const DB_PATH = process.env.DB_PATH || path.resolve(process.cwd(), 'db', 'wander.sqlite')
+
 export const MIME_OVERRIDES: Record<string, string> = {
   '.md': 'text/markdown; charset=utf-8',
 }

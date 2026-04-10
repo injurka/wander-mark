@@ -1,0 +1,5 @@
+{
+  "apiKey": "sk-your-aihubmix-or-openai-api-key-here",
+  "backendUrl": "https://wander-api.trip-scheduler.ru",
+  "model": "gemini-3-flash-preview"
+}
