@@ -109,6 +109,8 @@ export interface LoadedPlugin {
   module: WanderMarkPlugin
   /** ID <style> элемента для CSS плагина */
   styleElementId?: string
+  /** Сохраненная ссылка Blob для последующей очистки памяти */
+  blobUrl?: string
 }
 
 // ─── Реэкспорт для удобства ───

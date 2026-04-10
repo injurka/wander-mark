@@ -1,3 +1,4 @@
+import { get, set } from 'idb-keyval'
 import { markRaw, reactive, watch } from 'vue'
 
 export interface ReadLog {
@@ -34,10 +35,14 @@ export const trackerActions = {
     trackerState.showToast = ctx.showToast
     trackerState.getFileContent = ctx.getFileContent
 
-    const savedLogs = localStorage.getItem(`wm-tracker-logs-${ctx.vaultId}`)
-    if (savedLogs)
-      trackerState.logs = JSON.parse(savedLogs)
+    // Загрузка логов из IndexedDB
+    get(`wm-tracker-logs-${ctx.vaultId}`).then((savedLogs) => {
+      if (savedLogs && Array.isArray(savedLogs)) {
+        trackerState.logs = savedLogs
+      }
+    })
 
+    // Загрузка настроек из localStorage
     const savedConfig = localStorage.getItem(`wm-tracker-cfg-${ctx.vaultId}`)
     if (savedConfig) {
       const cfg = JSON.parse(savedConfig)
@@ -46,10 +51,12 @@ export const trackerActions = {
       trackerState.lastSync = cfg.lastSync || 0
     }
 
+    // Сохранение логов в IndexedDB при изменении
     watch(() => trackerState.logs, (val) => {
-      localStorage.setItem(`wm-tracker-logs-${ctx.vaultId}`, JSON.stringify(val))
+      set(`wm-tracker-logs-${ctx.vaultId}`, JSON.parse(JSON.stringify(val)))
     }, { deep: true })
 
+    // Сохранение настроек в localStorage при изменении
     watch(() => [trackerState.syncUrl, trackerState.identifier, trackerState.lastSync], () => {
       localStorage.setItem(`wm-tracker-cfg-${ctx.vaultId}`, JSON.stringify({
         syncUrl: trackerState.syncUrl,
@@ -127,7 +134,7 @@ export const trackerActions = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           vaultId: trackerState.vaultId,
-          identifier: trackerState.identifier, 
+          identifier: trackerState.identifier,
           logs: trackerState.logs,
         }),
       })

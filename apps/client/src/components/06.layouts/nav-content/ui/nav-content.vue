@@ -274,18 +274,16 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       if (!pUrl)
         continue
 
-      const pluginUrl = await resolveAppUrl(vaultConfig, pUrl)
-
       if (isCancelled)
         return
 
       const alreadyInstalled = pluginStore.plugins.find(
-        installed => installed.id === pId || installed.sourceUrl === pluginUrl,
+        installed => installed.id === pId || installed.sourceUrl === pUrl,
       )
 
       if (!alreadyInstalled) {
         try {
-          const newPlugin = await pluginStore.install(pluginUrl, enabledByDefault, false)
+          const newPlugin = await pluginStore.install(pUrl, enabledByDefault, false)
           configPluginIds.add(newPlugin.id)
         }
         catch (e) {

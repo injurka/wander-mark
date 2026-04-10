@@ -143,6 +143,9 @@
     "apps/plugin-reading-tracker": {
       "name": "@injurx/plugin-reading-tracker",
       "version": "1.0.0",
+      "dependencies": {
+        "idb-keyval": "^6.2.2",
+      },
       "devDependencies": {
         "@antfu/eslint-config": "7.7.3",
         "@vitejs/plugin-vue": "^6.0.5",
@@ -182,6 +185,7 @@
       "name": "@injurx/plugin-smart-textbook",
       "version": "1.0.0",
       "dependencies": {
+        "idb-keyval": "^6.2.2",
         "marked": "^12.0.0",
       },
       "devDependencies": {

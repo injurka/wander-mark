@@ -27,5 +27,8 @@
     "vite-plugin-css-injected-by-js": "^4.0.1",
     "vue": "^3.5.31",
     "vue-tsc": "^3.2.6"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.2.2"
   }
 }

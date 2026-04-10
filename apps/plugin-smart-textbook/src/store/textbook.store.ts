@@ -1,4 +1,5 @@
 import type { GenerationHistory, PluginContext, ScenarioType, TargetLanguage, TopicDefinition } from '../types'
+import { get, set } from 'idb-keyval'
 import { computed, reactive, watch } from 'vue'
 
 export const MODELS = [
@@ -162,12 +163,13 @@ export function initTbStore() {
     tbState.isSidebarOpen = !isMobile
   }
 
-  const savedHistory = localStorage.getItem('wm-tb-history')
-  if (savedHistory) {
-    tbState.history = JSON.parse(savedHistory)
-    if (tbState.history.length > 0)
-      tbState.activeHistoryId = tbState.history[0].id
-  }
+  get('wm-tb-history').then((savedHistory) => {
+    if (savedHistory && Array.isArray(savedHistory)) {
+      tbState.history = savedHistory
+      if (tbState.history.length > 0)
+        tbState.activeHistoryId = tbState.history[0].id
+    }
+  })
 
   watch(() => tbState.apiKey, val => localStorage.setItem('wm-tb-apikey', val))
   watch(() => tbState.model, val => localStorage.setItem('wm-tb-model', val))
@@ -180,5 +182,7 @@ export function initTbStore() {
   })
   watch(() => tbState.activeTopic, val => localStorage.setItem('wm-tb-topic', val))
   watch(() => tbState.isSidebarOpen, val => localStorage.setItem('wm-tb-sidebar', String(val)))
-  watch(() => tbState.history, val => localStorage.setItem('wm-tb-history', JSON.stringify(val)), { deep: true })
+  watch(() => tbState.history, (val) => {
+    set('wm-tb-history', JSON.parse(JSON.stringify(val)))
+  }, { deep: true })
 }

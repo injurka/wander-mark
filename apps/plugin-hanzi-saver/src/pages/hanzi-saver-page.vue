@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { state } from '../store'
+import { state } from '../store/hanzi-saver.store'
 
 const hanziList = ref<any[]>([])
 const isLoading = ref(true)

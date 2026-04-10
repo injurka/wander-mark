@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
-import { pluginContext, state } from '../store/hanzi-saver.store'
+import { state } from '../store/hanzi-saver.store'
 import SettingsModal from './settings-modal.vue'
 
 const props = defineProps<{ text: string }>()
@@ -46,11 +46,11 @@ async function runAnalysis() {
 async function saveToDb() {
   try {
     await saveHanziToDb(data.value)
-    pluginContext?.showToast('Иероглиф сохранен!', { type: 'success' })
+    state?.showToast('Иероглиф сохранен!', { type: 'success' })
     emit('close')
   }
   catch (e: any) {
-    pluginContext?.showToast('Ошибка сохранения', { type: 'error' })
+    state?.showToast('Ошибка сохранения', { type: 'error' })
   }
 }
 </script>
