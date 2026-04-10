@@ -48,15 +48,17 @@ defineExpose({
         :style="{ top: `${position.y}px`, left: `${position.x}px` }"
       >
         <div class="tooltip-plugins-stack">
-          <!-- Рендерим все компоненты, которые среагировали на текст -->
-          <component
-            :is="comp"
+          <div
             v-for="(comp, index) in activeComponents"
             :key="index"
-            :text="text"
             class="tooltip-plugin-item"
-            @close="close"
-          />
+          >
+            <component
+              :is="comp"
+              :text="text"
+              @close="close"
+            />
+          </div>
         </div>
       </div>
     </Transition>
@@ -95,7 +97,11 @@ defineExpose({
   gap: 12px;
 }
 
-/* Разделитель между плагинами, если их больше одного */
+.tooltip-plugin-item {
+  display: flex;
+  flex-direction: column;
+}
+
 .tooltip-plugin-item:not(:last-child) {
   padding-bottom: 12px;
   border-bottom: 1px dashed var(--border-secondary-color);

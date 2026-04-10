@@ -1,6 +1,6 @@
 import { state } from '../store/hanzi-saver.store'
 
-export async function analyzeHanziWithAi(text: string) {
+export async function analyzeHanziWithAi(text: string, signal?: AbortSignal) {
   if (!state.apiKey)
     throw new Error('API Key is missing')
 
@@ -33,6 +33,7 @@ Schema:
         { role: 'user', content: text },
       ],
     }),
+    signal,
   })
 
   if (!res.ok)

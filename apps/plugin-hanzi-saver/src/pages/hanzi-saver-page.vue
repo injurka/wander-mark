@@ -1,22 +1,38 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import SettingsModal from '../components/settings-modal.vue' // Импортируем компонент настроек
 import { state } from '../store/hanzi-saver.store'
 
 const hanziList = ref<any[]>([])
 const isLoading = ref(true)
 const error = ref('')
+let abortController: AbortController | null = null
+
+onUnmounted(() => {
+  if (abortController)
+    abortController.abort()
+})
 
 async function loadSavedHanzi() {
+  if (isLoading.value && abortController)
+    abortController.abort()
+
+  abortController = new AbortController()
+
   isLoading.value = true
   error.value = ''
   try {
-    const res = await fetch(`${state.backendUrl}/api/hanzi`)
+    const res = await fetch(`${state.backendUrl}/api/hanzi`, { signal: abortController.signal })
     if (!res.ok)
       throw new Error(`HTTP: ${res.status}`)
     hanziList.value = await res.json()
   }
   catch (e: any) {
+    if (e.name === 'AbortError') {
+      // eslint-disable-next-line no-console
+      console.log('Hanzi list fetch aborted.')
+      return
+    }
     error.value = `Не удалось загрузить базу: ${e.message}`
   }
   finally {

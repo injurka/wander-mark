@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import { state } from '../store/hanzi-saver.store'
 
 const emit = defineEmits(['close'])
 const isLoadingConfig = ref(false)
+let abortController = new AbortController()
+
+onUnmounted(() => {
+  abortController.abort()
+})
 
 async function loadConfig() {
+  if (isLoadingConfig.value)
+    abortController.abort()
+
+  abortController = new AbortController()
+
   isLoadingConfig.value = true
   try {
     const configPath = `meta/${state.vaultId}/plugins/configs/hanzi-saver.json`
     let configText = null
 
-    if (state.getFileContent) {
+    if (state.getFileContent)
       configText = await state.getFileContent(configPath)
-    }
 
     if (!configText) {
       const url = `${state.vaultUrl}/${configPath}`
-      const res = await fetch(url)
+      const res = await fetch(url, { signal: abortController.signal })
       if (!res.ok)
         throw new Error(`HTTP: ${res.status}`)
       configText = await res.text()
@@ -36,6 +45,12 @@ async function loadConfig() {
       state.showToast('Настройки загружены', { type: 'success' })
   }
   catch (e: any) {
+    if (e.name === 'AbortError') {
+      // eslint-disable-next-line no-console
+      console.log('Config fetch aborted.')
+      return
+    }
+
     if (state.showToast)
       state.showToast(`Ошибка: ${e.message}`, { type: 'error' })
   }

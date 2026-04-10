@@ -65,6 +65,7 @@ function speak() {
   gap: 4px;
   border-left: 1px solid var(--border-secondary-color);
   padding-left: 12px;
+  margin-left: auto;
 }
 
 .zh-btn {
