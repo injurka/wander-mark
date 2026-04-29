@@ -22,7 +22,6 @@ export function useTextDetection() {
 
   /**
    * Главная функция: находит последовательность символов под курсором.
-   * Теперь она принимает функцию проверки валидности символа от плагина.
    */
   function getWordFromEvent(e: MouseEvent, isValidChar: (char: string) => boolean): string | null {
     const x = e.clientX
@@ -51,9 +50,9 @@ export function useTextDetection() {
       return null
     }
 
-    // 2. Находим контейнер и "плоский" текст
+    // 2. Находим контейнер и "плоский" текст (теперь поддерживает любой родительский элемент)
     const element = textNode.parentElement
-    const blockContainer = element?.closest('p, li, blockquote, div.callout-content, h1, h2, h3, h4, h5, h6, td, th') as HTMLElement
+    const blockContainer = (element?.closest('p, li, blockquote, div, h1, h2, h3, h4, h5, h6, td, th') || element) as HTMLElement
 
     if (!blockContainer)
       return null

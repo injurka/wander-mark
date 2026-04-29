@@ -6,10 +6,7 @@ import { useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useVaultStore } from '~/shared/store/vault.store'
-import { usePluginStore } from '../../plugins'
-import { useTextDetection } from '../composables/use-text-detection'
 import { createMarkdownRenderer } from '../lib'
-import InteractiveTooltip from './interactive-tooltip.vue'
 
 interface Props {
   content: string
@@ -20,8 +17,6 @@ interface Props {
 const props = defineProps<Props>()
 const { theme } = useChangeTheme()
 const vaultStore = useVaultStore()
-const pluginStore = usePluginStore()
-const { getWordFromEvent } = useTextDetection()
 
 const router = useRouter()
 
@@ -29,7 +24,6 @@ const renderedContent = ref<string>('')
 const mdInstance = ref<MarkdownIt | null>(null)
 const isLoading = ref<boolean>(true)
 const currentImages = ref<string[]>([])
-const tooltipRef = ref<InstanceType<typeof InteractiveTooltip> | null>(null)
 
 const shikiTheme = computed(() => {
   return theme.value === ThemesVariant.Light ? 'catppuccin-latte' : 'catppuccin-mocha'
@@ -89,8 +83,6 @@ watch(
           if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
             const decodedSrc = decodeURIComponent(originalSrc)
 
-            // Если путь начинается с /images/ (как бывает в Obsidian), убираем слэш,
-            // иначе считаем, что картинка лежит внутри папки content/Vault/...
             const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
               ? decodedSrc.replace(/^\//, '')
               : `content/${props.vault}/${decodedSrc}`
@@ -129,69 +121,11 @@ onBeforeUnmount(() => {
 })
 
 function openImageViewer() {
-  // eslint-disable-next-line no-console
   console.log('Open image viewer with:', currentImages.value)
-}
-
-function handleSelection(event: MouseEvent) {
-  const selection = window.getSelection()
-  const selectedText = selection?.toString().trim()
-
-  if (!selectedText) {
-    return
-  }
-
-  const matchedComponents: any[] = []
-
-  // Собираем все плагины, которые могут обработать выделенный текст
-  for (const interceptor of pluginStore.textInterceptors) {
-    const isValid = interceptor.isValidText
-      ? interceptor.isValidText(selectedText)
-      : selectedText.split('').some(interceptor.isValidChar)
-
-    if (isValid) {
-      matchedComponents.push(interceptor.tooltipComponent)
-    }
-  }
-
-  // Если нашли хотя бы один плагин — открываем тултип
-  if (matchedComponents.length > 0) {
-    tooltipRef.value?.open(event.clientX, event.clientY, selectedText, matchedComponents)
-  }
 }
 
 function handleContentClick(event: MouseEvent) {
   const target = event.target as HTMLElement
-
-  const selection = window.getSelection()
-  if (selection && selection.toString().trim().length > 0) {
-    return
-  }
-
-  const matchedComponents: any[] = []
-  let detectedWord = ''
-
-  // Ищем все плагины, которые реагируют на клик
-  for (const interceptor of pluginStore.textInterceptors) {
-    const word = getWordFromEvent(event, interceptor.isValidChar)
-    if (word) {
-      matchedComponents.push(interceptor.tooltipComponent)
-      // Берем самое длинное совпадение, если плагины вернули разные слова
-      if (word.length > detectedWord.length) {
-        detectedWord = word
-      }
-    }
-  }
-
-  // Если нашли плагины — открываем единый тултип
-  if (matchedComponents.length > 0 && detectedWord) {
-    tooltipRef.value?.open(event.clientX, event.clientY, detectedWord, matchedComponents)
-    event.preventDefault()
-    event.stopPropagation()
-    return
-  }
-
-  tooltipRef.value?.close()
 
   // Обработка кликов по ссылкам
   const link = target.closest('a')
@@ -223,17 +157,16 @@ function handleContentClick(event: MouseEvent) {
 <template>
   <PageLoader v-if="isLoading" />
   <div v-else class="markdown-wrapper">
-    <InteractiveTooltip ref="tooltipRef" />
     <div
       class="markdown-body"
       @click="handleContentClick"
-      @mouseup="handleSelection"
       v-html="renderedContent"
     />
   </div>
 </template>
 
 <style lang="scss">
+/* Стили остаются без изменений */
 .markdown-body {
   line-height: 1.7;
   color: var(--fg-primary-color);
