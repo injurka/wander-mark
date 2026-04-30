@@ -14,9 +14,10 @@ import App from './app.vue'
 import '~/assets/scss/global.scss'
 import '~/assets/scss/normalize.scss'
 
-  ;
+import { KitBtn, KitDialog, KitInput, KitCheckbox, KitDropdown } from '~/components/01.kit'
 
-(window as any).Vue = Vue
+  ; (window as any).Vue = Vue
+
 
 async function bootstrap() {
   const app = createApp(App)
@@ -29,6 +30,12 @@ async function bootstrap() {
   app.use(head)
   app.use(router)
   app.use(i18n)
+
+  app.component('KitBtn', KitBtn)
+  app.component('KitDialog', KitDialog)
+  app.component('KitInput', KitInput)
+  app.component('KitCheckbox', KitCheckbox)
+  app.component('KitDropdown', KitDropdown)
 
   const vaultStore = useVaultStore()
   await vaultStore.initPredefinedVaults()

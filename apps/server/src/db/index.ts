@@ -12,6 +12,7 @@ export const db = new Database(DB_PATH)
 db.run(`
   CREATE TABLE IF NOT EXISTS hanzi (
     char TEXT PRIMARY KEY,
+    type TEXT DEFAULT 'word',
     pinyin TEXT,
     translation TEXT,
     components TEXT,
@@ -19,11 +20,12 @@ db.run(`
     hsk TEXT,
     strokes INTEGER,
     part_of_speech TEXT,
+    grammar_notes TEXT,
+    words_breakdown TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `)
 
-// Новая таблица для синхронизации прогресса чтения
 db.run(`
   CREATE TABLE IF NOT EXISTS reading_logs (
     vault_id TEXT,

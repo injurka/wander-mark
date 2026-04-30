@@ -17,7 +17,8 @@
       ]
     },
     "types": [
-      "bun"
+      "bun",
+      "@injurkx/plugin-api/src/global-components"
     ],
     "allowJs": true,
     "strict": true,

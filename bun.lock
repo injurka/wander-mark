@@ -127,6 +127,7 @@
       },
       "devDependencies": {
         "@antfu/eslint-config": "7.7.3",
+        "@injurkx/plugin-api": "workspace:*",
         "@vitejs/plugin-vue": "^5.0.0",
         "eslint": "10.0.3",
         "eslint-plugin-format": "2.0.1",
@@ -218,6 +219,10 @@
         "eslint-plugin-format": "2.0.1",
         "typescript": "5.9.3",
       },
+    },
+    "packages/plugin-api": {
+      "name": "@injurkx/plugin-api",
+      "version": "1.0.0",
     },
   },
   "packages": {
@@ -590,6 +595,8 @@
     "@injurka/wander-mark-cli": ["@injurka/wander-mark-cli@workspace:apps/cli"],
 
     "@injurka/wander-mark-server": ["@injurka/wander-mark-server@workspace:apps/server"],
+
+    "@injurkx/plugin-api": ["@injurkx/plugin-api@workspace:packages/plugin-api"],
 
     "@injurkx/wander-mark-client": ["@injurkx/wander-mark-client@workspace:apps/client"],
 

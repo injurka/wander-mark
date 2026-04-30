@@ -5,6 +5,7 @@ export const state = reactive({
   model: localStorage.getItem('hz-model') || 'gemini-3-flash-preview',
   backendUrl: localStorage.getItem('hz-backend') || 'http://localhost:8080',
   isSettingsOpen: false,
+  isManualInputOpen: false,
 
   vaultId: '',
   vaultUrl: '',

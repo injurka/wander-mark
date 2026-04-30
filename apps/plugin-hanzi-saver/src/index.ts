@@ -1,15 +1,20 @@
-import type { PluginContext } from './types'
+import type { PluginContext } from '@injurkx/plugin-api'
 import { markRaw } from 'vue'
 import HanziTooltip from './components/hanzi-tooltip.vue'
+import ToolbarAction from './components/toolbar-action.vue'
 import HanziSaverPage from './pages/hanzi-saver-page.vue'
 import { setContext } from './store/hanzi-saver.store'
 
 export default {
   id: 'hanzi-saver',
   name: 'Hanzi Saver',
-  description: 'Выделяйте иероглифы, разбирайте через AI и сохраняйте в БД',
-  version: '1.1.0',
+  description: 'Выделяйте иероглифы, разбирайте фразы через AI и сохраняйте в личный словарь',
+  version: '2.0.0',
   icon: 'mdi:translate',
+
+  slots: {
+    toolbar: markRaw(ToolbarAction),
+  },
 
   pages: {
     index: markRaw(HanziSaverPage),
@@ -25,7 +30,7 @@ export default {
     })
 
     // eslint-disable-next-line no-console
-    console.log('[Hanzi Saver] Activated')
+    console.log('[Hanzi Saver] Activated v2.0')
   },
 
   deactivate(ctx: PluginContext) {
