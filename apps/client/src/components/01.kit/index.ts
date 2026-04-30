@@ -3,6 +3,7 @@ import KitCheckbox from './kit-checkbox/ui/kit-checkbox.vue'
 import KitDialog from './kit-dialog/ui/kit-dialog.vue'
 import KitDropdown from './kit-dropdown/ui/kit-dropdown.vue'
 import KitInput from './kit-input/ui/kit-input.vue'
+import KitSelect from './kit-select/ui/kit-select.vue'
 
 export {
   KitBtn,
@@ -10,4 +11,5 @@ export {
   KitDialog,
   KitDropdown,
   KitInput,
+  KitSelect,
 }

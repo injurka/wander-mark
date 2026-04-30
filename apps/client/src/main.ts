@@ -2,22 +2,22 @@ import { createHead } from '@vueuse/head'
 import { createPinia } from 'pinia'
 import * as Vue from 'vue'
 import { createApp } from 'vue'
+import { KitBtn, KitCheckbox, KitDialog, KitDropdown, KitInput, KitSelect } from '~/components/01.kit'
+
 import { vRipple } from '~/shared/directives/ripple'
 import router from '~/shared/lib/router'
 import { i18n } from '~/shared/plugins/i18n'
+
 import { isTauri } from '~/shared/services/fs.client'
 
 import { useVaultStore } from '~/shared/store/vault.store'
 
 import App from './app.vue'
-
 import '~/assets/scss/global.scss'
-import '~/assets/scss/normalize.scss'
 
-import { KitBtn, KitDialog, KitInput, KitCheckbox, KitDropdown } from '~/components/01.kit'
+import '~/assets/scss/normalize.scss';
 
-  ; (window as any).Vue = Vue
-
+(window as any).Vue = Vue
 
 async function bootstrap() {
   const app = createApp(App)
@@ -36,6 +36,7 @@ async function bootstrap() {
   app.component('KitInput', KitInput)
   app.component('KitCheckbox', KitCheckbox)
   app.component('KitDropdown', KitDropdown)
+  app.component('KitSelect', KitSelect)
 
   const vaultStore = useVaultStore()
   await vaultStore.initPredefinedVaults()

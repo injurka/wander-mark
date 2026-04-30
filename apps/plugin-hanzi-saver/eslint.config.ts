@@ -5,6 +5,6 @@ export default antfu({
   formatters: true,
   ignores: ['bun.lock'],
   rules: {
-    'e18e/prefer-static-regex': 'off'
-  }
+    'e18e/prefer-static-regex': 'off',
+  },
 })

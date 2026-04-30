@@ -10,7 +10,7 @@ let abortController = new AbortController()
 // Управляем видимостью диалога
 const isOpen = ref(true)
 
-// Если диалог закрывается (например, по клику вне окна или на крестик), 
+// Если диалог закрывается (например, по клику вне окна или на крестик),
 // дожидаемся окончания анимации и прокидываем событие 'close' наверх
 watch(isOpen, (val) => {
   if (!val) {
@@ -91,36 +91,36 @@ async function loadConfig() {
     <div class="hz-settings-form">
       <div class="form-group">
         <label>URL Бэкенда (Bun + SQLite)</label>
-        <KitInput 
-          v-model="state.backendUrl" 
-          placeholder="http://localhost:3000" 
+        <KitInput
+          v-model="state.backendUrl"
+          placeholder="http://localhost:3000"
         />
       </div>
 
       <div class="form-group">
         <label>API Key (AiHubMix / OpenAI)</label>
-        <KitInput 
-          v-model="state.apiKey" 
-          type="password" 
-          placeholder="sk-..." 
+        <KitInput
+          v-model="state.apiKey"
+          type="password"
+          placeholder="sk-..."
         />
       </div>
 
       <div class="form-group">
         <label>Модель</label>
-        <KitInput 
-          v-model="state.model" 
-          placeholder="gemini-3-flash-preview" 
+        <KitInput
+          v-model="state.model"
+          placeholder="gemini-3-flash-preview"
         />
       </div>
     </div>
 
     <!-- Футер с кнопками -->
     <template #footer>
-      <KitBtn 
-        variant="tonal" 
-        color="secondary" 
-        :disabled="isLoadingConfig" 
+      <KitBtn
+        variant="tonal"
+        color="secondary"
+        :disabled="isLoadingConfig"
         @click="loadConfig"
       >
         {{ isLoadingConfig ? 'Загрузка...' : 'Загрузить конфиг' }}
