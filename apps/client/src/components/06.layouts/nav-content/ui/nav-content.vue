@@ -5,7 +5,6 @@ import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
-import { InteractiveTooltip, useTextDetection } from '~/components/02.shared/markdown-content'
 import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
@@ -25,9 +24,6 @@ const router = useRouter()
 
 const pluginStore = usePluginStore()
 const pluginsDialogOpen = ref(false)
-
-const tooltipRef = ref<InstanceType<typeof InteractiveTooltip> | null>(null)
-const { getWordFromEvent } = useTextDetection()
 
 const { showToast } = useToast()
 const { confirm } = useConfirm()
@@ -81,66 +77,6 @@ function handleScroll() {
   else isHeaderVisible.value = false
 
   lastScrollTop.value = scrollTop
-}
-
-function handleGlobalSelection(event: MouseEvent) {
-  const target = event.target as HTMLElement
-  if (target.closest('.interactive-tooltip')) return
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
-
-  const selection = window.getSelection()
-  const selectedText = selection?.toString().trim()
-
-  if (!selectedText) return
-
-  const matchedComponents: any[] = []
-
-  for (const interceptor of pluginStore.textInterceptors) {
-    const isValid = interceptor.isValidText
-      ? interceptor.isValidText(selectedText)
-      : selectedText.split('').some(interceptor.isValidChar)
-
-    if (isValid) {
-      matchedComponents.push(interceptor.tooltipComponent)
-    }
-  }
-
-  if (matchedComponents.length > 0) {
-    tooltipRef.value?.open(event.clientX, event.clientY, selectedText, matchedComponents)
-  }
-}
-
-function handleGlobalClick(event: MouseEvent) {
-  const target = event.target as HTMLElement
-  // Игнорируем клики внутри самой подсказки, чтобы не ломать ее функционал
-  if (target.closest('.interactive-tooltip')) return
-  
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-    tooltipRef.value?.close()
-    return
-  }
-
-  const selection = window.getSelection()
-  if (selection && selection.toString().trim().length > 0) return
-
-  const matchedComponents: any[] = []
-  let detectedWord = ''
-
-  for (const interceptor of pluginStore.textInterceptors) {
-    const word = getWordFromEvent(event, interceptor.isValidChar)
-    if (word) {
-      matchedComponents.push(interceptor.tooltipComponent)
-      if (word.length > detectedWord.length) {
-        detectedWord = word
-      }
-    }
-  }
-
-  if (matchedComponents.length > 0 && detectedWord) {
-    tooltipRef.value?.open(event.clientX, event.clientY, detectedWord, matchedComponents)
-  } else {
-    tooltipRef.value?.close()
-  }
 }
 
 useSwipe(mainAreaRef, {
@@ -375,7 +311,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 </script>
 
 <template>
-  <div class="layout-container" @click="handleGlobalClick" @mouseup="handleGlobalSelection">
+  <div class="layout-container">
     <PageLoader v-if="status === 'pending'" />
     <div v-else class="layout-content">
       <ContentViewerNavigation v-if="isSidebarEnabled" v-model:menu="menu" :items="data.nav" />
@@ -403,9 +339,6 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       <PluginSlot name="overlay" />
 
       <PluginManagerDialog v-model:visible="pluginsDialogOpen" />
-
-      <!-- Глобальный тултип для плагинов -->
-      <InteractiveTooltip ref="tooltipRef" />
     </div>
   </div>
 </template>
