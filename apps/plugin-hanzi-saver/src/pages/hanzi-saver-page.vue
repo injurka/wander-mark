@@ -76,8 +76,10 @@ function speak(text: string) {
 }
 
 async function removeHanzi(char: string) {
-  if (!state.ctx?.confirm(`Удалить "${char}" из словаря?`))
+  const isConfirmed = await state.ctx?.confirm(`Удалить "${char}" из словаря?`)
+  if (!isConfirmed)
     return
+
   try {
     await deleteHanziFromDb(char)
     hanziList.value = hanziList.value.filter(item => item.char !== char)
@@ -236,7 +238,7 @@ onUnmounted(() => {
 .hz-page-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   border-bottom: 1px solid var(--border-secondary-color);
   padding-bottom: 16px;
   margin-bottom: 24px;
@@ -263,9 +265,6 @@ onUnmounted(() => {
 }
 .filter-search {
   flex: 1;
-}
-.filter-type {
-  flex: 0 0 200px;
 }
 
 .hz-list {
@@ -454,7 +453,6 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
-  padding-right: 36px;
 }
 .wg-item {
   position: relative;

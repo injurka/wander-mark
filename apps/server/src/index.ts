@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { BASE_PATH, CORS_HEADERS, DATA_DIR, PORT } from './config'
 import { handleFile } from './handlers/file'
-import { getAllHanzi, getHanzi, saveHanzi } from './handlers/hanzi'
+import { deleteHanzi, getAllHanzi, getHanzi, saveHanzi } from './handlers/hanzi'
 import { handleSync } from './handlers/sync'
 import { withCors } from './utils/cors'
 import './db'
@@ -28,6 +28,7 @@ Bun.serve({
     '/api/hanzi/*': {
       OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
       GET: getHanzi,
+      DELETE: deleteHanzi,
     },
     '/*': {
       OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
