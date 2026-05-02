@@ -7,11 +7,8 @@ const emit = defineEmits(['close'])
 const isLoadingConfig = ref(false)
 let abortController = new AbortController()
 
-// Управляем видимостью диалога
 const isOpen = ref(true)
 
-// Если диалог закрывается (например, по клику вне окна или на крестик),
-// дожидаемся окончания анимации и прокидываем событие 'close' наверх
 watch(isOpen, (val) => {
   if (!val) {
     setTimeout(() => {
@@ -39,12 +36,10 @@ async function loadConfig() {
     const configPath = `meta/${state.vaultId}/plugins/configs/hanzi-saver.json`
     let configText = null
 
-    // Пытаемся получить через API хоста
     if (state.getFileContent) {
       configText = await state.getFileContent(configPath)
     }
 
-    // Запасной вариант через fetch (если плагин запущен отдельно)
     if (!configText) {
       const url = `${state.vaultUrl}/${configPath}`
       const res = await fetch(url, { signal: abortController.signal })
@@ -65,15 +60,15 @@ async function loadConfig() {
     if (state.showToast)
       state.showToast('Настройки загружены', { type: 'success' })
   }
-  catch (e: any) {
-    if (e.name === 'AbortError') {
-      // eslint-disable-next-line no-console
-      console.log('Config fetch aborted.')
-      return
+  catch (e: unknown) {
+    if (e instanceof Error) {
+      if (e.name === 'AbortError') {
+        console.log('Config fetch aborted.')
+        return
+      }
+      if (state.showToast)
+        state.showToast(`Ошибка: ${e.message}`, { type: 'error' })
     }
-
-    if (state.showToast)
-      state.showToast(`Ошибка: ${e.message}`, { type: 'error' })
   }
   finally {
     isLoadingConfig.value = false
@@ -115,7 +110,6 @@ async function loadConfig() {
       </div>
     </div>
 
-    <!-- Футер с кнопками -->
     <template #footer>
       <KitBtn
         variant="tonal"

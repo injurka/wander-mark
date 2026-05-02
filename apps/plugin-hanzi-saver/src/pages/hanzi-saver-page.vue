@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { HanziData } from '../types'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import SettingsModal from '../components/settings-modal.vue'
 import { state } from '../store/hanzi-saver.store'
 
-const hanziList = ref<any[]>([])
+const hanziList = ref<HanziData[]>([])
 const isLoading = ref(true)
 const error = ref('')
 let abortController: AbortController | null = null
@@ -31,9 +32,10 @@ async function loadSavedHanzi() {
       throw new Error(`HTTP: ${res.status}`)
     hanziList.value = await res.json()
   }
-  catch (e: any) {
-    if (e.name !== 'AbortError')
+  catch (e: unknown) {
+    if (e instanceof Error && e.name !== 'AbortError') {
       error.value = `Не удалось загрузить базу: ${e.message}`
+    }
   }
   finally {
     isLoading.value = false
@@ -130,16 +132,6 @@ onUnmounted(() => {
     <div v-else class="hz-list">
       <div v-for="item in filteredList" :key="item.char" class="hz-list-item" :class="{ 'is-expanded': expandedItems.has(item.char) }">
         <div class="item-main-row" @click="toggleExpand(item.char)">
-          <KitBtn
-            icon="mdi:volume-high"
-            variant="tonal"
-            color="secondary"
-            size="sm"
-            title="Озвучить"
-            class="tts-btn"
-            @click.stop="speak(item.char)"
-          />
-
           <div class="item-char" :class="{ 'is-sentence': item.type === 'sentence' }">
             {{ item.char }}
           </div>
@@ -159,6 +151,18 @@ onUnmounted(() => {
 
         <Transition name="expand">
           <div v-if="expandedItems.has(item.char)" class="item-details">
+            <div class="details-action-bar">
+              <KitBtn
+                icon="mdi:volume-high"
+                variant="tonal"
+                color="secondary"
+                size="sm"
+                @click.stop="speak(item.char)"
+              >
+                Озвучить
+              </KitBtn>
+            </div>
+
             <template v-if="item.type === 'word' || !item.type">
               <div v-if="item.components?.length" class="detail-block">
                 <strong>Ключи:</strong>
@@ -275,16 +279,13 @@ onUnmounted(() => {
   user-select: none;
 }
 
-.tts-btn {
-  flex-shrink: 0;
-}
-
 .item-char {
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--fg-primary-color);
   font-family: 'Maple Mono CN', sans-serif;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .item-char.is-sentence {
   font-size: 1.2rem;
@@ -294,7 +295,8 @@ onUnmounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  max-width: 300px;
+  flex-shrink: 1; /* Разрешаем сжиматься, если это предложение */
+  max-width: 400px;
 }
 
 .item-text-info {
@@ -353,13 +355,18 @@ onUnmounted(() => {
 }
 
 .item-details {
-  padding: 0 16px 16px 64px;
+  padding: 0 16px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   border-top: 1px dashed var(--border-secondary-color);
   margin-top: -4px;
   padding-top: 16px;
+}
+.details-action-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 4px;
 }
 .detail-block strong {
   display: block;
@@ -432,7 +439,7 @@ onUnmounted(() => {
 .expand-leave-active {
   transition: all 0.3s ease;
   overflow: hidden;
-  max-height: 500px;
+  max-height: 800px;
 }
 .expand-enter-from,
 .expand-leave-to {
@@ -454,13 +461,16 @@ onUnmounted(() => {
   .item-main-row {
     padding: 12px;
     gap: 10px;
-    flex-wrap: wrap;
+    align-items: flex-start;
   }
   .item-char {
     font-size: 1.5rem;
   }
-  .item-details {
-    padding-left: 16px;
+  .item-char.is-sentence {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    -webkit-line-clamp: 4;
   }
   .item-badges {
     display: none;

@@ -3,16 +3,54 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
+import type { HanziData } from '../types'
 
 const props = defineProps<{ text: string }>()
 const emit = defineEmits(['close'])
 
 type Status = 'loading' | 'found' | 'not_found' | 'ai_loading' | 'analyzed' | 'error'
 const status = ref<Status>('loading')
-const data = ref<any>(null)
+const data = ref<HanziData | null>(null)
 const errorMsg = ref('')
 
 const abortController = new AbortController()
+
+async function runAnalysis() {
+  status.value = 'ai_loading'
+  try {
+    const aiResult = await analyzeHanziWithAi(props.text, abortController.signal)
+    data.value = aiResult
+    status.value = 'analyzed'
+  }
+  catch (e: unknown) {
+    if (e instanceof Error) {
+      if (e.name === 'AbortError') {
+        console.log('AI analysis aborted.')
+        return
+      }
+      errorMsg.value = `Ошибка AI: ${e.message}`
+    } else {
+      errorMsg.value = 'Неизвестная ошибка AI'
+    }
+    status.value = 'error'
+  }
+}
+
+async function saveToDb() {
+  if (!data.value) return
+  try {
+    await saveHanziToDb(data.value, abortController.signal)
+    state?.showToast?.('Иероглиф сохранен!', { type: 'success' })
+    emit('close')
+  }
+  catch (e: unknown) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      console.log('Save to DB aborted.')
+      return
+    }
+    state?.showToast?.('Ошибка сохранения', { type: 'error' })
+  }
+}
 
 onUnmounted(() => {
   abortController.abort()
@@ -29,86 +67,49 @@ onMounted(async () => {
       status.value = 'not_found'
     }
   }
-  catch (e: any) {
-    if (e.name === 'AbortError') {
-      // eslint-disable-next-line no-console
-      console.log('DB check aborted.')
-      return
+  catch (e: unknown) {
+    if (e instanceof Error) {
+      if (e.name === 'AbortError') {
+        console.log('DB check aborted.')
+        return
+      }
+      errorMsg.value = `Ошибка БД: ${e.message}`
+    } else {
+      errorMsg.value = 'Неизвестная ошибка БД'
     }
-    errorMsg.value = `Ошибка БД: ${e.message}`
     status.value = 'error'
   }
 })
-
-async function runAnalysis() {
-  status.value = 'ai_loading'
-  try {
-    const aiResult = await analyzeHanziWithAi(props.text, abortController.signal)
-    data.value = aiResult
-    status.value = 'analyzed'
-  }
-  catch (e: any) {
-    if (e.name === 'AbortError') {
-      // eslint-disable-next-line no-console
-      console.log('AI analysis aborted.')
-      return
-    }
-    errorMsg.value = `Ошибка AI: ${e.message}`
-    status.value = 'error'
-  }
-}
-
-async function saveToDb() {
-  try {
-    await saveHanziToDb(data.value, abortController.signal)
-    state?.showToast('Иероглиф сохранен!', { type: 'success' })
-    emit('close')
-  }
-  catch (e: any) {
-    if (e.name === 'AbortError') {
-      // eslint-disable-next-line no-console
-      console.log('Save to DB aborted.')
-      return
-    }
-    state?.showToast('Ошибка сохранения', { type: 'error' })
-  }
-}
 </script>
 
 <template>
   <div class="hz-tooltip-container">
-    <!-- Header -->
     <div class="hz-header">
       <div class="hz-char">
         {{ text }}
       </div>
     </div>
 
-    <!-- State: Loading DB -->
     <div v-if="status === 'loading'" class="hz-center">
       <span class="spinner" /> Проверка БД...
     </div>
 
-    <!-- State: Not Found -->
     <div v-else-if="status === 'not_found'" class="hz-center hz-col">
       <span class="hz-muted">Новое слово!</span>
       <button class="hz-btn primary" @click="runAnalysis">
-        Сделать разбор (AI)
+        Сделать разбор
       </button>
     </div>
 
-    <!-- State: AI Loading -->
     <div v-else-if="status === 'ai_loading'" class="hz-center">
       <span class="spinner" /> Нейронка думает...
     </div>
 
-    <!-- State: Error -->
     <div v-else-if="status === 'error'" class="hz-error">
       {{ errorMsg }}
     </div>
 
-    <!-- State: Found or Analyzed -->
-    <div v-else-if="status === 'found' || status === 'analyzed'" class="hz-content">
+    <div v-else-if="(status === 'found' || status === 'analyzed') && data" class="hz-content">
       <div class="hz-pinyin">
         {{ data.pinyin }}
       </div>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { PluginSlotName } from '../models'
+import type { PluginSlotName } from '@injurkx/plugin-api'
 import { usePluginStore } from '../store'
 
 interface Props {
-  /** Имя слота, в котором рендерятся плагины */
   name: PluginSlotName
 }
 

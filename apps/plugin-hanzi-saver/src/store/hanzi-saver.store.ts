@@ -1,4 +1,5 @@
 import { reactive, watch } from 'vue'
+import type { PluginContext } from '../types'
 
 export const state = reactive({
   apiKey: localStorage.getItem('hz-api-key') || '',
@@ -9,8 +10,8 @@ export const state = reactive({
 
   vaultId: '',
   vaultUrl: '',
-  getFileContent: null as any,
-  showToast: null as any,
+  getFileContent: null as PluginContext['getFileContent'],
+  showToast: null as PluginContext['showToast'],
 })
 
 watch(() => state.apiKey, v => localStorage.setItem('hz-api-key', v))

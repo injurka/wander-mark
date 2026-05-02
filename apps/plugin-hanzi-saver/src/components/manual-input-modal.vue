@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { saveHanziToDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
+import type { HanziData } from '../types'
 
 const emit = defineEmits(['close'])
 
@@ -10,7 +11,7 @@ const isOpen = ref(true)
 const inputText = ref('')
 const isLoading = ref(false)
 const errorMsg = ref('')
-const resultData = ref<any>(null)
+const resultData = ref<HanziData | null>(null)
 
 watch(isOpen, (val) => {
   if (!val) {
@@ -27,6 +28,7 @@ function handleClose() {
 async function analyze() {
   if (!inputText.value.trim())
     return
+  
   isLoading.value = true
   errorMsg.value = ''
   resultData.value = null
@@ -35,8 +37,12 @@ async function analyze() {
     const aiResult = await analyzeHanziWithAi(inputText.value.trim())
     resultData.value = aiResult
   }
-  catch (e: any) {
-    errorMsg.value = e.message
+  catch (e: unknown) {
+    if (e instanceof Error) {
+      errorMsg.value = e.message
+    } else {
+      errorMsg.value = 'Произошла неизвестная ошибка'
+    }
   }
   finally {
     isLoading.value = false
@@ -46,14 +52,20 @@ async function analyze() {
 async function save() {
   if (!resultData.value)
     return
+
   isLoading.value = true
+
   try {
     await saveHanziToDb(resultData.value)
     state.showToast?.('Успешно сохранено!', { type: 'success' })
-    handleClose() 
+    handleClose()
   }
-  catch (e: any) {
-    errorMsg.value = `Ошибка сохранения: ${e.message}`
+  catch (e: unknown) {
+    if (e instanceof Error) {
+      errorMsg.value = `Ошибка сохранения: ${e.message}`
+    } else {
+      errorMsg.value = 'Неизвестная ошибка сохранения'
+    }
   }
   finally {
     isLoading.value = false
@@ -82,7 +94,7 @@ async function save() {
     <div v-else class="hz-result-area">
       <div class="hz-preview">
         <div class="hz-char">
-          {{ resultData.character || resultData.char }}
+          {{ resultData.char }}
         </div>
         <div class="hz-pinyin">
           {{ resultData.pinyin }}
@@ -149,12 +161,11 @@ async function save() {
 </template>
 
 <style scoped>
-
 .hz-input-area {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-top: 4px; 
+  padding-top: 4px;
 }
 
 .hz-textarea {

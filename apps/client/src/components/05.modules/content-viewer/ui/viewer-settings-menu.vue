@@ -10,6 +10,7 @@ const props = defineProps<{ vault: string }>()
 
 const emit = defineEmits<{
   (e: 'openPlugins'): void
+   (e: 'openAiSettings'): void
 }>()
 
 const { setTheme, theme } = useChangeTheme()
@@ -28,6 +29,11 @@ function toggleTheme() {
 
 function handleOpenPlugins() {
   emit('openPlugins')
+  dropdownRef.value?.close()
+}
+
+function handleOpenAiSettings() {
+  emit('openAiSettings')
   dropdownRef.value?.close()
 }
 </script>
@@ -87,6 +93,12 @@ function handleOpenPlugins() {
           <div class="item-label">
             <Icon icon="mdi:puzzle-outline" class="item-icon" />
             <span>{{ t('settings.plugins') }}</span>
+          </div>
+        </div>
+        <div class="menu-item" @click="handleOpenAiSettings">
+          <div class="item-label">
+            <Icon icon="mdi:robot-outline" class="item-icon" />
+            <span>{{ t('settings.aiSettings') }}</span>
           </div>
         </div>
       </div>

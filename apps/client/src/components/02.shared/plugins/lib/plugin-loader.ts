@@ -1,4 +1,4 @@
-import type { WanderMarkPlugin } from '../models'
+import type { WanderMarkPlugin } from '@injurkx/plugin-api'
 
 /**
  * Загружает ES-модуль плагина по URL в runtime.

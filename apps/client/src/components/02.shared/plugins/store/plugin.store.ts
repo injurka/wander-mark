@@ -1,4 +1,5 @@
-import type { LoadedPlugin, PluginContext, PluginRecord, PluginSlotName, TextInterceptor, WanderMarkPlugin } from '../models'
+import type { PluginSlotName, TextInterceptor, WanderMarkPlugin, WanderMarkPluginContext } from '@injurkx/plugin-api'
+import type { LoadedPlugin, PluginRecord } from '../models'
 import { defineStore } from 'pinia'
 import { computed, markRaw, ref, shallowRef } from 'vue'
 import { useVaultStore } from '~/shared/store/vault.store'
@@ -14,7 +15,7 @@ export const usePluginStore = defineStore('plugins', () => {
   const loaded = ref<Map<string, LoadedPlugin>>(new Map())
   const errors = ref<Map<string, string>>(new Map())
   const textInterceptors = ref<TextInterceptor[]>([])
-  const context = shallowRef<PluginContext | null>(null)
+  const context = shallowRef<WanderMarkPluginContext | null>(null)
 
   const plugins = computed(() => registry.value)
   const enabledPlugins = computed(() => registry.value.filter(p => p.enabled))
@@ -45,7 +46,7 @@ export const usePluginStore = defineStore('plugins', () => {
 
   const getError = (pluginId: string) => errors.value.get(pluginId)
 
-  async function init(vaultId: string, ctx: Omit<PluginContext, 'registerTextInterceptor' | 'unregisterTextInterceptor'>) {
+  async function init(vaultId: string, ctx: Omit<WanderMarkPluginContext, 'registerTextInterceptor' | 'unregisterTextInterceptor'>) {
     await deactivateAll()
 
     currentVaultId.value = vaultId
@@ -54,7 +55,7 @@ export const usePluginStore = defineStore('plugins', () => {
       ...ctx,
       registerTextInterceptor,
       unregisterTextInterceptor,
-    } as PluginContext
+    }
 
     errors.value.clear()
     textInterceptors.value = []
@@ -88,13 +89,12 @@ export const usePluginStore = defineStore('plugins', () => {
       throw new Error(`Плагин "${module.name}" (${module.id}) уже установлен.`)
     }
 
-    // Ограничиваем длину строк, чтобы не вызвать ошибку QuotaExceededError при заполнении localStorage
     const safeIcon = module.icon && module.icon.length > 500 ? 'mdi:puzzle-outline' : (module.icon || 'mdi:puzzle-outline')
     const safeDesc = module.description && module.description.length > 1000 ? `${module.description.substring(0, 1000)}...` : (module.description || '')
 
     const record: PluginRecord = {
       id: module.id,
-      sourceUrl, // Мы сохраняем оригинальный путь вместо нестабильного blob!
+      sourceUrl,
       enabled: autoEnable,
       name: module.name.substring(0, 100),
       description: safeDesc,
@@ -112,6 +112,7 @@ export const usePluginStore = defineStore('plugins', () => {
       registry.value.pop()
       if (isBlob)
         URL.revokeObjectURL(urlToLoad)
+
       throw e
     }
 
@@ -185,7 +186,12 @@ export const usePluginStore = defineStore('plugins', () => {
       let urlToLoad = loadedUrl || record.sourceUrl
       let isBlob = false
 
-      if (!existingModule && !urlToLoad.startsWith('http') && !urlToLoad.startsWith('blob:') && !urlToLoad.startsWith('data:')) {
+      if (
+        !existingModule
+        && !urlToLoad.startsWith('http')
+        && !urlToLoad.startsWith('blob:')
+        && !urlToLoad.startsWith('data:')
+      ) {
         urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
         isBlob = urlToLoad.startsWith('blob:')
       }
@@ -206,6 +212,8 @@ export const usePluginStore = defineStore('plugins', () => {
 
       if (module.activate && context.value) {
         await module.activate(context.value)
+        // eslint-disable-next-line no-console
+        console.log(`[${module.name}] Activated v${module.version}`)
       }
 
       errors.value.delete(record.id)
@@ -221,6 +229,8 @@ export const usePluginStore = defineStore('plugins', () => {
     for (const [id, lp] of loaded.value) {
       try {
         await lp.module.deactivate?.(context.value!)
+        // eslint-disable-next-line no-console
+        console.log(`[${lp.module.name}] Deactivated v${lp.module.version}`)
       }
       catch (e) {
         console.warn(`[PluginStore] Error deactivating "${id}":`, e)
@@ -240,6 +250,7 @@ export const usePluginStore = defineStore('plugins', () => {
   function persist() {
     if (!currentVaultId.value)
       return
+
     localStorage.setItem(
       storageKey(currentVaultId.value),
       JSON.stringify(registry.value),

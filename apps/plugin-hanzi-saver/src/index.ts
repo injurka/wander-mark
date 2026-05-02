@@ -1,4 +1,4 @@
-import type { PluginContext } from '@injurkx/plugin-api'
+import type { WanderMarkPlugin, WanderMarkPluginContext } from '@injurkx/plugin-api'
 import { markRaw } from 'vue'
 import HanziTooltip from './components/hanzi-tooltip.vue'
 import ToolbarAction from './components/toolbar-action.vue'
@@ -20,7 +20,7 @@ export default {
     index: markRaw(HanziSaverPage),
   },
 
-  activate(ctx: PluginContext) {
+  activate(ctx: WanderMarkPluginContext) {
     setContext(ctx)
 
     ctx.registerTextInterceptor({
@@ -29,11 +29,10 @@ export default {
       tooltipComponent: markRaw(HanziTooltip),
     })
 
-    // eslint-disable-next-line no-console
-    console.log('[Hanzi Saver] Activated v2.0')
+
   },
 
-  deactivate(ctx: PluginContext) {
+  deactivate(ctx: WanderMarkPluginContext) {
     ctx.unregisterTextInterceptor('hanzi-interceptor')
   },
-}
+} satisfies WanderMarkPlugin

@@ -158,4 +158,6 @@ bun start --help
 bun start -c /home/injurka/Documents/obsidian-mark/.obsidian/export/config.json --deploy
 
 bun start -c /root/my/wander-mark/vaults-example/.export/config.json
+
+bun start -c /home/evai/my/wander-mark/vaults-example/.export/config.json
  -->

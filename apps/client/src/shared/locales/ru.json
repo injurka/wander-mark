@@ -11,6 +11,7 @@
     "showIcons": "Иконки в меню",
     "showOutline": "Линии структуры",
     "plugins": "Менеджер плагинов",
+    "aiSettings": "Настройки AI", 
     "language": "Язык"
   },
   "home": {

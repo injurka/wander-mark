@@ -4,10 +4,12 @@ import { useHead } from '@vueuse/head'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { get, set } from 'idb-keyval'
+import AiSettingsDialog from '~/components/02.shared/global-dialogs/ui/ai-settings-dialog.vue'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
-import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
+import { ContentNavItem, ContentViewerHeader, ContentViewerNavigation, useContentViewerStore, VaultMetaSettings } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
 import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
@@ -15,6 +17,15 @@ import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { isNative } from '~/shared/services/fs.client'
 import { useVaultStore } from '~/shared/store/vault.store'
+import { useGlobalSettingsStore } from '~/shared/store/settings.store'
+import { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/models'
+
+interface InititalData {
+  nav: ContentNavItem[] | null
+  settings: VaultMetaSettings | null
+  backlinks: BacklinksMap | null
+  searchIndex: VaultMetaSearchIndexItem[] | null
+}
 
 const params = useTypedRouteParams()
 const contentViewerStore = useContentViewerStore()
@@ -23,7 +34,10 @@ const route = useRoute()
 const router = useRouter()
 
 const pluginStore = usePluginStore()
+const globalSettings = useGlobalSettingsStore()
+
 const pluginsDialogOpen = ref(false)
+const aiSettingsDialogOpen = ref(false)
 
 const { showToast } = useToast()
 const { confirm } = useConfirm()
@@ -42,7 +56,12 @@ const isHeaderVisible = ref(true)
 const lastScrollTop = ref(0)
 const scrollThreshold = 50
 const status = ref<'pending' | 'success'>('pending')
-const data = ref<{ nav: any, settings: any, backlinks: any, searchIndex: any }>({ nav: [], settings: null, backlinks: null, searchIndex: [] })
+const data = ref<InititalData>({
+  nav: null, 
+  settings: null,
+  backlinks: null, 
+  searchIndex: null
+})
 
 function handleScroll() {
   if (!scrollableRef.value)
@@ -112,16 +131,16 @@ watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
 
   status.value = 'pending'
   try {
-    const parseJson = async (path: string) => {
+    async function parseJson<T>(path: string) {
       const content = await vaultStore.getFileContent(vault, path)
-      return content ? JSON.parse(content) : null
+      return content ? JSON.parse(content) as T : null
     }
 
     const [navRes, settingsRes, backlinksRes, searchRes] = await Promise.all([
-      parseJson(`content/${vault}/nav.json`),
-      parseJson(`meta/${vault}/settings.json`),
-      parseJson(`meta/${vault}/backlinks.json`),
-      parseJson(`meta/${vault}/search.json`),
+      parseJson<ContentNavItem[]>(`content/${vault}/nav.json`),
+      parseJson<VaultMetaSettings | null>(`meta/${vault}/settings.json`),
+      parseJson<BacklinksMap | null>(`meta/${vault}/backlinks.json`),
+      parseJson<VaultMetaSearchIndexItem[]>(`meta/${vault}/search.json`),
     ])
 
     if (isCancelled)
@@ -132,7 +151,7 @@ watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
       settings: settingsRes,
       backlinks: backlinksRes,
       searchIndex: searchRes || [],
-    }
+    } 
   }
   finally {
     if (!isCancelled) {
@@ -255,8 +274,29 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     confirm,
     locale: currentLocale,
     t,
+    storage: {
+      get: async <T>(key: string): Promise<T | null> => {
+        const val = await get<T>(`plugin::${vault}::${key}`)
+        return val ?? null
+      },
+      set: async <T>(key: string, value: T) => set(`plugin::${vault}::${key}`, value),
+    },
+    ai: {
+      getModel: () => globalSettings.aiModel,
+      fetch: (endpoint, options = {}) => {
+        if (!globalSettings.aiKey) {
+          aiSettingsDialogOpen.value = true 
+          return Promise.reject(new Error('API ключ не настроен.'))
+        }
+        const headers = {
+          'Content-Type': 'application/json',
+          ...options.headers,
+          'Authorization': `Bearer ${globalSettings.aiKey}`,
+        }
+        return fetch(endpoint, { ...options, headers })
+      },
+    },
   })
-
   if (isCancelled)
     return
 
@@ -323,6 +363,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
           @update:menu="menu = $event"
           @open-search="searchOpen = true"
           @open-plugins="pluginsDialogOpen = true"
+          @open-ai-settings="aiSettingsDialogOpen = true"
         >
           <template #toolbar-extra>
             <PluginSlot name="toolbar" />
@@ -339,6 +380,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       <PluginSlot name="overlay" />
 
       <PluginManagerDialog v-model:visible="pluginsDialogOpen" />
+      <AiSettingsDialog v-model:visible="aiSettingsDialogOpen" />
     </div>
   </div>
 </template>
