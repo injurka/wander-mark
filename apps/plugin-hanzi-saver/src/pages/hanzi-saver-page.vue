@@ -10,15 +10,95 @@ const isLoading = ref(true)
 const error = ref('')
 let abortController: AbortController | null = null
 
+// Базовые фильтры
 const searchQuery = ref('')
 const filterType = ref('all')
+const showAdvancedFilters = ref(false)
+
+// Расширенные фильтры
+const filterHsk = ref('all')
+const filterPoS = ref('all')
+const sortBy = ref('default')
+
 const expandedItems = ref<Set<string>>(new Set())
 
+// Статические опции
 const filterOptions = [
   { label: 'Все записи', value: 'all' },
-  { label: 'Только слова', value: 'word' },
-  { label: 'Только предложения', value: 'sentence' },
+  { label: 'Слова/Иероглифы', value: 'word' },
+  { label: 'Предложения', value: 'sentence' },
 ]
+
+const sortOptions = [
+  { label: 'По умолчанию', value: 'default' },
+  { label: 'Пиньинь (A-Z)', value: 'pinyin_asc' },
+  { label: 'Черты (меньше → больше)', value: 'strokes_asc' },
+  { label: 'Черты (больше → меньше)', value: 'strokes_desc' },
+]
+
+// Динамические опции на основе данных из БД
+const availableHskLevels = computed(() => {
+  const levels = new Set<string>()
+  hanziList.value.forEach((item) => {
+    if (item.type === 'word' && item.hsk && item.hsk !== 'None') {
+      levels.add(item.hsk)
+    }
+  })
+  return Array.from(levels).sort()
+})
+
+const hskOptions = computed(() => [
+  { label: 'Любой уровень', value: 'all' },
+  ...availableHskLevels.value.map(l => ({ label: l, value: l })),
+])
+
+const availablePoS = computed(() => {
+  const pos = new Set<string>()
+  hanziList.value.forEach((item) => {
+    if (item.type === 'word' && item.part_of_speech) {
+      pos.add(item.part_of_speech.toLowerCase().trim())
+    }
+  })
+  return Array.from(pos).sort()
+})
+
+const posOptions = computed(() => [
+  { label: 'Любая часть речи', value: 'all' },
+  ...availablePoS.value.map(p => ({ label: p.charAt(0).toUpperCase() + p.slice(1), value: p })),
+])
+
+// Сброс нерелевантных фильтров при выборе "Предложений"
+watch(filterType, (newType) => {
+  if (newType === 'sentence') {
+    filterHsk.value = 'all'
+    filterPoS.value = 'all'
+    if (sortBy.value.includes('strokes')) {
+      sortBy.value = 'default'
+    }
+  }
+})
+
+// Подсчет активных расширенных фильтров для бейджика
+const activeFiltersCount = computed(() => {
+  let count = 0
+  if (filterType.value !== 'all')
+    count++
+  if (filterHsk.value !== 'all')
+    count++
+  if (filterPoS.value !== 'all')
+    count++
+  if (sortBy.value !== 'default')
+    count++
+  return count
+})
+
+function resetFilters() {
+  searchQuery.value = ''
+  filterType.value = 'all'
+  filterHsk.value = 'all'
+  filterPoS.value = 'all'
+  sortBy.value = 'default'
+}
 
 async function loadSavedHanzi() {
   if (isLoading.value && abortController)
@@ -49,15 +129,38 @@ watch(() => state.isManualInputOpen, (isOpen) => {
 })
 
 const filteredList = computed(() => {
-  return hanziList.value.filter((item) => {
+  let result = hanziList.value.filter((item) => {
+    // Поиск
     const q = searchQuery.value.toLowerCase()
     const matchSearch = item.char.toLowerCase().includes(q)
       || item.pinyin.toLowerCase().includes(q)
       || item.translation.toLowerCase().includes(q)
+
+    // Тип записи
     const matchType = filterType.value === 'all' || item.type === filterType.value
 
-    return matchSearch && matchType
+    // HSK
+    const matchHsk = filterHsk.value === 'all' || item.hsk === filterHsk.value
+
+    // Часть речи
+    const matchPoS = filterPoS.value === 'all'
+      || (item.part_of_speech && item.part_of_speech.toLowerCase().trim() === filterPoS.value)
+
+    return matchSearch && matchType && matchHsk && matchPoS
   })
+
+  // Сортировка
+  if (sortBy.value === 'pinyin_asc') {
+    result.sort((a, b) => a.pinyin.localeCompare(b.pinyin))
+  }
+  else if (sortBy.value === 'strokes_asc') {
+    result.sort((a, b) => (a.strokes || 0) - (b.strokes || 0))
+  }
+  else if (sortBy.value === 'strokes_desc') {
+    result.sort((a, b) => (b.strokes || 0) - (a.strokes || 0))
+  }
+
+  return result
 })
 
 function toggleExpand(char: string) {
@@ -122,23 +225,69 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <div class="hz-filters">
-      <div class="filter-search">
-        <KitInput v-model="searchQuery" placeholder="Поиск по иероглифу, пиньиню или переводу..." />
+    <div class="hz-filter-section">
+      <div class="hz-search-row">
+        <div class="hz-search-input">
+          <KitInput v-model="searchQuery" placeholder="Поиск по иероглифу, пиньиню или переводу..." />
+        </div>
+        <button
+          class="hz-filter-toggle-btn"
+          :class="{ 'is-active': showAdvancedFilters || activeFiltersCount > 0 }"
+          title="Расширенные фильтры"
+          @click="showAdvancedFilters = !showAdvancedFilters"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <span v-if="activeFiltersCount > 0" class="filter-badge">{{ activeFiltersCount }}</span>
+        </button>
       </div>
-      <div class="filter-type">
-        <KitSelect v-model="filterType" :options="filterOptions" />
-      </div>
+
+      <Transition name="slide-down">
+        <div v-if="showAdvancedFilters" class="hz-advanced-filters">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label>Тип записи</label>
+              <KitSelect v-model="filterType" :options="filterOptions" />
+            </div>
+
+            <div class="filter-group">
+              <label>Сортировка</label>
+              <KitSelect v-model="sortBy" :options="sortOptions" />
+            </div>
+
+            <template v-if="filterType !== 'sentence'">
+              <div class="filter-group">
+                <label>Уровень HSK</label>
+                <KitSelect v-model="filterHsk" :options="hskOptions" />
+              </div>
+
+              <div class="filter-group">
+                <label>Часть речи</label>
+                <KitSelect v-model="filterPoS" :options="posOptions" />
+              </div>
+            </template>
+          </div>
+
+          <div v-if="activeFiltersCount > 0" class="hz-filter-actions">
+            <span class="reset-link" @click="resetFilters">Сбросить все фильтры</span>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <div v-if="isLoading" class="hz-state">
-      Загрузка...
+      <span class="spinner" /> Загрузка базы...
     </div>
     <div v-else-if="error" class="hz-state hz-error">
       {{ error }}
     </div>
-    <div v-else-if="filteredList.length === 0" class="hz-state">
-      Ничего не найдено.
+    <div v-else-if="filteredList.length === 0" class="hz-state empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
+      <p>Ничего не найдено по текущим фильтрам.</p>
+      <button v-if="activeFiltersCount > 0 || searchQuery" class="hz-btn text-primary" @click="resetFilters">
+        Сбросить поиск
+      </button>
     </div>
 
     <div v-else class="hz-list">
@@ -158,6 +307,7 @@ onUnmounted(() => {
           <div class="item-right-actions">
             <span v-if="item.type === 'sentence'" class="badge type-badge">Фраза</span>
             <span v-else-if="item.hsk && item.hsk !== 'None'" class="badge hsk-badge">{{ item.hsk }}</span>
+            <span v-if="item.type === 'word' && item.part_of_speech" class="badge pos-badge">{{ item.part_of_speech }}</span>
             <svg class="chevron" :class="{ rotated: expandedItems.has(item.char) }" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6" /></svg>
           </div>
         </div>
@@ -189,9 +339,19 @@ onUnmounted(() => {
                 <strong>Этимология:</strong>
                 <p>{{ item.etymology }}</p>
               </div>
-              <div class="detail-block">
-                <strong>Мета:</strong>
-                <span class="meta-info">Черт: {{ item.strokes || '?' }} | Часть речи: {{ item.part_of_speech || '?' }}</span>
+              <div class="detail-block meta-block">
+                <div class="meta-item">
+                  <span class="meta-label">Кол-во черт:</span>
+                  <span class="meta-value">{{ item.strokes || '?' }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Уровень HSK:</span>
+                  <span class="meta-value">{{ item.hsk && item.hsk !== 'None' ? item.hsk : 'Не указан' }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Часть речи:</span>
+                  <span class="meta-value">{{ item.part_of_speech || 'Неизвестно' }}</span>
+                </div>
               </div>
             </template>
 
@@ -258,19 +418,163 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
 }
-.hz-filters {
+
+/* Фильтры */
+.hz-filter-section {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 24px;
+  background: var(--bg-primary-color);
+  border: 1px solid var(--border-secondary-color);
+  border-radius: 12px;
+  padding: 12px;
 }
-.filter-search {
+
+.hz-search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.hz-search-input {
   flex: 1;
 }
 
+.hz-filter-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary-color);
+  background: var(--bg-secondary-color);
+  color: var(--fg-secondary-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.hz-filter-toggle-btn:hover {
+  background: var(--bg-hover-color);
+  color: var(--fg-primary-color);
+  border-color: var(--border-primary-color);
+}
+.hz-filter-toggle-btn.is-active {
+  background: rgba(var(--bg-accent-color-rgb), 0.1);
+  color: var(--fg-accent-color);
+  border-color: var(--fg-accent-color);
+}
+
+.filter-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--fg-accent-color);
+  color: var(--bg-primary-color);
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hz-advanced-filters {
+  border-top: 1px dashed var(--border-secondary-color);
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg-muted-color);
+  text-transform: uppercase;
+}
+
+.hz-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.reset-link {
+  font-size: 0.85rem;
+  color: var(--fg-error-color);
+  cursor: pointer;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.reset-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  max-height: 400px;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  margin-top: 0;
+  border-top-color: transparent;
+}
+
+/* Состояния */
+.hz-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--fg-secondary-color);
+  font-size: 1rem;
+  gap: 12px;
+}
+.hz-error {
+  color: var(--fg-error-color);
+}
+.empty-state .empty-icon {
+  color: var(--border-primary-color);
+  margin-bottom: 8px;
+}
+.hz-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.text-primary {
+  color: var(--fg-accent-color);
+}
+.text-primary:hover {
+  text-decoration: underline;
+}
+
+/* Список */
 .hz-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .hz-list-item {
   background: var(--bg-primary-color);
@@ -325,12 +629,11 @@ onUnmounted(() => {
   -webkit-box-orient: vertical;
 }
 
-/* Изменено: Убрано жесткое обрезание, текст будет переноситься как абзац */
 .item-text-info {
   font-size: 0.95rem;
   line-height: 1.4;
   opacity: 0.85;
-  word-break: break-word; /* Позволяет переносить длинные слова на новую строку */
+  word-break: break-word;
 }
 .item-pinyin {
   font-weight: 600;
@@ -350,14 +653,16 @@ onUnmounted(() => {
 .item-right-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .badge {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 .hsk-badge {
   background: rgba(var(--fg-accent-color-rgb), 0.1);
@@ -369,10 +674,17 @@ onUnmounted(() => {
   color: var(--fg-muted-color);
   border: 1px solid var(--border-secondary-color);
 }
+.pos-badge {
+  background: var(--bg-secondary-color);
+  color: var(--fg-primary-color);
+  border: 1px dashed var(--border-primary-color);
+}
+
 .chevron {
   color: var(--fg-muted-color);
   transition: transform 0.2s;
   flex-shrink: 0;
+  margin-left: 4px;
 }
 .chevron.rotated {
   transform: rotate(180deg);
@@ -394,10 +706,10 @@ onUnmounted(() => {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--bg-primary-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-secondary-color);
   color: var(--fg-muted-color);
   border: 1px solid var(--border-secondary-color);
   display: flex;
@@ -408,10 +720,9 @@ onUnmounted(() => {
   z-index: 10;
 }
 .hz-delete-btn:hover {
-  background: var(--fg-error-color);
-  color: #fff;
-  border-color: var(--fg-error-color);
-  transform: translateY(-2px);
+  background: rgba(var(--bg-error-color-rgb), 0.1);
+  color: var(--fg-error-color);
+  border-color: rgba(var(--bg-error-color-rgb), 0.3);
 }
 
 .details-action-bar {
@@ -422,7 +733,7 @@ onUnmounted(() => {
   font-size: 0.8rem;
   text-transform: uppercase;
   color: var(--fg-muted-color);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .detail-block p {
   margin: 0;
@@ -434,25 +745,46 @@ onUnmounted(() => {
 .comp-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 .comp-tag {
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-primary-color);
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.85rem;
   color: var(--fg-primary-color);
 }
-.meta-info {
-  font-size: 0.85rem;
-  color: var(--fg-secondary-color);
+
+.meta-block {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: var(--bg-secondary-color);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary-color);
+}
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.meta-label {
+  font-size: 0.75rem;
+  color: var(--fg-muted-color);
+  text-transform: uppercase;
+}
+.meta-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--fg-primary-color);
 }
 
 .words-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
 .wg-item {
   position: relative;
@@ -460,9 +792,9 @@ onUnmounted(() => {
   flex-direction: column;
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-primary-color);
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 8px;
-  gap: 4px;
+  gap: 6px;
 }
 .wg-left {
   display: flex;
@@ -472,7 +804,7 @@ onUnmounted(() => {
 .wg-char {
   font-weight: 700;
   font-family: 'Maple Mono CN', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--fg-primary-color);
 }
 .wg-pinyin {
@@ -481,26 +813,27 @@ onUnmounted(() => {
 }
 .wg-trans {
   color: var(--fg-secondary-color);
-  font-size: 0.85rem;
-  line-height: 1.2;
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
 .wg-add-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   background: var(--bg-primary-color);
   border: 1px solid var(--border-secondary-color);
   color: var(--fg-accent-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
+  transition: all 0.2s;
 }
 .wg-add-btn:hover {
   background: var(--fg-accent-color);
@@ -509,8 +842,8 @@ onUnmounted(() => {
 }
 
 .grammar-text {
-  background: rgba(var(--border-accent-color-rgb), 0.05);
-  padding: 12px;
+  background: rgba(var(--bg-accent-color-rgb), 0.05);
+  padding: 14px;
   border-left: 3px solid var(--fg-accent-color);
   border-radius: 0 8px 8px 0;
   padding-right: 48px;
@@ -520,7 +853,7 @@ onUnmounted(() => {
 .expand-leave-active {
   transition: all 0.3s ease;
   overflow: hidden;
-  max-height: 800px;
+  max-height: 1000px;
 }
 .expand-enter-from,
 .expand-leave-to {
@@ -532,11 +865,8 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .hz-filters {
-    flex-direction: column;
-  }
-  .filter-type {
-    width: 100%;
+  .filter-grid {
+    grid-template-columns: 1fr;
   }
   .item-main-row {
     padding: 12px;
@@ -546,11 +876,9 @@ onUnmounted(() => {
   .item-char {
     font-size: 1.4rem;
   }
-  .item-badges {
+  .item-right-actions .badge {
     display: none;
   }
-
-  /* Мобильная версия: Пиньинь сверху, перевод снизу без точки-разделителя */
   .item-text-info {
     display: flex;
     flex-direction: column;

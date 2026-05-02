@@ -1,5 +1,5 @@
-import { state } from '../store/hanzi-saver.store'
 import type { HanziData } from '../types'
+import { state } from '../store/hanzi-saver.store'
 
 export async function analyzeHanziWithAi(text: string, signal?: AbortSignal): Promise<HanziData> {
   if (!state.apiKey)
@@ -19,7 +19,7 @@ Schema:
   
   // If type is 'word', include these fields:
   "part_of_speech": "Part of speech in Russian",
-  "hsk": "HSK Level (e.g. 'HSK 1', 'HSK 4', 'None')",
+  "hsk": "HSK Level 1-9 (e.g. 'HSK 1', 'HSK 4', 'None')",
   "strokes": Number of strokes (integer),
   "components": ["List of radicals/components with translation, e.g. '氵 (вода)'"],
   "etymology": "Brief etymology or mnemonic story in Russian",
