@@ -1,42 +1,52 @@
-import { mkdirSync } from 'node:fs'
-import path from 'node:path'
-import { Database } from 'bun:sqlite'
-import { DB_PATH } from '../config'
+/* eslint-disable no-console */
+import { BASE_PATH, CORS_HEADERS, DATA_DIR, PORT } from './config'
+import { handleFile } from './handlers/file'
+import { getAllHanzi, getHanzi, saveHanzi, deleteHanzi } from './handlers/hanzi'
+import { handleSync } from './handlers/sync'
+import { withCors } from './utils/cors'
+import './db'
 
-const dbDir = path.dirname(DB_PATH)
-mkdirSync(dbDir, { recursive: true })
+Bun.serve({
+  port: PORT,
 
-export const db = new Database(DB_PATH)
+  routes: {
+    '/health': {
+      GET: () => new Response(JSON.stringify({ status: 'ok' }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }),
+    },
+    '/api/sync/reading': {
+      OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+      POST: handleSync,
+    },
+    '/api/hanzi': {
+      OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+      GET: getAllHanzi,
+      POST: saveHanzi,
+    },
+    '/api/hanzi/*': {
+      OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+      GET: getHanzi,
+      DELETE: deleteHanzi,
+    },
+    '/*': {
+      OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+      GET: handleFile,
+      HEAD: handleFile,
+    },
+  },
 
-// Таблица для плагина Hanzi Saver
-db.run(`
-  CREATE TABLE IF NOT EXISTS hanzi (
-    char TEXT PRIMARY KEY,
-    type TEXT DEFAULT 'word',
-    pinyin TEXT,
-    translation TEXT,
-    components TEXT,
-    etymology TEXT,
-    hsk TEXT,
-    strokes INTEGER,
-    part_of_speech TEXT,
-    grammar_notes TEXT,
-    words_breakdown TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`)
+  fetch() {
+    return withCors(new Response('Not Found', { status: 404 }))
+  },
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS reading_logs (
-    vault_id TEXT,
-    identifier TEXT,
-    path TEXT,
-    title TEXT,
-    read_dates TEXT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (vault_id, identifier, path)
-  )
-`)
+  error(err: any) {
+    console.error('[Server Error]', err)
+    return withCors(new Response('Internal Server Error', { status: 500 }))
+  },
+})
 
-// eslint-disable-next-line no-console
-console.log(`🗄️ SQLite Database initialized at ${DB_PATH}`)
+console.log(`✅ Server running on port ${PORT}`)
+console.log(`📁 Base path: ${BASE_PATH || '(not set)'}`)
+console.log(`🔄 Sync data path: ${DATA_DIR}`)

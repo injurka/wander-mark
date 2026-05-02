@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import type { HanziData } from '../types'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
-import type { HanziData } from '../types'
 
 const props = defineProps<{ text: string }>()
 const emit = defineEmits(['close'])
@@ -29,7 +29,8 @@ async function runAnalysis() {
         return
       }
       errorMsg.value = `Ошибка AI: ${e.message}`
-    } else {
+    }
+    else {
       errorMsg.value = 'Неизвестная ошибка AI'
     }
     status.value = 'error'
@@ -37,10 +38,11 @@ async function runAnalysis() {
 }
 
 async function saveToDb() {
-  if (!data.value) return
+  if (!data.value)
+    return
   try {
     await saveHanziToDb(data.value, abortController.signal)
-    state?.showToast?.('Иероглиф сохранен!', { type: 'success' })
+    state.ctx?.showToast?.('Иероглиф сохранен!', { type: 'success' })
     emit('close')
   }
   catch (e: unknown) {
@@ -48,7 +50,7 @@ async function saveToDb() {
       console.log('Save to DB aborted.')
       return
     }
-    state?.showToast?.('Ошибка сохранения', { type: 'error' })
+    state.ctx?.showToast?.('Ошибка сохранения', { type: 'error' })
   }
 }
 
@@ -74,7 +76,8 @@ onMounted(async () => {
         return
       }
       errorMsg.value = `Ошибка БД: ${e.message}`
-    } else {
+    }
+    else {
       errorMsg.value = 'Неизвестная ошибка БД'
     }
     status.value = 'error'

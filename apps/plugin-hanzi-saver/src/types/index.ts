@@ -25,10 +25,3 @@ export interface HanziData {
 export interface ToastOptions {
   type: 'success' | 'error' | 'warning' | 'info'
 }
-
-export interface PluginContext {
-  vaultId: string
-  vaultUrl: string
-  getFileContent: ((path: string) => Promise<string | null>) | null
-  showToast: ((msg: string, opts?: ToastOptions) => void) | null
-}

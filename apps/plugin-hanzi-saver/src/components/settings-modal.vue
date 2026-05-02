@@ -26,6 +26,9 @@ onUnmounted(() => {
 })
 
 async function loadConfig() {
+  if (!state.ctx)
+    return
+
   if (isLoadingConfig.value)
     abortController.abort()
 
@@ -33,15 +36,15 @@ async function loadConfig() {
   isLoadingConfig.value = true
 
   try {
-    const configPath = `meta/${state.vaultId}/plugins/configs/hanzi-saver.json`
+    const configPath = `meta/${state.ctx.vaultId}/plugins/configs/hanzi-saver.json`
     let configText = null
 
-    if (state.getFileContent) {
-      configText = await state.getFileContent(configPath)
+    if (state.ctx.getFileContent) {
+      configText = await state.ctx.getFileContent(configPath)
     }
 
     if (!configText) {
-      const url = `${state.vaultUrl}/${configPath}`
+      const url = `${state.ctx.vaultUrl}/${configPath}`
       const res = await fetch(url, { signal: abortController.signal })
       if (!res.ok)
         throw new Error(`HTTP: ${res.status}`)
@@ -57,17 +60,18 @@ async function loadConfig() {
     if (data.model)
       state.model = data.model
 
-    if (state.showToast)
-      state.showToast('Настройки загружены', { type: 'success' })
+    if (state.ctx.showToast)
+      state.ctx.showToast('Настройки загружены', { type: 'success' })
   }
   catch (e: unknown) {
     if (e instanceof Error) {
       if (e.name === 'AbortError') {
+        // eslint-disable-next-line no-console
         console.log('Config fetch aborted.')
         return
       }
-      if (state.showToast)
-        state.showToast(`Ошибка: ${e.message}`, { type: 'error' })
+      if (state.ctx?.showToast)
+        state.ctx.showToast(`Ошибка: ${e.message}`, { type: 'error' })
     }
   }
   finally {

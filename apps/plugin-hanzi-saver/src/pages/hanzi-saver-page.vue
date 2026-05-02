@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { HanziData } from '../types'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import SettingsModal from '../components/settings-modal.vue'
+import { deleteHanziFromDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
 
 const hanziList = ref<HanziData[]>([])
@@ -42,6 +43,11 @@ async function loadSavedHanzi() {
   }
 }
 
+watch(() => state.isManualInputOpen, (isOpen) => {
+  if (!isOpen)
+    loadSavedHanzi()
+})
+
 const filteredList = computed(() => {
   return hanziList.value.filter((item) => {
     const q = searchQuery.value.toLowerCase()
@@ -69,8 +75,30 @@ function speak(text: string) {
   window.speechSynthesis.speak(utterance)
 }
 
-onMounted(() => loadSavedHanzi())
+async function removeHanzi(char: string) {
+  if (!state.ctx?.confirm(`Удалить "${char}" из словаря?`))
+    return
+  try {
+    await deleteHanziFromDb(char)
+    hanziList.value = hanziList.value.filter(item => item.char !== char)
+    state.ctx?.showToast?.('Успешно удалено', { type: 'success' })
+  }
+  catch (e: unknown) {
+    if (e instanceof Error)
+      state.ctx?.showToast?.(`Ошибка удаления: ${e.message}`, { type: 'error' })
+  }
+}
 
+function isWordSaved(word: string) {
+  return hanziList.value.some(h => h.char === word)
+}
+
+function addMissingWord(word: string) {
+  state.manualInputTarget = word
+  state.isManualInputOpen = true
+}
+
+onMounted(() => loadSavedHanzi())
 onUnmounted(() => {
   if (abortController)
     abortController.abort()
@@ -86,36 +114,18 @@ onUnmounted(() => {
       </div>
 
       <div class="hz-actions">
-        <KitBtn
-          icon="mdi:refresh"
-          variant="tonal"
-          color="secondary"
-          :disabled="isLoading"
-          title="Обновить базу"
-          @click="loadSavedHanzi"
-        />
-        <KitBtn
-          icon="mdi:cog"
-          variant="tonal"
-          color="secondary"
-          title="Настройки"
-          @click="state.isSettingsOpen = true"
-        />
+        <KitBtn icon="mdi:plus" variant="tonal" color="primary" title="Добавить слово/фразу" @click="state.isManualInputOpen = true" />
+        <KitBtn icon="mdi:refresh" variant="tonal" color="secondary" :disabled="isLoading" title="Обновить базу" @click="loadSavedHanzi" />
+        <KitBtn icon="mdi:cog" variant="tonal" color="secondary" title="Настройки" @click="state.isSettingsOpen = true" />
       </div>
     </header>
 
     <div class="hz-filters">
       <div class="filter-search">
-        <KitInput
-          v-model="searchQuery"
-          placeholder="Поиск по иероглифу, пиньиню или переводу..."
-        />
+        <KitInput v-model="searchQuery" placeholder="Поиск по иероглифу, пиньиню или переводу..." />
       </div>
       <div class="filter-type">
-        <KitSelect
-          v-model="filterType"
-          :options="filterOptions"
-        />
+        <KitSelect v-model="filterType" :options="filterOptions" />
       </div>
     </div>
 
@@ -132,33 +142,36 @@ onUnmounted(() => {
     <div v-else class="hz-list">
       <div v-for="item in filteredList" :key="item.char" class="hz-list-item" :class="{ 'is-expanded': expandedItems.has(item.char) }">
         <div class="item-main-row" @click="toggleExpand(item.char)">
-          <div class="item-char" :class="{ 'is-sentence': item.type === 'sentence' }">
-            {{ item.char }}
+          <div class="item-content">
+            <div class="item-char" :class="{ 'is-sentence': item.type === 'sentence' }">
+              {{ item.char }}
+            </div>
+            <div class="item-text-info">
+              <span class="item-pinyin">{{ item.pinyin }}</span>
+              <span v-if="item.pinyin && item.translation" class="item-sep">•</span>
+              <span class="item-translation">{{ item.translation }}</span>
+            </div>
           </div>
 
-          <div class="item-text-info">
-            <span class="item-pinyin">{{ item.pinyin }}</span>
-            <span class="item-translation">{{ item.translation }}</span>
-          </div>
-
-          <div class="item-badges">
+          <div class="item-right-actions">
             <span v-if="item.type === 'sentence'" class="badge type-badge">Фраза</span>
             <span v-else-if="item.hsk && item.hsk !== 'None'" class="badge hsk-badge">{{ item.hsk }}</span>
+            <svg class="chevron" :class="{ rotated: expandedItems.has(item.char) }" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6" /></svg>
           </div>
-
-          <svg class="chevron" :class="{ rotated: expandedItems.has(item.char) }" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6" /></svg>
         </div>
 
         <Transition name="expand">
           <div v-if="expandedItems.has(item.char)" class="item-details">
+            <button class="hz-delete-btn" title="Удалить запись" @click.stop="removeHanzi(item.char)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </button>
+
             <div class="details-action-bar">
-              <KitBtn
-                icon="mdi:volume-high"
-                variant="tonal"
-                color="secondary"
-                size="sm"
-                @click.stop="speak(item.char)"
-              >
+              <KitBtn icon="mdi:volume-high" variant="tonal" color="secondary" size="sm" @click.stop="speak(item.char)">
                 Озвучить
               </KitBtn>
             </div>
@@ -182,12 +195,18 @@ onUnmounted(() => {
 
             <template v-else-if="item.type === 'sentence'">
               <div v-if="item.words_breakdown?.length" class="detail-block">
-                <strong>Словарь:</strong>
-                <div class="words-breakdown">
-                  <div v-for="(w, i) in item.words_breakdown" :key="i" class="wb-item">
-                    <span class="wb-char">{{ w.word }}</span>
-                    <span class="wb-pinyin">{{ w.pinyin }}</span>
-                    <span class="wb-trans">{{ w.translation }}</span>
+                <strong>Составные слова:</strong>
+                <div class="words-grid">
+                  <div v-for="(w, i) in item.words_breakdown" :key="i" class="wg-item">
+                    <div class="wg-left">
+                      <span class="wg-char">{{ w.word }}</span>
+                      <span class="wg-pinyin">{{ w.pinyin }}</span>
+                    </div>
+                    <span class="wg-trans">{{ w.translation }}</span>
+
+                    <button v-if="!isWordSaved(w.word)" class="wg-add-btn" title="Добавить слово" @click.stop="addMissingWord(w.word)">
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
@@ -237,7 +256,6 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
 }
-
 .hz-filters {
   display: flex;
   gap: 12px;
@@ -260,7 +278,9 @@ onUnmounted(() => {
   border: 1px solid var(--border-secondary-color);
   border-radius: 10px;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 .hz-list-item:hover {
   border-color: var(--border-primary-color);
@@ -272,59 +292,66 @@ onUnmounted(() => {
 
 .item-main-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 16px 20px;
   gap: 16px;
   cursor: pointer;
   user-select: none;
 }
+.item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
 
 .item-char {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--fg-primary-color);
   font-family: 'Maple Mono CN', sans-serif;
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 .item-char.is-sentence {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 500;
   white-space: normal;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex-shrink: 1; /* Разрешаем сжиматься, если это предложение */
-  max-width: 400px;
 }
 
+/* Изменено: Убрано жесткое обрезание, текст будет переноситься как абзац */
 .item-text-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  opacity: 0.85;
+  word-break: break-word; /* Позволяет переносить длинные слова на новую строку */
 }
 .item-pinyin {
   font-weight: 600;
   color: var(--fg-accent-color);
-  font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+.item-sep {
+  color: var(--fg-muted-color);
+  font-size: 0.8rem;
+  margin: 0 6px;
+  display: inline-block;
+  vertical-align: middle;
 }
 .item-translation {
   color: var(--fg-secondary-color);
-  font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.item-badges {
+.item-right-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
   flex-shrink: 0;
 }
 .badge {
@@ -343,7 +370,6 @@ onUnmounted(() => {
   color: var(--fg-muted-color);
   border: 1px solid var(--border-secondary-color);
 }
-
 .chevron {
   color: var(--fg-muted-color);
   transition: transform 0.2s;
@@ -355,17 +381,41 @@ onUnmounted(() => {
 }
 
 .item-details {
-  padding: 0 16px 16px 16px;
+  position: relative;
+  padding: 0 20px 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   border-top: 1px dashed var(--border-secondary-color);
   margin-top: -4px;
   padding-top: 16px;
 }
-.details-action-bar {
+
+.hz-delete-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-primary-color);
+  color: var(--fg-muted-color);
+  border: 1px solid var(--border-secondary-color);
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+.hz-delete-btn:hover {
+  background: var(--fg-error-color);
+  color: #fff;
+  border-color: var(--fg-error-color);
+  transform: translateY(-2px);
+}
+
+.details-action-bar {
   margin-bottom: 4px;
 }
 .detail-block strong {
@@ -377,7 +427,7 @@ onUnmounted(() => {
 }
 .detail-block p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--fg-secondary-color);
   line-height: 1.5;
 }
@@ -400,39 +450,72 @@ onUnmounted(() => {
   color: var(--fg-secondary-color);
 }
 
-.words-breakdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding-right: 36px;
 }
-.wb-item {
+.wg-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-primary-color);
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  gap: 4px;
 }
-.wb-char {
+.wg-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wg-char {
   font-weight: 700;
   font-family: 'Maple Mono CN', sans-serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--fg-primary-color);
 }
-.wb-pinyin {
+.wg-pinyin {
   color: var(--fg-accent-color);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
-.wb-trans {
+.wg-trans {
   color: var(--fg-secondary-color);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
 }
+
+.wg-add-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--bg-primary-color);
+  border: 1px solid var(--border-secondary-color);
+  color: var(--fg-accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.wg-add-btn:hover {
+  background: var(--fg-accent-color);
+  color: var(--bg-primary-color);
+  border-color: var(--fg-accent-color);
+}
+
 .grammar-text {
   background: rgba(var(--border-accent-color-rgb), 0.05);
   padding: 12px;
-  border-left: 3px solid var(--border-accent-color);
+  border-left: 3px solid var(--fg-accent-color);
   border-radius: 0 8px 8px 0;
+  padding-right: 48px;
 }
 
 .expand-enter-active,
@@ -455,7 +538,6 @@ onUnmounted(() => {
     flex-direction: column;
   }
   .filter-type {
-    flex: none;
     width: 100%;
   }
   .item-main-row {
@@ -464,15 +546,20 @@ onUnmounted(() => {
     align-items: flex-start;
   }
   .item-char {
-    font-size: 1.5rem;
-  }
-  .item-char.is-sentence {
-    white-space: normal;
-    word-break: break-word;
-    max-width: 100%;
-    -webkit-line-clamp: 4;
+    font-size: 1.4rem;
   }
   .item-badges {
+    display: none;
+  }
+
+  /* Мобильная версия: Пиньинь сверху, перевод снизу без точки-разделителя */
+  .item-text-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .item-sep {
     display: none;
   }
 }

@@ -101,3 +101,40 @@ export async function saveHanzi(req: Request): Promise<Response> {
     }))
   }
 }
+
+// DELETE /api/hanzi/:char
+export async function deleteHanzi(req: Request): Promise<Response> {
+  const url = new URL(req.url)
+  const char = decodeURIComponent(url.pathname.split('/').pop() || '')
+
+  if (!char) {
+    return withCors(new Response(JSON.stringify({ error: 'Missing character' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+  }
+
+  try {
+    const query = db.prepare('DELETE FROM hanzi WHERE char = $char')
+    const result = query.run({ $char: char })
+
+    if (result.changes > 0) {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      })
+    }
+
+    return withCors(new Response(JSON.stringify({ error: 'Character not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+  }
+  catch (error: any) {
+    console.error('[Hanzi Delete Error]', error)
+    return withCors(new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+  }
+}
