@@ -51,6 +51,13 @@ async function initRenderer() {
     mdInstance.value = await createMarkdownRenderer({
       imageBasePath: props.imageBasePath,
       shikiTheme: shikiTheme.value,
+      onHighlightNeeded: () => {
+        if (mdInstance.value && props.content) {
+          let html = mdInstance.value.render(props.content)
+          html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
+          renderedContent.value = html
+        }
+      },
     })
   }
   catch (error) {
@@ -60,7 +67,6 @@ async function initRenderer() {
     isLoading.value = false
   }
 }
-
 watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {

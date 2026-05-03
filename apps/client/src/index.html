@@ -26,6 +26,48 @@
   </head>
 
   <body>
+    <div
+      id="app-preloader"
+      style="
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #0d1117;
+        z-index: 99999;
+      "
+    >
+      <style>
+        #app-preloader .spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #21262d;
+          border-top-color: #c975de;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @media (prefers-color-scheme: light) {
+          #app-preloader {
+            background-color: #faf4f2 !important;
+          }
+
+          #app-preloader .spinner {
+            border-color: #e0dad9;
+            border-top-color: #f37a51;
+          }
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      </style>
+      <div class="spinner"></div>
+    </div>
+
     <div id="app"></div>
     <script type="module" src="./main.ts"></script>
   </body>

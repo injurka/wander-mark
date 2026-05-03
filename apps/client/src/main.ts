@@ -44,6 +44,8 @@ async function bootstrap() {
 
   app.mount('#app')
 
+  document.getElementById('app-preloader')?.remove()
+
   if (!isTauri && 'serviceWorker' in navigator) {
     import('~/shared/services/pwa.service')
       .then(({ initializePwaUpdater }) => {

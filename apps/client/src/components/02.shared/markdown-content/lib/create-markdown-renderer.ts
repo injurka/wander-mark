@@ -16,24 +16,26 @@ import { markdownItWikiLinks } from './markdownIt-wiki-links'
 interface CreateMarkdownRendererParams {
   imageBasePath: string
   shikiTheme: string
+  onHighlightNeeded: () => void 
 }
 
 let cachedHighlighter: Highlighter | null = null
 
+// Грузим инстанс без языков, только с темами (мгновенная инициализация)
 async function getHighlighter(): Promise<Highlighter> {
   if (cachedHighlighter)
     return cachedHighlighter
 
   cachedHighlighter = await createHighlighter({
     themes: [catppuccinMocha, catppuccinMacchiato, catppuccinFrappe, catppuccinLatte],
-    langs: ['c++', 'ql', 'javascript', 'typescript', 'html', 'css', 'scss', 'json', 'bash', 'python', 'vue', 'markdown', 'go', 'rust', 'yaml', 'shell'],
+    langs: [], // Пусто! Грузим языки по запросу
   })
 
   return cachedHighlighter
 }
 
 export async function createMarkdownRenderer(params: CreateMarkdownRendererParams): Promise<MarkdownIt> {
-  const { imageBasePath, shikiTheme } = params
+  const { imageBasePath, shikiTheme, onHighlightNeeded } = params
   const highlighter = await getHighlighter()
 
   const md = new MarkdownIt({
@@ -42,12 +44,23 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
     linkify: true,
     typographer: true,
     highlight: (str: string, lang: string): string => {
+      if (!lang)
+        return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
+
       if (lang === 'mermaid') {
         return `<div class="mermaid">${md.utils.escapeHtml(str)}</div>`
       }
 
-      if (!lang || !highlighter.getLoadedLanguages().includes(lang)) {
-        return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
+      // Если язык еще не загружен — загружаем его в фоне
+      if (!highlighter.getLoadedLanguages().includes(lang)) {
+        highlighter.loadLanguage(lang as any).then(() => {
+          onHighlightNeeded() // Перерисовываем контент после загрузки парсера
+        }).catch((err) => {
+          console.warn(`[Shiki] Не удалось загрузить язык: ${lang}`, err)
+        })
+
+        // Пока грузится, отдаем код без подсветки
+        return `<pre class="shiki-loading"><code>${md.utils.escapeHtml(str)}</code></pre>`
       }
 
       try {
@@ -63,13 +76,11 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
   md.renderer.rules.table_open = (tokens, idx, options, _env, self) => {
     return `<div class="table-container">${self.renderToken(tokens, idx, options)}`
   }
-
   md.renderer.rules.table_close = (tokens, idx, options, _env, self) => {
     return `${self.renderToken(tokens, idx, options)}</div>`
   }
 
-  md
-    .use(markdownItWikiImages, { baseURL: imageBasePath, defaultAlt: '' })
+  md.use(markdownItWikiImages, { baseURL: imageBasePath, defaultAlt: '' })
     .use(markdownItWikiLinks)
     .use(MarkdownItObsidianCallouts)
     .use(MarkdownItAttrs)

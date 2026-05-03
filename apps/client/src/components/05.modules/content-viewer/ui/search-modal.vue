@@ -3,8 +3,8 @@ import type { FuseResult } from 'fuse.js'
 import type { SearchIndexItem } from '../models'
 import { Icon } from '@iconify/vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
-import Fuse from 'fuse.js'
 import { useI18n } from 'vue-i18n'
+import SearchWorker from '~/workers/dedicated/search?worker'
 import { useContentViewerStore } from '../store'
 
 const modelValue = defineModel<boolean>({ required: true })
@@ -18,6 +18,9 @@ const selectedTags = ref<Set<string>>(new Set())
 const activeIndex = ref(0)
 const modalRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
+const searchResults = ref<FuseResult<SearchIndexItem>[]>([])
+
+const worker = new SearchWorker()
 
 const fuseOptions = {
   keys: [
@@ -33,13 +36,30 @@ const fuseOptions = {
   useExtendedSearch: true,
 }
 
-let fuse: Fuse<SearchIndexItem> | null = null
+worker.addEventListener('message', (e) => {
+  if (e.data.type === 'RESULT') {
+    searchResults.value = e.data.payload
+  }
+})
 
 watch(() => store.searchIndex, (newIndex) => {
   if (newIndex && newIndex.length > 0) {
-    fuse = new Fuse(newIndex, fuseOptions)
+    worker.postMessage({ type: 'INIT', payload: { index: newIndex, options: fuseOptions } })
   }
 }, { immediate: true })
+
+watch(query, (newQuery) => {
+  if (newQuery) {
+    worker.postMessage({ type: 'SEARCH', payload: { query: newQuery } })
+  }
+  else {
+    searchResults.value = []
+  }
+})
+
+onBeforeUnmount(() => {
+  worker.terminate()
+})
 
 const availableTags = computed(() => {
   const map = new Map<string, number>()
@@ -55,23 +75,20 @@ const availableTags = computed(() => {
 })
 
 function toggleTag(tag: string) {
-  if (selectedTags.value.has(tag)) {
+  if (selectedTags.value.has(tag))
     selectedTags.value.delete(tag)
-  }
-  else {
-    selectedTags.value.add(tag)
-  }
+  else selectedTags.value.add(tag)
   activeIndex.value = 0
 }
 
 const filteredResults = computed(() => {
   const index = store.searchIndex || []
-  let baseResults: { item: SearchIndexItem, matches?: readonly any[] }[] = []
+  let baseResults = []
 
-  if (query.value && fuse) {
-    baseResults = fuse.search(query.value)
+  if (query.value) {
+    baseResults = searchResults.value
   }
-  else if (!query.value && selectedTags.value.size > 0) {
+  else if (selectedTags.value.size > 0) {
     baseResults = index.map(item => ({ item }))
   }
   else {
@@ -82,9 +99,7 @@ const filteredResults = computed(() => {
     return baseResults.filter(({ item }) => {
       if (!item.tags)
         return false
-
-      const itemTags = new Set(item.tags.map(t => t.replace(/^#/, '')))
-
+      const itemTags = new Set(item.tags.map((t: string) => t.replace(/^#/, '')))
       return Array.from(selectedTags.value).every(t => itemTags.has(t))
     })
   }
