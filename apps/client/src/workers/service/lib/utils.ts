@@ -65,13 +65,14 @@ const safeCachePlugin: WorkboxPlugin = {
       return null
     if (response.status === 206)
       return null
+    if (response.type === 'error')
+      return null
     if (response.type !== 'opaque' && response.headers.has('vary') && response.headers.get('vary')?.includes('*')) {
       return null
     }
     return response
   },
 }
-
 class CacheStrategyFactory {
   static createNetworkFirst(cacheName: string, options: {
     maxEntries: number

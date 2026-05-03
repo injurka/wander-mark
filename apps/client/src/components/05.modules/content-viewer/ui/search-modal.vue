@@ -44,7 +44,8 @@ worker.addEventListener('message', (e) => {
 
 watch(() => store.searchIndex, (newIndex) => {
   if (newIndex && newIndex.length > 0) {
-    worker.postMessage({ type: 'INIT', payload: { index: newIndex, options: fuseOptions } })
+    const rawIndex = JSON.parse(JSON.stringify(newIndex))
+    worker.postMessage({ type: 'INIT', payload: { index: rawIndex, options: fuseOptions } })
   }
 }, { immediate: true })
 

@@ -18,10 +18,15 @@ function initializePwaUpdater(pinia: Pinia): void {
     onRegistered(r) {
       if (r) {
         setInterval(async () => {
-          if (r.installing || !navigator.onLine)
-            return
+          try {
+            if (r.installing || !navigator.onLine)
+              return
 
-          await r.update()
+            await r.update()
+          }
+          catch (error) {
+            console.warn('SW update check failed:', error)
+          }
         }, intervalMS)
       }
     },
