@@ -706,8 +706,8 @@ onUnmounted(() => {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 8px;
   background: var(--bg-secondary-color);
   color: var(--fg-muted-color);

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { WorkboxPlugin } from 'workbox-core'
 import type { AssetType, CacheInfo } from '../model/types'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
@@ -7,15 +8,13 @@ import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategi
 class AssetAnalyzer {
   private static cache = new Map<string, AssetType>()
 
-  // Паттерны для хешированных файлов (Vite/Nuxt)
   static HASH_PATTERNS = [
-    /\.[a-f0-9]{8,}\.(js|css|mjs)$/i, // Vite хеши
-    /\.[a-f0-9]{6,12}\.(js|css|mjs)$/i, // Короткие хеши
-    /assets\/.*\.[a-f0-9]{8,}\./i, // Assets с хешами
-    /\?v=[a-f0-9]{8,}/i, // Query параметры версий
+    /\.[a-f0-9]{8,}\.(js|css|mjs)$/i,
+    /\.[a-f0-9]{6,12}\.(js|css|mjs)$/i,
+    /assets\/.*\.[a-f0-9]{8,}\./i,
+    /\?v=[a-f0-9]{8,}/i,
   ]
 
-  // Паттерны для статических библиотек (безопасно кешировать долго)
   static VENDOR_PATTERNS = [
     /node_modules/i,
     /vendor/i,
@@ -122,23 +121,17 @@ class CacheStrategyFactory {
 class ServiceWorkerMonitor {
   static trackCacheHit(cacheName: string, url: string) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.log(`🎯 Cache HIT: ${cacheName} - ${url}`)
     }
   }
 
   static trackCacheMiss(cacheName: string, url: string) {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.log(`❌ Cache MISS: ${cacheName} - ${url}`)
     }
   }
 }
 
-/**
- * Создает плагин для мониторинга попаданий и промахов в кеш.
- * @param cacheName Имя кеша для логирования.
- */
 function createMonitoringPlugin(cacheName: string): WorkboxPlugin {
   return {
     cachedResponseWillBeUsed: async ({ request, cachedResponse }) => {

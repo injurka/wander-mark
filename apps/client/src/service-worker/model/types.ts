@@ -27,11 +27,13 @@ const CACHE_CONFIG = {
     hashedAssets: 'wander-mark-hashed-assets',
     vendorAssets: 'wander-mark-vendor-assets',
     regularAssets: 'wander-mark-regular-assets',
+    content: 'wander-mark-content',
   },
   durations: {
     images: 365 * 24 * 60 * 60,
     fonts: 365 * 24 * 60 * 60,
     icons: 30 * 24 * 60 * 60,
+    content: 7 * 24 * 60 * 60, 
     static: {
       hashed: 365 * 24 * 60 * 60,
       vendor: 30 * 24 * 60 * 60,
@@ -43,6 +45,7 @@ const CACHE_CONFIG = {
     fonts: 30,
     images: 1000,
     icons: 500,
+    content: 1000,
     hashedAssets: 200,
     vendorAssets: 100,
     regularAssets: 50,

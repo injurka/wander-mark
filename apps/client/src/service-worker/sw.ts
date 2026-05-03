@@ -10,7 +10,6 @@ import { CACHE_CONFIG } from './model/types'
 declare let self: ServiceWorkerGlobalScope
 
 clientsClaim()
-
 cleanupOutdatedCaches()
 
 precacheAndRoute(self.__WB_MANIFEST || [])
@@ -42,7 +41,7 @@ if (import.meta.env.PROD) {
   )
 }
 
-// ICONS (Iconify)
+// ICONS (Iconify API)
 registerRoute(
   ({ url }) => url.hostname === 'api.iconify.design',
   CacheStrategyFactory.createStaleWhileRevalidate(
@@ -54,9 +53,12 @@ registerRoute(
   ),
 )
 
-// IMAGES
+// IMAGES / MEDIA (перехватывает теги <img>, а также fetch() запросы картинок)
 registerRoute(
-  ({ request }) => request.destination === 'image',
+  ({ request, url }) => {
+    return request.destination === 'image'
+      || url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp)$/i)
+  },
   CacheStrategyFactory.createStaleWhileRevalidate(
     CACHE_CONFIG.names.images,
     {
@@ -66,7 +68,23 @@ registerRoute(
   ),
 )
 
-// --- СТАТИЧЕСКИЕ АССЕТЫ (JS, CSS) ---
+// --- КОНТЕНТ (Markdown, JSON) ---
+registerRoute(
+  ({ request, url }) => {
+    // Контент запрашивается как XHR/fetch (destination обычно '' или 'empty')
+    return (request.destination === 'empty' || request.destination === '')
+      && (url.pathname.endsWith('.md') || url.pathname.endsWith('.json'))
+  },
+  CacheStrategyFactory.createStaleWhileRevalidate(
+    CACHE_CONFIG.names.content,
+    {
+      maxEntries: CACHE_CONFIG.limits.content,
+      maxAgeSeconds: CACHE_CONFIG.durations.content,
+    },
+  ),
+)
+
+// --- СТАТИЧЕСКИЕ АССЕТЫ ПЛАГИНОВ И ПРИЛОЖЕНИЯ (JS, CSS) ---
 
 const hashedAssetsStrategy = CacheStrategyFactory.createCacheFirst(
   CACHE_CONFIG.names.hashedAssets,
@@ -93,8 +111,9 @@ const regularAssetsStrategy = CacheStrategyFactory.createStaleWhileRevalidate(
   },
 )
 
-function isScriptOrStyle({ request, sameOrigin }: { request: Request, sameOrigin: boolean }) {
-  return sameOrigin && (request.destination === 'script' || request.destination === 'style')
+function isScriptOrStyle({ request }: { request: Request }) {
+  return request.destination === 'script' || request.destination === 'style'
+    || request.url.endsWith('.js') || request.url.endsWith('.css')
 }
 
 registerRoute(
