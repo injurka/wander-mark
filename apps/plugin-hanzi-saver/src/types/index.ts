@@ -2,6 +2,8 @@ export interface HanziWordBreakdown {
   word: string
   pinyin: string
   translation: string
+  grammar_role?: string // STPMVO роль или часть речи (Субъект, Глагол, Частица и т.д.)
+  explanation?: string 
 }
 
 export interface HanziData {

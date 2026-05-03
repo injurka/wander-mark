@@ -26,9 +26,15 @@ Schema:
 
   // If type is 'sentence', include these fields instead:
   "words_breakdown": [
-    { "word": "Chinese word", "pinyin": "pinyin", "translation": "translation in Russian" }
+    { 
+      "word": "Chinese word or character", 
+      "pinyin": "pinyin", 
+      "translation": "short translation in Russian",
+      "grammar_role": "Grammatical role (e.g., Subject, Time, Place, Manner, Verb, Object, Particle). Keep it short in Russian.",
+      "explanation": "Detailed explanation of its grammatical function or literal meaning in context (e.g., 'глагольный суффикс, указывающий на завершенность действия (прошедшее время)')."
+    }
   ],
-  "grammar_notes": "Explanation of the grammar patterns used in Russian"
+  "grammar_notes": "General explanation of the grammar patterns used in the whole sentence in Russian"
 }`
 
   const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {

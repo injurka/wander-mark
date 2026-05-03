@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HanziData } from '../types'
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
@@ -15,6 +15,20 @@ const errorMsg = ref('')
 const resultData = ref<HanziData | null>(null)
 const historyStack = ref<HanziData[]>([])
 const wordDbStatus = ref<Record<string, boolean>>({})
+
+// Состояние для компактного вида слов
+const isWordsExpanded = ref(false)
+
+const visibleWords = computed(() => {
+  if (!resultData.value?.words_breakdown) return []
+  if (isWordsExpanded.value) return resultData.value.words_breakdown
+  return resultData.value.words_breakdown.slice(0, 3) // Показываем только 3 слова превью
+})
+
+const hiddenWordsCount = computed(() => {
+  if (!resultData.value?.words_breakdown) return 0
+  return Math.max(0, resultData.value.words_breakdown.length - 3)
+})
 
 onMounted(() => {
   if (state.manualInputTarget) {
@@ -57,6 +71,7 @@ async function analyze() {
 
   isLoading.value = true
   errorMsg.value = ''
+  isWordsExpanded.value = false // Сбрасываем при новом анализе
 
   try {
     const aiResult = await analyzeHanziWithAi(inputText.value.trim())
@@ -86,6 +101,7 @@ function goBack() {
   if (historyStack.value.length > 0) {
     resultData.value = historyStack.value.pop()!
     inputText.value = resultData.value.char
+    isWordsExpanded.value = false
     checkWordsDbStatus()
   }
   else {
@@ -106,6 +122,7 @@ async function save() {
       const parent = historyStack.value.pop()!
       resultData.value = parent
       inputText.value = parent.char
+      isWordsExpanded.value = false
       await checkWordsDbStatus()
     }
     else {
@@ -129,7 +146,7 @@ async function save() {
     v-model:visible="isOpen"
     :title="historyStack.length > 0 ? 'Разбор составного слова' : 'Анализ текста'"
     icon="mdi:translate"
-    :max-width="500"
+    :max-width="600"
   >
     <div v-if="!resultData" class="hz-input-area">
       <textarea
@@ -142,7 +159,7 @@ async function save() {
       </p>
     </div>
 
-    <div v-else class="hz-result-area">
+    <div v-else class="hz-result-area custom-scrollbar">
       <div class="hz-preview">
         <div class="hz-char">
           {{ resultData.char }}
@@ -156,36 +173,78 @@ async function save() {
       </div>
 
       <div v-if="resultData.type === 'sentence'" class="hz-sentence-details">
-        <div class="hz-section-title">
-          Слова из фразы:
+        
+        <!-- КОМПАКТНЫЙ БЛОК: СОСТАВНЫЕ СЛОВА -->
+        <div class="hz-section-header">
+          <div class="hz-section-title">Составные слова</div>
         </div>
-        <div class="hz-words-grid">
-          <div v-for="(w, i) in resultData.words_breakdown" :key="i" class="hz-word-item">
-            <div class="w-info">
-              <span class="w-char">{{ w.word }}</span>
-              <span class="w-pinyin">{{ w.pinyin }}</span>
+        
+        <div class="hz-words-container" :class="{ 'is-expanded': isWordsExpanded }">
+          <!-- Компактный вид (чипсы) -->
+          <div v-if="!isWordsExpanded" class="hz-words-compact">
+            <div v-for="(w, i) in visibleWords" :key="i" class="w-chip" @click="analyzeSubWord(w.word)">
+              <span class="w-chip-char">{{ w.word }}</span>
+              <span class="w-chip-pinyin">{{ w.pinyin }}</span>
             </div>
-            <span class="w-trans">{{ w.translation }}</span>
-
-            <button
-              v-if="!wordDbStatus[w.word]"
-              class="hz-sub-action add-btn"
-              title="Добавить в словарь"
-              @click="analyzeSubWord(w.word)"
-            >
-              +
+            <button v-if="hiddenWordsCount > 0" class="hz-expand-btn" @click="isWordsExpanded = true">
+              показать еще {{ hiddenWordsCount }}
             </button>
-            <span v-else class="hz-sub-action added-mark" title="Уже в словаре">
-              ✓
-            </span>
+          </div>
+
+          <!-- Развернутый вид (сетка с кнопками добавления) -->
+          <div v-else class="hz-words-grid">
+            <div v-for="(w, i) in visibleWords" :key="i" class="hz-word-item">
+              <div class="w-info">
+                <span class="w-char">{{ w.word }}</span>
+                <span class="w-pinyin">{{ w.pinyin }}</span>
+              </div>
+              <span class="w-trans">{{ w.translation }}</span>
+
+              <button
+                v-if="!wordDbStatus[w.word]"
+                class="hz-sub-action add-btn"
+                title="Анализировать / Добавить"
+                @click="analyzeSubWord(w.word)"
+              >
+                +
+              </button>
+              <span v-else class="hz-sub-action added-mark" title="Уже в словаре">
+                ✓
+              </span>
+            </div>
+            <button class="hz-collapse-btn" @click="isWordsExpanded = false">Свернуть</button>
           </div>
         </div>
-        <div class="hz-section-title">
-          Грамматика:
+
+        <!-- ПОДРОБНЫЙ РАЗБОР ПРЕДЛОЖЕНИЯ -->
+        <div class="hz-section-header mt-4">
+          <div class="hz-section-title">Разбор предложения</div>
         </div>
-        <p class="hz-grammar">
-          {{ resultData.grammar_notes }}
-        </p>
+        
+        <div class="hz-syntax-list">
+          <div v-for="(w, i) in resultData.words_breakdown" :key="'sa-'+i" class="sa-item">
+            <div class="sa-bullet"></div>
+            <div class="sa-content">
+              <div class="sa-head">
+                <span class="sa-char">{{ w.word }}</span>
+                <span class="sa-pinyin">({{ w.pinyin }})</span>
+                <span class="sa-dash">—</span>
+                <span class="sa-trans">{{ w.translation }}</span>
+                <span v-if="w.grammar_role" class="sa-role">[{{ w.grammar_role }}]</span>
+              </div>
+              <div v-if="w.explanation" class="sa-desc">
+                {{ w.explanation }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="resultData.grammar_notes" class="mt-4">
+          <div class="hz-section-title">Общая грамматика</div>
+          <p class="hz-grammar">
+            {{ resultData.grammar_notes }}
+          </p>
+        </div>
       </div>
 
       <p v-if="errorMsg" class="hz-error">
@@ -243,6 +302,9 @@ async function save() {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .hz-preview {
@@ -250,6 +312,7 @@ async function save() {
   background: var(--bg-secondary-color);
   padding: 20px;
   border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .hz-char {
@@ -270,19 +333,71 @@ async function save() {
   color: var(--fg-primary-color);
 }
 
+.hz-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-secondary-color);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+.mt-4 { margin-top: 24px; }
+
 .hz-section-title {
   font-weight: bold;
-  font-size: 0.85rem;
-  color: var(--fg-muted-color);
-  margin-bottom: 8px;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: var(--fg-primary-color);
 }
 
+/* Компактный вид слов */
+.hz-words-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.w-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-tertiary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid var(--border-primary-color);
+  transition: all 0.2s;
+}
+.w-chip:hover {
+  border-color: var(--fg-accent-color);
+  background: rgba(var(--bg-accent-color-rgb), 0.05);
+}
+.w-chip-char {
+  font-family: 'Maple Mono CN', sans-serif;
+  font-weight: 600;
+  color: var(--fg-primary-color);
+}
+.w-chip-pinyin {
+  font-size: 0.8rem;
+  color: var(--fg-secondary-color);
+}
+.hz-expand-btn, .hz-collapse-btn {
+  background: none;
+  border: none;
+  color: var(--fg-accent-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.hz-expand-btn:hover, .hz-collapse-btn:hover {
+  text-decoration: underline;
+}
+
+/* Развернутая сетка слов */
 .hz-words-grid {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .hz-word-item {
@@ -345,6 +460,73 @@ async function save() {
   background: rgba(var(--bg-success-color-rgb), 0.1);
   color: var(--fg-success-color);
   border: 1px solid transparent;
+}
+
+/* Разбор предложения (Структурированный список) */
+.hz-syntax-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-tertiary-color);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary-color);
+}
+.sa-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.sa-bullet {
+  width: 6px;
+  height: 6px;
+  background-color: var(--fg-accent-color);
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.sa-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+.sa-char {
+  font-weight: 700;
+  color: var(--fg-primary-color);
+  font-family: 'Maple Mono CN', sans-serif;
+  font-size: 1.1rem;
+}
+.sa-pinyin {
+  font-weight: 600;
+  color: var(--fg-primary-color);
+}
+.sa-dash {
+  color: var(--fg-muted-color);
+}
+.sa-trans {
+  color: var(--fg-secondary-color);
+}
+.sa-role {
+  font-size: 0.75rem;
+  color: var(--fg-accent-color);
+  background: rgba(var(--bg-accent-color-rgb), 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.sa-desc {
+  font-size: 0.85rem;
+  color: var(--fg-secondary-color);
+  line-height: 1.4;
+  opacity: 0.9;
 }
 
 .hz-grammar {
