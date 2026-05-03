@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import * as Vue from 'vue'
 import { createApp } from 'vue'
 import iconsBundle from '~/assets/icons-bundle.json'
-import { KitBtn, KitCheckbox, KitDialog, KitDropdown, KitInput, KitSelect } from '~/components/01.kit'
+import { KitBtn, KitCheckbox, KitDialog, KitDropdown, KitInput, KitSelect, KitSkeleton } from '~/components/01.kit'
 import { vRipple } from '~/shared/directives/ripple'
 import router from '~/shared/lib/router'
 import { i18n } from '~/shared/plugins/i18n'
@@ -37,6 +37,7 @@ async function bootstrap() {
   app.component('KitCheckbox', KitCheckbox)
   app.component('KitDropdown', KitDropdown)
   app.component('KitSelect', KitSelect)
+  app.component('KitSkeleton', KitSkeleton)
 
   const vaultStore = useVaultStore()
   await vaultStore.initPredefinedVaults()

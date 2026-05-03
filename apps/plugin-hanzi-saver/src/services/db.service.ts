@@ -2,6 +2,9 @@ import type { HanziData } from '../types'
 import { state } from '../store/hanzi-saver.store'
 
 export async function checkHanziInDb(char: string, signal?: AbortSignal): Promise<HanziData | null> {
+  if (!state.backendUrl)
+    throw new Error('URL бэкенда не настроен')
+
   const res = await fetch(`${state.backendUrl}/api/hanzi/${encodeURIComponent(char)}`, { signal })
   if (res.status === 404)
     return null
@@ -12,6 +15,9 @@ export async function checkHanziInDb(char: string, signal?: AbortSignal): Promis
 }
 
 export async function saveHanziToDb(data: HanziData, signal?: AbortSignal): Promise<unknown> {
+  if (!state.backendUrl)
+    throw new Error('URL бэкенда не настроен')
+
   const res = await fetch(`${state.backendUrl}/api/hanzi`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -24,6 +30,9 @@ export async function saveHanziToDb(data: HanziData, signal?: AbortSignal): Prom
 }
 
 export async function deleteHanziFromDb(char: string, signal?: AbortSignal): Promise<void> {
+  if (!state.backendUrl)
+    throw new Error('URL бэкенда не настроен')
+
   const res = await fetch(`${state.backendUrl}/api/hanzi/${encodeURIComponent(char)}`, {
     method: 'DELETE',
     signal,

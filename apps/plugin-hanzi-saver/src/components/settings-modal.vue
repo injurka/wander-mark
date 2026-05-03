@@ -83,10 +83,10 @@ async function loadConfig() {
   >
     <div class="hz-settings-form">
       <div class="form-group">
-        <label>URL Бэкенда (Bun + SQLite)</label>
+        <label>URL Бэкенда</label>
         <KitInput
           v-model="state.backendUrl"
-          placeholder="http://localhost:3000"
+          placeholder="https://wander-api.trip-scheduler.ru"
         />
       </div>
     </div>

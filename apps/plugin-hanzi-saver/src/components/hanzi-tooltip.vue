@@ -4,6 +4,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
 import { state } from '../store/hanzi-saver.store'
+import HanziActionPopover from './hanzi-action-popover.vue'
 
 const props = defineProps<{ text: string }>()
 const emit = defineEmits(['close'])
@@ -135,10 +136,23 @@ onMounted(async () => {
         </button>
       </div>
     </div>
+
+    <HanziActionPopover />
   </div>
 </template>
 
 <style scoped>
+.interactive-text {
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
+}
+.interactive-text:hover {
+  color: var(--fg-accent-color);
+  opacity: 0.8;
+}
+
 .hz-tooltip-container {
   display: flex;
   flex-direction: column;

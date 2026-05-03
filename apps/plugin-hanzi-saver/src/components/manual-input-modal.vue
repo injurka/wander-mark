@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { HanziData } from '../types'
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { analyzeHanziWithAi } from '../services/ai.service'
 import { checkHanziInDb, saveHanziToDb } from '../services/db.service'
-import { state } from '../store/hanzi-saver.store'
+import { openPopover, state } from '../store/hanzi-saver.store'
+import HanziActionPopover from './hanzi-action-popover.vue'
+import HzWordsCompact from './hz-words-compact.vue'
 
 const emit = defineEmits(['close'])
 
@@ -18,20 +20,7 @@ const wordDbStatus = ref<Record<string, boolean>>({})
 
 const isWordsExpanded = ref(false)
 
-const visibleWords = computed(() => {
-  if (!resultData.value?.words_breakdown)
-    return []
-  if (isWordsExpanded.value)
-    return resultData.value.words_breakdown
-
-  return resultData.value.words_breakdown.slice(0, 3)
-})
-
-const hiddenWordsCount = computed(() => {
-  if (!resultData.value?.words_breakdown)
-    return 0
-  return Math.max(0, resultData.value.words_breakdown.length - 3)
-})
+let abortController: AbortController | null = null
 
 onMounted(() => {
   if (state.manualInputTarget) {
@@ -41,8 +30,17 @@ onMounted(() => {
   }
 })
 
+onUnmounted(() => {
+  if (abortController) {
+    abortController.abort()
+  }
+})
+
 watch(isOpen, (val) => {
   if (!val) {
+    if (abortController) {
+      abortController.abort()
+    }
     setTimeout(() => {
       emit('close')
     }, 300)
@@ -53,16 +51,20 @@ function handleClose() {
   isOpen.value = false
 }
 
-async function checkWordsDbStatus() {
+async function checkWordsDbStatus(signal?: AbortSignal) {
   if (resultData.value?.type !== 'sentence' || !resultData.value.words_breakdown)
     return
 
   for (const w of resultData.value.words_breakdown) {
+    if (signal?.aborted)
+      return
     try {
-      const exists = await checkHanziInDb(w.word)
+      const exists = await checkHanziInDb(w.word, signal)
       wordDbStatus.value[w.word] = !!exists
     }
-    catch {
+    catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError')
+        throw e
       wordDbStatus.value[w.word] = false
     }
   }
@@ -72,22 +74,36 @@ async function analyze() {
   if (!inputText.value.trim())
     return
 
+  if (abortController) {
+    abortController.abort()
+  }
+  abortController = new AbortController()
+  const signal = abortController.signal
+
   isLoading.value = true
   errorMsg.value = ''
-  isWordsExpanded.value = false 
+  isWordsExpanded.value = false
 
   try {
-    const aiResult = await analyzeHanziWithAi(inputText.value.trim())
+    const aiResult = await analyzeHanziWithAi(inputText.value.trim(), signal)
     resultData.value = aiResult
-    await checkWordsDbStatus()
+    await checkWordsDbStatus(signal)
   }
   catch (e: unknown) {
-    if (e instanceof Error)
+    if (e instanceof Error) {
+      if (e.name === 'AbortError') {
+        return
+      }
       errorMsg.value = e.message
-    else errorMsg.value = 'Произошла неизвестная ошибка'
+    }
+    else {
+      errorMsg.value = 'Произошла неизвестная ошибка'
+    }
   }
   finally {
-    isLoading.value = false
+    if (!signal.aborted) {
+      isLoading.value = false
+    }
   }
 }
 
@@ -102,10 +118,15 @@ function analyzeSubWord(word: string) {
 
 function goBack() {
   if (historyStack.value.length > 0) {
+    if (abortController) {
+      abortController.abort()
+    }
+    abortController = new AbortController()
+
     resultData.value = historyStack.value.pop()!
     inputText.value = resultData.value.char
     isWordsExpanded.value = false
-    checkWordsDbStatus()
+    checkWordsDbStatus(abortController.signal)
   }
   else {
     resultData.value = null
@@ -116,9 +137,15 @@ async function save() {
   if (!resultData.value)
     return
 
+  if (abortController) {
+    abortController.abort()
+  }
+  abortController = new AbortController()
+  const signal = abortController.signal
+
   isLoading.value = true
   try {
-    await saveHanziToDb(resultData.value)
+    await saveHanziToDb(resultData.value, signal)
 
     if (historyStack.value.length > 0) {
       state.ctx?.showToast?.('Слово добавлено в словарь!', { type: 'success' })
@@ -126,7 +153,7 @@ async function save() {
       resultData.value = parent
       inputText.value = parent.char
       isWordsExpanded.value = false
-      await checkWordsDbStatus()
+      await checkWordsDbStatus(signal)
     }
     else {
       state.ctx?.showToast?.('Успешно сохранено!', { type: 'success' })
@@ -134,12 +161,19 @@ async function save() {
     }
   }
   catch (e: unknown) {
-    if (e instanceof Error)
+    if (e instanceof Error) {
+      if (e.name === 'AbortError')
+        return
       errorMsg.value = `Ошибка сохранения: ${e.message}`
-    else errorMsg.value = 'Неизвестная ошибка сохранения'
+    }
+    else {
+      errorMsg.value = 'Неизвестная ошибка сохранения'
+    }
   }
   finally {
-    isLoading.value = false
+    if (!signal.aborted) {
+      isLoading.value = false
+    }
   }
 }
 </script>
@@ -154,6 +188,7 @@ async function save() {
     <div v-if="!resultData" class="hz-input-area">
       <textarea
         v-model="inputText"
+        :disabled="isLoading"
         placeholder="Вставьте иероглиф, слово или целое предложение на китайском..."
         class="hz-textarea custom-scrollbar"
       />
@@ -176,53 +211,47 @@ async function save() {
       </div>
 
       <div v-if="resultData.type === 'sentence'" class="hz-sentence-details">
-        <!-- КОМПАКТНЫЙ БЛОК: СОСТАВНЫЕ СЛОВА -->
         <div class="hz-section-header">
           <div class="hz-section-title">
             Составные слова
           </div>
         </div>
 
-        <div class="hz-words-container" :class="{ 'is-expanded': isWordsExpanded }">
-          <!-- Компактный вид (чипсы) -->
-          <div v-if="!isWordsExpanded" class="hz-words-compact">
-            <div v-for="(w, i) in visibleWords" :key="i" class="w-chip" @click="analyzeSubWord(w.word)">
-              <span class="w-chip-char">{{ w.word }}</span>
-              <span class="w-chip-pinyin">{{ w.pinyin }}</span>
-            </div>
-            <button v-if="hiddenWordsCount > 0" class="hz-expand-btn" @click="isWordsExpanded = true">
-              показать еще {{ hiddenWordsCount }}
-            </button>
-          </div>
+        <HzWordsCompact 
+          v-if="resultData.words_breakdown"
+          :words="resultData.words_breakdown" 
+          :expanded="isWordsExpanded"
+          @toggle="isWordsExpanded = true"
+          @word-click="analyzeSubWord"
+        >
+          <template #expanded>
+            <div class="hz-words-grid">
+              <div v-for="(w, i) in resultData.words_breakdown" :key="i" class="hz-word-item">
+                <div class="w-info">
+                  <span class="w-char interactive-text" title="Действия" @click.stop="openPopover($event, w.word)">{{ w.word }}</span>
+                  <span class="w-pinyin">{{ w.pinyin }}</span>
+                </div>
+                <span class="w-trans">{{ w.translation }}</span>
 
-          <!-- Развернутый вид (сетка с кнопками добавления) -->
-          <div v-else class="hz-words-grid">
-            <div v-for="(w, i) in visibleWords" :key="i" class="hz-word-item">
-              <div class="w-info">
-                <span class="w-char">{{ w.word }}</span>
-                <span class="w-pinyin">{{ w.pinyin }}</span>
+                <button
+                  v-if="!wordDbStatus[w.word]"
+                  class="hz-sub-action add-btn"
+                  title="Анализировать / Добавить"
+                  @click="analyzeSubWord(w.word)"
+                >
+                  +
+                </button>
+                <span v-else class="hz-sub-action added-mark" title="Уже в словаре">
+                  ✓
+                </span>
               </div>
-              <span class="w-trans">{{ w.translation }}</span>
-
-              <button
-                v-if="!wordDbStatus[w.word]"
-                class="hz-sub-action add-btn"
-                title="Анализировать / Добавить"
-                @click="analyzeSubWord(w.word)"
-              >
-                +
+              <button class="hz-collapse-btn" @click="isWordsExpanded = false">
+                Свернуть
               </button>
-              <span v-else class="hz-sub-action added-mark" title="Уже в словаре">
-                ✓
-              </span>
             </div>
-            <button class="hz-collapse-btn" @click="isWordsExpanded = false">
-              Свернуть
-            </button>
-          </div>
-        </div>
+          </template>
+        </HzWordsCompact>
 
-        <!-- ПОДРОБНЫЙ РАЗБОР ПРЕДЛОЖЕНИЯ -->
         <div class="hz-section-header mt-4">
           <div class="hz-section-title">
             Разбор предложения
@@ -234,7 +263,7 @@ async function save() {
             <div class="sa-bullet" />
             <div class="sa-content">
               <div class="sa-head">
-                <span class="sa-char">{{ w.word }}</span>
+                <span class="sa-char interactive-text" title="Действия" @click.stop="openPopover($event, w.word)">{{ w.word }}</span>
                 <span class="sa-pinyin">({{ w.pinyin }})</span>
                 <span class="sa-dash">—</span>
                 <span class="sa-trans">{{ w.translation }}</span>
@@ -281,10 +310,21 @@ async function save() {
         </KitBtn>
       </template>
     </template>
+    
+    <HanziActionPopover />
   </KitDialog>
 </template>
 
 <style scoped>
+.interactive-text {
+  cursor: pointer;
+  transition: color 0.2s, opacity 0.2s;
+}
+.interactive-text:hover {
+  color: var(--fg-accent-color);
+  opacity: 0.8;
+}
+
 .hz-input-area {
   display: flex;
   flex-direction: column;
@@ -303,9 +343,15 @@ async function save() {
   color: var(--fg-primary-color);
   font-family: inherit;
   outline: none;
+  transition: all 0.2s ease;
 }
 .hz-textarea:focus {
   border-color: var(--fg-accent-color);
+}
+.hz-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-tertiary-color);
 }
 
 .hz-result-area {
@@ -331,6 +377,7 @@ async function save() {
   color: var(--fg-accent-color);
   font-weight: 700;
   margin-bottom: 8px;
+  display: inline-block;
 }
 .hz-pinyin {
   font-size: 1rem;
@@ -361,38 +408,6 @@ async function save() {
   color: var(--fg-primary-color);
 }
 
-/* Компактный вид слов */
-.hz-words-compact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-.w-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-tertiary-color);
-  padding: 6px 12px;
-  border-radius: 20px;
-  cursor: pointer;
-  border: 1px solid var(--border-primary-color);
-  transition: all 0.2s;
-}
-.w-chip:hover {
-  border-color: var(--fg-accent-color);
-  background: rgba(var(--bg-accent-color-rgb), 0.05);
-}
-.w-chip-char {
-  font-family: 'Maple Mono CN', sans-serif;
-  font-weight: 600;
-  color: var(--fg-primary-color);
-}
-.w-chip-pinyin {
-  font-size: 0.8rem;
-  color: var(--fg-secondary-color);
-}
-.hz-expand-btn,
 .hz-collapse-btn {
   background: none;
   border: none;
@@ -401,13 +416,12 @@ async function save() {
   font-weight: 600;
   cursor: pointer;
   padding: 4px 8px;
+  align-self: flex-start;
 }
-.hz-expand-btn:hover,
 .hz-collapse-btn:hover {
   text-decoration: underline;
 }
 
-/* Развернутая сетка слов */
 .hz-words-grid {
   display: flex;
   flex-direction: column;
@@ -476,7 +490,6 @@ async function save() {
   border: 1px solid transparent;
 }
 
-/* Разбор предложения (Структурированный список) */
 .hz-syntax-list {
   display: flex;
   flex-direction: column;

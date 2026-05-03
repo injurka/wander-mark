@@ -4,6 +4,7 @@ import KitDialog from './kit-dialog/ui/kit-dialog.vue'
 import KitDropdown from './kit-dropdown/ui/kit-dropdown.vue'
 import KitInput from './kit-input/ui/kit-input.vue'
 import KitSelect from './kit-select/ui/kit-select.vue'
+import KitSkeleton from './kit-skeleton/ui/kit-skeleton.vue'
 
 export {
   KitBtn,
@@ -12,4 +13,5 @@ export {
   KitDropdown,
   KitInput,
   KitSelect,
+  KitSkeleton,
 }
