@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'openSearch'): void
   (e: 'openPlugins'): void
+  (e: 'openAiSettings'): void 
 }>()
 const menu = defineModel('menu', { required: true })
 
@@ -133,9 +134,11 @@ const currentVault = computed(() => route.params.vault as string)
         @click="emit('openSearch')"
       />
 
+      <!-- Добавили слушатель @open-ai-settings -->
       <ViewerSettingsMenu
         :vault="currentVault"
         @open-plugins="emit('openPlugins')"
+        @open-ai-settings="emit('openAiSettings')"
       />
     </div>
   </header>

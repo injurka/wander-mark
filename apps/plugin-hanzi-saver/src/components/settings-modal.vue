@@ -53,12 +53,8 @@ async function loadConfig() {
 
     const data = JSON.parse(configText)
 
-    if (data.apiKey)
-      state.apiKey = data.apiKey
     if (data.backendUrl)
       state.backendUrl = data.backendUrl
-    if (data.model)
-      state.model = data.model
 
     if (state.ctx.showToast)
       state.ctx.showToast('Настройки загружены', { type: 'success' })
@@ -66,8 +62,6 @@ async function loadConfig() {
   catch (e: unknown) {
     if (e instanceof Error) {
       if (e.name === 'AbortError') {
-        // eslint-disable-next-line no-console
-        console.log('Config fetch aborted.')
         return
       }
       if (state.ctx?.showToast)
@@ -93,23 +87,6 @@ async function loadConfig() {
         <KitInput
           v-model="state.backendUrl"
           placeholder="http://localhost:3000"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>API Key (AiHubMix / OpenAI)</label>
-        <KitInput
-          v-model="state.apiKey"
-          type="password"
-          placeholder="sk-..."
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Модель</label>
-        <KitInput
-          v-model="state.model"
-          placeholder="gemini-3-flash-preview"
         />
       </div>
     </div>

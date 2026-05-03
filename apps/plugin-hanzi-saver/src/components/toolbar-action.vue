@@ -2,6 +2,8 @@
 import { state } from '../store/hanzi-saver.store'
 import ManualInputModal from './manual-input-modal.vue'
 
+defineProps<{ pluginId?: string }>()
+
 function openModal() {
   state.manualInputTarget = ''
   state.isManualInputOpen = true
@@ -9,19 +11,25 @@ function openModal() {
 </script>
 
 <template>
-  <button class="hz-toolbar-btn" title="Добавить иероглиф/фразу" @click="openModal">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
-      <polyline points="14 2 14 8 20 8" />
-      <path d="M2 15h10" />
-      <path d="M7 10v10" />
-    </svg>
-  </button>
+  <div class="hz-toolbar-wrapper">
+    <button class="hz-toolbar-btn" title="Добавить иероглиф/фразу" @click="openModal">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M2 15h10" />
+        <path d="M7 10v10" />
+      </svg>
+    </button>
 
-  <ManualInputModal v-if="state.isManualInputOpen" @close="state.isManualInputOpen = false" />
+    <ManualInputModal v-if="state.isManualInputOpen" @close="state.isManualInputOpen = false" />
+  </div>
 </template>
 
 <style scoped>
+.hz-toolbar-wrapper {
+  display: contents;
+}
+
 .hz-toolbar-btn {
   display: flex;
   align-items: center;

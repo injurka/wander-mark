@@ -2,8 +2,8 @@ import type { HanziData } from '../types'
 import { state } from '../store/hanzi-saver.store'
 
 export async function analyzeHanziWithAi(text: string, signal?: AbortSignal): Promise<HanziData> {
-  if (!state.apiKey)
-    throw new Error('API Key is missing')
+  if (!state.ctx)
+    throw new Error('Plugin context is not initialized')
 
   const prompt = `
 You are an expert in Chinese linguistics. Analyze the provided Chinese text. 
@@ -37,14 +37,10 @@ Schema:
   "grammar_notes": "General explanation of the grammar patterns used in the whole sentence in Russian"
 }`
 
-  const res = await fetch('https://api.aihubmix.com/v1/chat/completions', {
+  const res = await state.ctx.ai.fetch('/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${state.apiKey}`,
-    },
     body: JSON.stringify({
-      model: state.model,
+      model: state.ctx.ai.getModel(),
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: prompt },

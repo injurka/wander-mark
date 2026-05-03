@@ -16,17 +16,20 @@ const resultData = ref<HanziData | null>(null)
 const historyStack = ref<HanziData[]>([])
 const wordDbStatus = ref<Record<string, boolean>>({})
 
-// Состояние для компактного вида слов
 const isWordsExpanded = ref(false)
 
 const visibleWords = computed(() => {
-  if (!resultData.value?.words_breakdown) return []
-  if (isWordsExpanded.value) return resultData.value.words_breakdown
-  return resultData.value.words_breakdown.slice(0, 3) // Показываем только 3 слова превью
+  if (!resultData.value?.words_breakdown)
+    return []
+  if (isWordsExpanded.value)
+    return resultData.value.words_breakdown
+
+  return resultData.value.words_breakdown.slice(0, 3)
 })
 
 const hiddenWordsCount = computed(() => {
-  if (!resultData.value?.words_breakdown) return 0
+  if (!resultData.value?.words_breakdown)
+    return 0
   return Math.max(0, resultData.value.words_breakdown.length - 3)
 })
 
@@ -71,7 +74,7 @@ async function analyze() {
 
   isLoading.value = true
   errorMsg.value = ''
-  isWordsExpanded.value = false // Сбрасываем при новом анализе
+  isWordsExpanded.value = false 
 
   try {
     const aiResult = await analyzeHanziWithAi(inputText.value.trim())
@@ -173,12 +176,13 @@ async function save() {
       </div>
 
       <div v-if="resultData.type === 'sentence'" class="hz-sentence-details">
-        
         <!-- КОМПАКТНЫЙ БЛОК: СОСТАВНЫЕ СЛОВА -->
         <div class="hz-section-header">
-          <div class="hz-section-title">Составные слова</div>
+          <div class="hz-section-title">
+            Составные слова
+          </div>
         </div>
-        
+
         <div class="hz-words-container" :class="{ 'is-expanded': isWordsExpanded }">
           <!-- Компактный вид (чипсы) -->
           <div v-if="!isWordsExpanded" class="hz-words-compact">
@@ -212,18 +216,22 @@ async function save() {
                 ✓
               </span>
             </div>
-            <button class="hz-collapse-btn" @click="isWordsExpanded = false">Свернуть</button>
+            <button class="hz-collapse-btn" @click="isWordsExpanded = false">
+              Свернуть
+            </button>
           </div>
         </div>
 
         <!-- ПОДРОБНЫЙ РАЗБОР ПРЕДЛОЖЕНИЯ -->
         <div class="hz-section-header mt-4">
-          <div class="hz-section-title">Разбор предложения</div>
+          <div class="hz-section-title">
+            Разбор предложения
+          </div>
         </div>
-        
+
         <div class="hz-syntax-list">
-          <div v-for="(w, i) in resultData.words_breakdown" :key="'sa-'+i" class="sa-item">
-            <div class="sa-bullet"></div>
+          <div v-for="(w, i) in resultData.words_breakdown" :key="`sa-${i}`" class="sa-item">
+            <div class="sa-bullet" />
             <div class="sa-content">
               <div class="sa-head">
                 <span class="sa-char">{{ w.word }}</span>
@@ -240,7 +248,9 @@ async function save() {
         </div>
 
         <div v-if="resultData.grammar_notes" class="mt-4">
-          <div class="hz-section-title">Общая грамматика</div>
+          <div class="hz-section-title">
+            Общая грамматика
+          </div>
           <p class="hz-grammar">
             {{ resultData.grammar_notes }}
           </p>
@@ -341,7 +351,9 @@ async function save() {
   padding-bottom: 6px;
   margin-bottom: 12px;
 }
-.mt-4 { margin-top: 24px; }
+.mt-4 {
+  margin-top: 24px;
+}
 
 .hz-section-title {
   font-weight: bold;
@@ -380,7 +392,8 @@ async function save() {
   font-size: 0.8rem;
   color: var(--fg-secondary-color);
 }
-.hz-expand-btn, .hz-collapse-btn {
+.hz-expand-btn,
+.hz-collapse-btn {
   background: none;
   border: none;
   color: var(--fg-accent-color);
@@ -389,7 +402,8 @@ async function save() {
   cursor: pointer;
   padding: 4px 8px;
 }
-.hz-expand-btn:hover, .hz-collapse-btn:hover {
+.hz-expand-btn:hover,
+.hz-collapse-btn:hover {
   text-decoration: underline;
 }
 

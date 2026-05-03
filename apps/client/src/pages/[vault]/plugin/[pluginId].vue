@@ -65,6 +65,8 @@ const pluginComponent = computed(() => {
   margin: 0 auto;
   min-height: calc(100dvh - 50px);
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 .plugin-page-not-found {
   padding: 40px;

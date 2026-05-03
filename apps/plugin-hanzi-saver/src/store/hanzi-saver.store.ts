@@ -2,8 +2,6 @@ import type { WanderMarkPluginContext } from '@injurkx/plugin-api'
 import { markRaw, reactive, watch } from 'vue'
 
 export interface HanziSaverState {
-  apiKey: string
-  model: string
   backendUrl: string
 
   isSettingsOpen: boolean
@@ -14,9 +12,7 @@ export interface HanziSaverState {
 }
 
 export const state = reactive({
-  apiKey: localStorage.getItem('hz-api-key') || '',
-  model: localStorage.getItem('hz-model') || 'gemini-3-flash-preview',
-  backendUrl: localStorage.getItem('hz-backend') || 'http://localhost:8080',
+  backendUrl: '',
 
   isSettingsOpen: false,
   isManualInputOpen: false,
@@ -25,10 +21,21 @@ export const state = reactive({
   ctx: null,
 }) as HanziSaverState
 
-watch(() => state.apiKey, v => localStorage.setItem('hz-api-key', v))
-watch(() => state.model, v => localStorage.setItem('hz-model', v))
-watch(() => state.backendUrl, v => localStorage.setItem('hz-backend', v))
-
 export function setContext(ctx: WanderMarkPluginContext) {
   state.ctx = markRaw(ctx)
+
+  ctx.storage.get<string>('backendUrl').then((val) => {
+    if (val) {
+      state.backendUrl = val
+    }
+    else {
+      state.backendUrl = 'http://localhost:3000'
+    }
+  })
 }
+
+watch(() => state.backendUrl, (val) => {
+  if (state.ctx && val) {
+    state.ctx.storage.set('backendUrl', val)
+  }
+})

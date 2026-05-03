@@ -12,6 +12,7 @@ const { t } = useI18n()
 
 const contentData = ref<string>('')
 const status = ref<'pending' | 'success' | 'error'>('pending')
+const isReady = ref(false)
 
 watch(params, async (newParams, _oldParams, onCleanup) => {
   let isCancelled = false
@@ -20,6 +21,8 @@ watch(params, async (newParams, _oldParams, onCleanup) => {
   })
 
   status.value = 'pending'
+  isReady.value = false
+
   try {
     const path = newParams.pwd.join('/')
     const content = await vaultStore.getFileContent(newParams.vault, `content/${newParams.vault}/${path}.md`)
@@ -46,23 +49,38 @@ watch(params, async (newParams, _oldParams, onCleanup) => {
 
 <template>
   <div class="page-wrapper">
-    <div v-if="status === 'pending'" class="loading-state">
-      <div class="loading-text">
-        {{ t('page.loading') }}
+    <Transition name="fade" mode="out-in">
+      <div v-if="status === 'pending'" class="loading-state">
+        <div class="loading-text">
+          {{ t('page.loading') }}
+        </div>
       </div>
-    </div>
 
-    <template v-else-if="status === 'success' && contentData">
-      <ContentViewer :content="contentData" image-base-path="" :vault="params.vault" />
-      <ContentViewerFooter :vault="params.vault" :current-item-path="params.pwd.join('/')" :items="store.navItems" />
-    </template>
+      <div v-else-if="status === 'success' && contentData" class="content-success">
+        <ContentViewer
+          :content="contentData"
+          image-base-path=""
+          :vault="params.vault"
+          @ready="isReady = true"
+        />
 
-    <div v-else class="empty-state">
-      <div class="alert">
-        <h3>{{ t('page.notFound') }}</h3>
-        <p>{{ t('page.notFoundDesc') }}</p>
+        <Transition name="content-appear">
+          <ContentViewerFooter
+            v-if="isReady"
+            :vault="params.vault"
+            :current-item-path="params.pwd.join('/')"
+            :items="store.navItems"
+          />
+        </Transition>
       </div>
-    </div>
+
+      <div v-else class="empty-state">
+        <div class="alert">
+          <h3>{{ t('page.notFound') }}</h3>
+          <p>{{ t('page.notFoundDesc') }}</p>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -70,7 +88,16 @@ watch(params, async (newParams, _oldParams, onCleanup) => {
 .page-wrapper {
   width: 100%;
   min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
 }
+
+.content-success {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .loading-state {
   text-align: center;
   padding: 40px;

@@ -8,11 +8,15 @@ import BacklinksSection from './backlinks-section.vue'
 interface Props {
   content: string
   imageBasePath: string
+  vault?: string
 }
+
 defineProps<Props>()
 
+const emit = defineEmits<{ (e: 'ready'): void }>()
 const store = useContentViewerStore()
 const { t, locale } = useI18n()
+const isReady = ref(false)
 
 const meta = computed(() => store.activeItem?.meta)
 
@@ -30,6 +34,11 @@ const formattedDate = computed(() => {
     return ''
   }
 })
+
+function handleReady() {
+  isReady.value = true
+  emit('ready')
+}
 
 function getMinString(n: number) {
   if (locale.value === 'ru') {
@@ -51,7 +60,6 @@ function getMinString(n: number) {
 <template>
   <div class="content-viewer">
     <div class="markdown-body-wrapper">
-      <!-- Блок метаданных -->
       <div v-if="meta" class="content-meta">
         <div v-if="meta.readingTime" class="meta-item" :title="t('contentViewer.readingTime')">
           <Icon icon="mdi:clock-outline" class="meta-icon" />
@@ -69,14 +77,16 @@ function getMinString(n: number) {
         </div>
       </div>
 
-      <!-- Контент -->
       <MarkdownContent
         :content="content"
         :image-base-path="imageBasePath"
+        :vault="vault"
+        @ready="handleReady"
       />
 
-      <!-- Обратные ссылки -->
-      <BacklinksSection />
+      <Transition name="content-appear">
+        <BacklinksSection v-if="isReady" />
+      </Transition>
     </div>
   </div>
 </template>
@@ -86,11 +96,21 @@ function getMinString(n: number) {
   margin: 0 auto;
   width: 1200px;
   max-width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.markdown-wrapper {
+  flex-grow: 1;
 }
 
 .markdown-body-wrapper {
   padding: 20px;
   background-color: var(--bg-primary-color);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 
   @include media-down(md) {
     padding: 8px;
@@ -101,7 +121,7 @@ function getMinString(n: number) {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-secondary-color);
   color: var(--fg-secondary-color);
@@ -125,5 +145,21 @@ function getMinString(n: number) {
     margin-bottom: 16px;
     padding-bottom: 8px;
   }
+}
+
+.content-appear-enter-active {
+  transition:
+    opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.content-appear-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+.content-appear-leave-active {
+  transition: opacity 0.2s;
+}
+.content-appear-leave-to {
+  opacity: 0;
 }
 </style>

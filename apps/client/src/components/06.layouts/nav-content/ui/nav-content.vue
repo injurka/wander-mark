@@ -293,7 +293,13 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
           ...options.headers,
           'Authorization': `Bearer ${globalSettings.aiKey}`,
         }
-        return fetch(endpoint, { ...options, headers })
+        
+        const baseUrl = globalSettings.aiUrl || 'https://api.aihubmix.com/v1'
+        const url = endpoint.startsWith('http') 
+          ? endpoint 
+          : `${baseUrl.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+          
+        return fetch(url, { ...options, headers })
       },
     },
   })

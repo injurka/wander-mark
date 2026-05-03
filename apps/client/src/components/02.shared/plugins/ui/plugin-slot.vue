@@ -13,11 +13,18 @@ const components = pluginStore.getSlotComponents(props.name)
 </script>
 
 <template>
-  <template v-for="entry in components" :key="entry.pluginId">
-    <component
-      :is="entry.component"
-      :plugin-id="entry.pluginId"
-      class="wm-plugin-slot-item"
-    />
-  </template>
+  <div
+    v-for="entry in components"
+    :key="entry.pluginId"
+    class="wm-plugin-slot-item"
+    :data-plugin-id="entry.pluginId"
+  >
+    <component :is="entry.component" />
+  </div>
 </template>
+
+<style scoped>
+.wm-plugin-slot-item {
+  display: contents;
+}
+</style>

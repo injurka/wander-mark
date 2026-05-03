@@ -18,6 +18,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{ (e: 'ready'): void }>()
+
 const { theme } = useChangeTheme()
 const vaultStore = useVaultStore()
 const pluginStore = usePluginStore()
@@ -69,6 +71,8 @@ watch(
       renderedContent.value = html
 
       await nextTick()
+      setTimeout(emit, 500, 'ready')
+
       const wrapper = document.querySelector('.markdown-body')
       if (wrapper && props.vault) {
         try {
@@ -119,13 +123,6 @@ watch(theme, () => {
     const html = mdInstance.value.render(props.content)
     renderedContent.value = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
   }
-})
-
-onMounted(() => {
-  initRenderer()
-})
-onBeforeUnmount(() => {
-  vaultStore.clearBlobUrls()
 })
 
 function openImageViewer() {
@@ -218,23 +215,46 @@ function handleContentClick(event: MouseEvent) {
     }
   }
 }
+
+onMounted(() => {
+  initRenderer()
+})
+onBeforeUnmount(() => {
+  vaultStore.clearBlobUrls()
+})
 </script>
 
 <template>
-  <PageLoader v-if="isLoading" />
-  <div v-else class="markdown-wrapper">
+  <div class="markdown-wrapper">
     <InteractiveTooltip ref="tooltipRef" />
-    <div
-      class="markdown-body"
-      @click="handleContentClick"
-      @mouseup="handleSelection"
-      v-html="renderedContent"
-    />
+
+    <Transition name="fade" mode="out-in">
+      <PageLoader v-if="isLoading" />
+      <div
+        v-else
+        class="markdown-body"
+        @click="handleContentClick"
+        @mouseup="handleSelection"
+        v-html="renderedContent"
+      />
+    </Transition>
   </div>
 </template>
 
 <style lang="scss">
+@keyframes markdown-appear {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .markdown-body {
+  animation: markdown-appear 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   line-height: 1.7;
   color: var(--fg-primary-color);
   font-size: 1.05rem;

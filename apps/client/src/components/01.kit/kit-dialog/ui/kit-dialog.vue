@@ -67,7 +67,7 @@ onUnmounted(() => {
 
 <template>
   <Teleport to="body">
-    <Transition name="dialog" :duration="300">
+    <Transition name="dialog" :duration="300" appear>
       <div v-if="visible" class="dialog-root">
         <div class="dialog-overlay" @mousedown="handleOverlayClick" />
 
@@ -80,6 +80,7 @@ onUnmounted(() => {
           :aria-describedby="description ? `dialog-desc-${dialogId}` : undefined"
           @mousedown.stop
         >
+          <!-- Остальной код шаблона остается без изменений -->
           <div class="dialog-header">
             <slot v-if="$slots.header" name="header" />
             <template v-else>
@@ -159,8 +160,7 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   background-color: var(--bg-primary-color);
   border: 1px solid var(--border-secondary-color);
-  border-radius: var(--r-m);
-  box-shadow: var(--s-m);
+  border-radius: 16px;
   z-index: 1001;
   width: 90vw;
   padding: 16px;
