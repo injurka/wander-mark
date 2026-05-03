@@ -59,6 +59,19 @@ class AssetAnalyzer {
   }
 }
 
+const safeCachePlugin: WorkboxPlugin = {
+  cacheWillUpdate: async ({ response }) => {
+    if (!response)
+      return null
+    if (response.status === 206)
+      return null
+    if (response.type !== 'opaque' && response.headers.has('vary') && response.headers.get('vary')?.includes('*')) {
+      return null
+    }
+    return response
+  },
+}
+
 class CacheStrategyFactory {
   static createNetworkFirst(cacheName: string, options: {
     maxEntries: number
@@ -71,6 +84,7 @@ class CacheStrategyFactory {
         new CacheableResponsePlugin({
           statuses: [0, 200],
         }),
+        safeCachePlugin,
         new ExpirationPlugin({
           maxEntries: options.maxEntries,
           maxAgeSeconds: options.maxAgeSeconds,
@@ -91,6 +105,7 @@ class CacheStrategyFactory {
         new CacheableResponsePlugin({
           statuses: options.statuses || [0, 200],
         }),
+        safeCachePlugin,
         new ExpirationPlugin({
           maxEntries: options.maxEntries,
           maxAgeSeconds: options.maxAgeSeconds,
@@ -109,6 +124,7 @@ class CacheStrategyFactory {
       plugins: [
         createMonitoringPlugin(cacheName),
         new CacheableResponsePlugin({ statuses: [0, 200] }),
+        safeCachePlugin,
         new ExpirationPlugin({
           maxEntries: options.maxEntries,
           maxAgeSeconds: options.maxAgeSeconds,

@@ -10,6 +10,7 @@ import { CACHE_CONFIG } from './model/types'
 declare let self: ServiceWorkerGlobalScope
 
 clientsClaim()
+
 cleanupOutdatedCaches()
 
 precacheAndRoute(self.__WB_MANIFEST || [])
@@ -17,7 +18,11 @@ precacheAndRoute(self.__WB_MANIFEST || [])
 if (import.meta.env.PROD) {
   // WEB APP MANIFEST
   registerRoute(
-    ({ request, sameOrigin }) => sameOrigin && request.destination === 'manifest',
+    ({ request, sameOrigin, url }) => {
+      if (!url.protocol.startsWith('http'))
+        return false
+      return sameOrigin && request.destination === 'manifest'
+    },
     CacheStrategyFactory.createNetworkFirst(
       CACHE_CONFIG.names.webmanifest,
       {
@@ -29,7 +34,11 @@ if (import.meta.env.PROD) {
 
   // FONTS
   registerRoute(
-    ({ request }) => request.destination === 'font',
+    ({ request, url }) => {
+      if (!url.protocol.startsWith('http'))
+        return false
+      return request.destination === 'font'
+    },
     CacheStrategyFactory.createCacheFirst(
       CACHE_CONFIG.names.fonts,
       {
@@ -41,9 +50,9 @@ if (import.meta.env.PROD) {
   )
 }
 
-// ICONS (Iconify API)
+// ICONS (Iconify)
 registerRoute(
-  ({ url }) => url.hostname === 'api.iconify.design',
+  ({ url }) => url.protocol.startsWith('http') && url.hostname === 'api.iconify.design',
   CacheStrategyFactory.createStaleWhileRevalidate(
     CACHE_CONFIG.names.icons,
     {
@@ -53,11 +62,12 @@ registerRoute(
   ),
 )
 
-// IMAGES / MEDIA (перехватывает теги <img>, а также fetch() запросы картинок)
+// IMAGES
 registerRoute(
   ({ request, url }) => {
-    return request.destination === 'image'
-      || url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp)$/i)
+    if (!url.protocol.startsWith('http'))
+      return false
+    return request.destination === 'image' || url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp)$/i)
   },
   CacheStrategyFactory.createStaleWhileRevalidate(
     CACHE_CONFIG.names.images,
@@ -68,23 +78,14 @@ registerRoute(
   ),
 )
 
-// --- КОНТЕНТ (Markdown, JSON) ---
-registerRoute(
-  ({ request, url }) => {
-    // Контент запрашивается как XHR/fetch (destination обычно '' или 'empty')
-    return (request.destination === 'empty' || request.destination === '')
-      && (url.pathname.endsWith('.md') || url.pathname.endsWith('.json'))
-  },
-  CacheStrategyFactory.createStaleWhileRevalidate(
-    CACHE_CONFIG.names.content,
-    {
-      maxEntries: CACHE_CONFIG.limits.content,
-      maxAgeSeconds: CACHE_CONFIG.durations.content,
-    },
-  ),
-)
+// --- СТАТИЧЕСКИЕ АССЕТЫ (JS, CSS) ---
 
-// --- СТАТИЧЕСКИЕ АССЕТЫ ПЛАГИНОВ И ПРИЛОЖЕНИЯ (JS, CSS) ---
+function isScriptOrStyle({ request, url }: { request: Request, url: URL }) {
+  if (!url.protocol.startsWith('http'))
+    return false
+  return request.destination === 'script' || request.destination === 'style'
+    || url.pathname.endsWith('.js') || url.pathname.endsWith('.css')
+}
 
 const hashedAssetsStrategy = CacheStrategyFactory.createCacheFirst(
   CACHE_CONFIG.names.hashedAssets,
@@ -110,11 +111,6 @@ const regularAssetsStrategy = CacheStrategyFactory.createStaleWhileRevalidate(
     maxAgeSeconds: CACHE_CONFIG.durations.static.regular,
   },
 )
-
-function isScriptOrStyle({ request }: { request: Request }) {
-  return request.destination === 'script' || request.destination === 'style'
-    || request.url.endsWith('.js') || request.url.endsWith('.css')
-}
 
 registerRoute(
   options => isScriptOrStyle(options) && AssetAnalyzer.getAssetType(options.url.href) === 'hashed',
