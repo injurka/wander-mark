@@ -21,17 +21,16 @@ export const state = reactive({
   ctx: null,
 }) as HanziSaverState
 
-export function setContext(ctx: WanderMarkPluginContext) {
+export async function setContext(ctx: WanderMarkPluginContext) {
   state.ctx = markRaw(ctx)
 
-  ctx.storage.get<string>('backendUrl').then((val) => {
-    if (val) {
-      state.backendUrl = val
-    }
-    else {
-      state.backendUrl = 'http://localhost:3000'
-    }
-  })
+  const val = await ctx.storage.get<string>('backendUrl')
+  if (val) {
+    state.backendUrl = val
+  }
+  else {
+    state.backendUrl = 'http://localhost:3000'
+  }
 }
 
 watch(() => state.backendUrl, (val) => {

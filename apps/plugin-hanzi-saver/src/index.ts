@@ -20,16 +20,14 @@ export default {
     index: markRaw(HanziSaverPage),
   },
 
-  activate(ctx: WanderMarkPluginContext) {
-    setContext(ctx)
+  async activate(ctx: WanderMarkPluginContext) {
+    await setContext(ctx)
 
     ctx.registerTextInterceptor({
       id: 'hanzi-interceptor',
       isValidChar: (char: string) => /[\u4E00-\u9FFF]/.test(char),
       tooltipComponent: markRaw(HanziTooltip),
     })
-
-
   },
 
   deactivate(ctx: WanderMarkPluginContext) {

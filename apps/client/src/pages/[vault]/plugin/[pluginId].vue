@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { PageLoader } from '~/components/02.shared/page-loader'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 
 const route = useRoute()
@@ -31,24 +32,31 @@ const pluginPageKey = computed(() => {
   return pathArr.join('/')
 })
 
-const pluginComponent = computed(() => {
-  const loadedPlugin = pluginStore.loaded.get(pluginId.value)
+const pluginRecord = computed(() => pluginStore.registry.find(p => p.id === pluginId.value))
+const isEnabled = computed(() => pluginRecord.value?.enabled)
+const loadedPlugin = computed(() => pluginStore.loaded.get(pluginId.value))
+const isLoading = computed(() => isEnabled.value && !loadedPlugin.value)
 
-  if (!loadedPlugin)
+const pluginComponent = computed(() => {
+  if (!loadedPlugin.value)
     return null
 
-  return loadedPlugin.module.pages?.[pluginPageKey.value] || null
+  return loadedPlugin.value.module.pages?.[pluginPageKey.value] || null
 })
 </script>
 
 <template>
   <div class="plugin-page-wrapper">
+    <!-- Показываем лоадер, если плагин должен быть, но еще инициализируется -->
+    <PageLoader v-if="isLoading" />
+
     <component
       :is="pluginComponent"
-      v-if="pluginComponent"
+      v-else-if="pluginComponent"
       :plugin-id="pluginId"
       :plugin-path="pluginPathArray"
     />
+
     <div v-else class="plugin-page-not-found">
       <div class="alert">
         <h3>{{ t('page.pluginNotFound') }}</h3>
