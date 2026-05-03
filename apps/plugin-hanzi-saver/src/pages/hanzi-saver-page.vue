@@ -71,7 +71,6 @@ const activeFiltersCount = computed(() => {
   let count = 0
   if (filterType.value !== 'all')
     count++
-  // HSK и Часть речи считаем только если мы не ищем исключительно по фразам
   if (filterType.value !== 'sentence') {
     if (filterHsk.value !== 'all')
       count++
@@ -303,9 +302,29 @@ onUnmounted(() => {
       </Transition>
     </div>
 
-    <div v-if="isLoading" class="hz-state">
-      Загрузка...
+    <!-- Отображение состояния загрузки (Skeleton) -->
+    <div v-if="isLoading" class="hz-list">
+      <div v-for="n in 5" :key="n" class="hz-list-item skeleton-item">
+        <div class="item-main-row">
+          <div class="item-content skeleton-content">
+            <!-- Скелетон иероглифа -->
+            <KitSkeleton width="80px" height="34px" border-radius="6px" />
+            <!-- Скелетон перевода и пиньиня -->
+            <div class="skeleton-text-group">
+              <KitSkeleton width="60px" height="16px" border-radius="4px" />
+              <KitSkeleton width="180px" height="16px" border-radius="4px" />
+            </div>
+          </div>
+          <div class="item-right-actions">
+            <!-- Скелетон бейджа -->
+            <KitSkeleton width="48px" height="20px" border-radius="12px" />
+            <!-- Скелетон шеврона -->
+            <KitSkeleton width="20px" height="20px" border-radius="4px" />
+          </div>
+        </div>
+      </div>
     </div>
+
     <div v-else-if="error" class="hz-state hz-error">
       {{ error }}
     </div>
@@ -626,6 +645,7 @@ onUnmounted(() => {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--fg-secondary-color);
+  white-space: nowrap;
 }
 
 .chip-group {
@@ -728,6 +748,20 @@ onUnmounted(() => {
 .hz-list-item.is-expanded {
   border-color: var(--border-focus-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Стили скелетона */
+.skeleton-item {
+  pointer-events: none;
+}
+.skeleton-content {
+  gap: 8px;
+}
+.skeleton-text-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 2px;
 }
 
 .item-main-row {
