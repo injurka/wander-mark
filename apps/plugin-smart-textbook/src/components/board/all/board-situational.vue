@@ -35,14 +35,11 @@ function toggleAudio(text: string, index: number) {
     return
   }
 
-  // Останавливаем предыдущую озвучку, если была
   window.speechSynthesis.cancel()
 
-  // Очищаем текст от возможных HTML тегов на всякий случай
   const rawText = text.replace(/<[^>]*>?/g, '')
   const utterance = new SpeechSynthesisUtterance(rawText)
 
-  // Определяем язык для TTS на основе текущего языка карточки
   const lang = tbActions.getActiveTargetLang()
   const langMap: Record<string, string> = {
     Chinese: 'zh-CN',
@@ -51,12 +48,16 @@ function toggleAudio(text: string, index: number) {
   }
   utterance.lang = langMap[lang] || 'en-US'
 
-  utterance.onstart = () => { playingIndex.value = index }
+  utterance.onstart = () => {
+    playingIndex.value = index
+  }
   utterance.onend = () => {
     if (playingIndex.value === index)
       playingIndex.value = null
   }
-  utterance.onerror = () => { playingIndex.value = null }
+  utterance.onerror = () => {
+    playingIndex.value = null
+  }
 
   window.speechSynthesis.speak(utterance)
 }

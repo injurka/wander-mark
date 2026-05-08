@@ -92,8 +92,10 @@ export const tbActions = {
     tbState.vaultId = ctx.vaultId
     tbState.vaultUrl = ctx.vaultUrl
     tbState.getFileContent = ctx.getFileContent
+
     if (ctx.showToast)
       tbState.showToast = ctx.showToast
+
     if (ctx.confirm)
       tbState.confirm = ctx.confirm
   },
@@ -106,6 +108,7 @@ export const tbActions = {
       tbState.confirm(msg)
     }
     else {
+      // eslint-disable-next-line no-alert
       alert(msg)
     }
   },
@@ -175,7 +178,9 @@ export function initTbStore() {
   watch(() => tbState.model, val => localStorage.setItem('wm-tb-model', val))
   watch(() => tbState.targetLanguage, (val) => {
     localStorage.setItem('wm-tb-targetlang', val)
+
     const topic = TOPIC_REGISTRY.find(t => t.id === tbState.activeTopic)
+
     if (topic?.languages && topic.languages.length > 0 && !topic.languages.includes(val)) {
       tbState.activeTopic = 'situational'
     }

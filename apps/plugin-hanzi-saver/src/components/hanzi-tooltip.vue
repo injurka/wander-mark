@@ -1,3 +1,4 @@
+<!-- eslint-disable no-console -->
 <script setup lang="ts">
 import type { HanziData } from '../types'
 import { onMounted, onUnmounted, ref } from 'vue'

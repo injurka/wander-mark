@@ -1,6 +1,6 @@
-# 🌍 Wander Mark (WanderingMark)
+# 🌍 Wander Mark 
 
-**Wander Mark** — это комплексная экосистема для экспорта, отображения и управления базами знаний (vaults) из **Obsidian**. Проект превращает ваши сырые Markdown-заметки в полноценное, кроссплатформенное приложение (PWA / Desktop) с поддержкой полнотекстового поиска, графа связей и динамически подгружаемых плагинов.
+Это комплексная экосистема для экспорта, отображения и управления базами знаний (vaults) из **Obsidian**. Проект превращает ваши сырые Markdown-заметки в полноценное, кроссплатформенное приложение (PWA / Desktop) с поддержкой полнотекстового поиска, графа связей и динамически подгружаемых плагинов.
 
 ![Vue.js](https://img.shields.io/badge/Vue%203-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
 ![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)

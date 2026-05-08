@@ -52,6 +52,7 @@ async function loadConfig() {
         trackerState.showToast(t('sync.configSuccess'), { type: 'success' })
       }
       else {
+        // eslint-disable-next-line no-alert
         alert(t('sync.configSuccess'))
       }
     }
@@ -60,6 +61,7 @@ async function loadConfig() {
         trackerState.showToast(t('sync.configEmpty'), { type: 'warning' })
       }
       else {
+        // eslint-disable-next-line no-alert
         alert(t('sync.configEmpty'))
       }
     }
@@ -69,6 +71,7 @@ async function loadConfig() {
       trackerState.showToast(`${t('sync.configError')}${e.message}`, { type: 'error' })
     }
     else {
+      // eslint-disable-next-line no-alert
       alert(`${t('sync.configError')}${e.message}`)
     }
   }

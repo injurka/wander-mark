@@ -217,9 +217,9 @@ async function save() {
           </div>
         </div>
 
-        <HzWordsCompact 
+        <HzWordsCompact
           v-if="resultData.words_breakdown"
-          :words="resultData.words_breakdown" 
+          :words="resultData.words_breakdown"
           :expanded="isWordsExpanded"
           @toggle="isWordsExpanded = true"
           @word-click="analyzeSubWord"
@@ -310,7 +310,7 @@ async function save() {
         </KitBtn>
       </template>
     </template>
-    
+
     <HanziActionPopover />
   </KitDialog>
 </template>
@@ -318,7 +318,9 @@ async function save() {
 <style scoped>
 .interactive-text {
   cursor: pointer;
-  transition: color 0.2s, opacity 0.2s;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
 }
 .interactive-text:hover {
   color: var(--fg-accent-color);

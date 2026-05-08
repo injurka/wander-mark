@@ -22,22 +22,17 @@ function checkOverflow() {
 
   const el = containerRef.value
 
-  // Временно отключаем перенос и паддинг, чтобы измерить естественную ширину элементов
-  const originalWrap = el.style.flexWrap
   el.style.flexWrap = 'nowrap'
   el.style.paddingRight = '0px'
 
-  // Проверяем, выходят ли элементы за границы контейнера
   const isOver = el.scrollWidth > el.clientWidth
 
-  // Возвращаем перенос, а если элементы не влезают - выделяем место (110px) под кнопку "Показать еще"
   el.style.flexWrap = 'wrap'
   el.style.paddingRight = isOver ? '110px' : '0px'
 
   isOverflowing.value = isOver
 
   if (isOver) {
-    // Считаем сколько элементов осталось на первой строке после применения отступа
     const children = Array.from(el.querySelectorAll('.w-chip')) as HTMLElement[]
     if (children.length > 0) {
       const firstTop = children[0].offsetTop

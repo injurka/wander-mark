@@ -2536,7 +2536,6 @@ const ut = {
 .ai-status.loading { color: var(--fg-accent-color); animation: pulse-text 1.5s infinite;}
 @keyframes pulse-text { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-/* === НОВОЕ ПОЛЕ ВВОДА (Modern Chat Input) === */
 .ai-input-area { padding: 16px 20px; background: var(--bg-primary-color); border-top: 1px solid var(--border-secondary-color); flex-shrink: 0; }
 .ai-input-box { position: relative; background: var(--bg-secondary-color); border: 1px solid var(--border-primary-color); border-radius: 14px; display: flex; flex-direction: column; transition: all 0.2s ease; }
 .ai-input-box:focus-within { border-color: var(--fg-accent-color); box-shadow: 0 0 0 3px var(--bg-accent-overlay-color); }

@@ -4,7 +4,7 @@ import { marked } from 'marked'
 import { ref } from 'vue'
 import { usePluginI18n } from '../../../i18n'
 
-const props = defineProps<{ data: AspectPairsData }>()
+defineProps<{ data: AspectPairsData }>()
 
 const { t } = usePluginI18n()
 

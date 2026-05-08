@@ -38,7 +38,6 @@ function deselectToken(token: any, index: number) {
  * Также проверяем совпадение порядка токенов.
  */
 function checkResult() {
-  // Сравниваем по порядку токенов (самый надёжный способ)
   const isCorrect = selected.value.length === props.data.tokens.length
     && selected.value.every((tok, i) => tok.text === props.data.tokens[i].text)
 
@@ -46,8 +45,9 @@ function checkResult() {
     showLogic.value = true
   }
   else {
-    // Запасная проверка: конкатенация текстов
+    // eslint-disable-next-line e18e/prefer-static-regex
     const currentStr = selected.value.map(tok => tok.text).join('').replace(/\s+/g, '')
+    // eslint-disable-next-line e18e/prefer-static-regex
     const targetStr = props.data.target.replace(/\s+/g, '')
     if (currentStr === targetStr) {
       showLogic.value = true

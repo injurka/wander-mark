@@ -24,7 +24,7 @@ function renderMarkdown(text: string): string {
 }
 
 function renderSentence(sentence: string): string {
-  // Replace ___ with a styled blank span
+  // eslint-disable-next-line e18e/prefer-static-regex
   return sentence.replace(/___/g, '<span class="sentence-blank">___</span>')
 }
 

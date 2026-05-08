@@ -53,7 +53,7 @@ const posOptions = computed(() => {
   const pos = new Set<string>()
   hanziList.value.forEach((item) => {
     if (item.type === 'word' && item.part_of_speech) {
-      let p = item.part_of_speech.trim().toLowerCase().replace(/[.,]/g, '')
+      const p = item.part_of_speech.trim().toLowerCase().replace(/[.,]/g, '')
       if (p)
         pos.add(p)
     }
@@ -110,7 +110,7 @@ const filteredList = computed(() => {
 
     let matchPos = true
     if (filterType.value !== 'sentence' && filterPos.value !== 'all') {
-      let itemPos = (item.part_of_speech || '').trim().toLowerCase().replace(/[.,]/g, '')
+      const itemPos = (item.part_of_speech || '').trim().toLowerCase().replace(/[.,]/g, '')
       matchPos = itemPos === filterPos.value
     }
 

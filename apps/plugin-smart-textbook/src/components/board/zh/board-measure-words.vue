@@ -62,13 +62,15 @@ function selectOption(oi: number) {
     answeredMap[currentIndex.value] = true
   }
   else {
-    // Wrong: shake, disable
     if (!disabledSets[currentIndex.value]) {
       disabledSets[currentIndex.value] = new Set()
     }
     disabledSets[currentIndex.value].add(oi)
     shakingOption.value = oi
-    setTimeout(() => { shakingOption.value = null }, 600)
+
+    setTimeout(() => {
+      shakingOption.value = null
+    }, 600)
   }
 }
 

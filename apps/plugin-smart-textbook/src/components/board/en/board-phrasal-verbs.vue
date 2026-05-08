@@ -63,7 +63,8 @@ function toggleMode() {
 function highlightParticle(phrasalVerb: string, particle: string): string {
   if (!particle || !phrasalVerb)
     return phrasalVerb || ''
-  // Case-insensitive replace — only the particle portion
+
+  // eslint-disable-next-line e18e/prefer-static-regex
   const escaped = particle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const regex = new RegExp(`(${escaped})`, 'i')
   return phrasalVerb.replace(regex, '<span class="particle-highlight">$1</span>')
@@ -73,6 +74,8 @@ function highlightParticle(phrasalVerb: string, particle: string): string {
 function renderBlank(sentence: string): string {
   if (!sentence)
     return ''
+
+  // eslint-disable-next-line e18e/prefer-static-regex
   return sentence.replace(/___/g, '<span class="quiz-blank">___</span>')
 }
 

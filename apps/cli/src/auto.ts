@@ -1,6 +1,7 @@
 import type { ProjectConfig } from './types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import process from 'node:process'
 import { main as runMigrator } from './migrator'
 
 async function copyVaultMetaFiles(config: ProjectConfig, sourcePath: string, exportDirName: string) {
@@ -70,6 +71,7 @@ export async function runAutoGeneration(config: ProjectConfig) {
 
     // Надежно определяем имя папки (убираем начальные слэши, если они есть, например /Russian -> Russian)
     let exportDirName = vault.exportPath || path.basename(vault.sourcePath)
+    // eslint-disable-next-line e18e/prefer-static-regex
     exportDirName = exportDirName.replace(/^\/+/, '')
 
     const currentExportPath = path.join(exportPathRoot, exportDirName)

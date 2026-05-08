@@ -55,9 +55,9 @@
     "Russian": "Russian"
   },
   "board": {
-      "sortingInstructions": "Drag and drop words into the correct columns (or tap word, then tap column)",
-      "dropHere": "Drop here...",
-      "sortingComplete": "Great job! All words sorted correctly.",
+    "sortingInstructions": "Drag and drop words into the correct columns (or tap word, then tap column)",
+    "dropHere": "Drop here...",
+    "sortingComplete": "Great job! All words sorted correctly.",
     "etymology": "Etymology & Mnemonic",
     "components": "Components (Radicals)",
     "roleSemantic": "Meaning",

@@ -71,7 +71,11 @@ watch(() => tbState.activeHistoryId, (newId, oldId) => {
 
 const touchStartX = ref(0)
 const touchEndX = ref(0)
-function handleTouchStart(e: TouchEvent) { touchStartX.value = e.changedTouches[0].screenX }
+
+function handleTouchStart(e: TouchEvent) {
+  touchStartX.value = e.changedTouches[0].screenX
+}
+
 function handleTouchEnd(e: TouchEvent) {
   touchEndX.value = e.changedTouches[0].screenX
   if (typeof window !== 'undefined' && window.innerWidth <= 768) {
@@ -108,7 +112,7 @@ function scenarioIcon(scenario: string): string {
     case 'phrasal-verbs': return '🔗'
     case 'radicals': return '🧱'
     case 'tone-guesser': return '🎵'
-     case 'sorting': return '🗂️'
+    case 'sorting': return '🗂️'
     default: return '📄'
   }
 }

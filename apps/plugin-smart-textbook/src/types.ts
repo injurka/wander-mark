@@ -30,25 +30,25 @@ export interface TranslationData {
  */
 export type ScenarioType
   = | 'situational'
-  | 'builder'
-  | 'review'
-  | 'speaking'
-  | 'quiz'
-  | 'sorting'
-  | 'stpmvo'
-  | 'measure-words'
-  | 'radicals'
-  | 'chengyu'
-  | 'tone-guesser'
-  | 'declension'
-  | 'aspect-pairs'
-  | 'phrasal-verbs'
+    | 'builder'
+    | 'review'
+    | 'speaking'
+    | 'quiz'
+    | 'sorting'
+    | 'stpmvo'
+    | 'measure-words'
+    | 'radicals'
+    | 'chengyu'
+    | 'tone-guesser'
+    | 'declension'
+    | 'aspect-pairs'
+    | 'phrasal-verbs'
 
 export interface SortingItem {
   text: string
   subtext?: string
   category_id: string
-  _id?: string 
+  _id?: string
 }
 
 export interface SortingCategory {
