@@ -108,3 +108,9 @@ bun run build
 **Backend & Tools (CLI, Server):**
 - [Bun](https://bun.sh/)
 - TypeScript
+
+
+## Примеры приложения
+
+![alt text](./assets/image.png)
+![alt text](./assets/image-1.png)
