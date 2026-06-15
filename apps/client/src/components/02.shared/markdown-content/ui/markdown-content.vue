@@ -32,6 +32,7 @@ const mdInstance = ref<MarkdownIt | null>(null)
 const isLoading = ref<boolean>(true)
 const currentImages = ref<string[]>([])
 const tooltipRef = ref<InstanceType<typeof InteractiveTooltip> | null>(null)
+const markdownBodyRef = ref<HTMLElement | null>(null)
 
 const shikiTheme = computed(() => {
   return theme.value === ThemesVariant.Light ? 'catppuccin-latte' : 'catppuccin-mocha'
@@ -41,7 +42,7 @@ function applyMermaidTheme() {
   mermaid.initialize({
     startOnLoad: false,
     theme: theme.value === ThemesVariant.Light ? 'default' : 'dark',
-    securityLevel: 'loose', // Позволяет кликабельные элементы, если нужно
+    securityLevel: 'loose',
     fontFamily: '\'Inter\', \'Maple Mono CN\', sans-serif',
   })
 }
@@ -67,6 +68,45 @@ async function initRenderer() {
     isLoading.value = false
   }
 }
+
+// Вынесли логику обработки DOM в отдельную функцию
+async function postProcessMarkdown() {
+  if (!markdownBodyRef.value || !props.vault)
+    return
+
+  try {
+    const mermaidNodes = markdownBodyRef.value.querySelectorAll('.mermaid')
+    if (mermaidNodes.length > 0) {
+      applyMermaidTheme()
+      // Передаём только конкретные ноды, а не глобальный querySelector
+      await mermaid.run({
+        nodes: Array.from(mermaidNodes) as HTMLElement[],
+        suppressErrors: true,
+      })
+    }
+  }
+  catch (e) {
+    console.warn('Mermaid rendering failed', e)
+  }
+
+  const images = markdownBodyRef.value.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
+  for (const img of images) {
+    const originalSrc = img.getAttribute('data-src')
+
+    if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
+      const decodedSrc = decodeURIComponent(originalSrc)
+      const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
+        ? decodedSrc.replace(/^\//, '')
+        : `content/${props.vault}/${decodedSrc}`
+
+      img.src = await vaultStore.resolveMediaUrl(props.vault, mediaPath)
+    }
+    else if (originalSrc) {
+      img.src = originalSrc
+    }
+  }
+}
+
 watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {
@@ -77,44 +117,24 @@ watch(
       renderedContent.value = html
 
       await nextTick()
-      setTimeout(emit, 500, 'ready')
 
-      const wrapper = document.querySelector('.markdown-body')
-      if (wrapper && props.vault) {
-        try {
-          applyMermaidTheme()
-          await mermaid.run({
-            querySelector: '.mermaid',
-            suppressErrors: true,
-          })
-        }
-        catch (e) {
-          console.warn('Mermaid rendering failed', e)
-        }
-
-        const images = wrapper.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
-        for (const img of images) {
-          const originalSrc = img.getAttribute('data-src')
-
-          if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
-            const decodedSrc = decodeURIComponent(originalSrc)
-
-            // Если путь начинается с /images/ (как бывает в Obsidian), убираем слэш,
-            // иначе считаем, что картинка лежит внутри папки content/Vault/...
-            const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
-              ? decodedSrc.replace(/^\//, '')
-              : `content/${props.vault}/${decodedSrc}`
-
-            img.src = await vaultStore.resolveMediaUrl(props.vault, mediaPath)
-          }
-          else if (originalSrc) {
-            img.src = originalSrc
-          }
-        }
+      if (markdownBodyRef.value) {
+        await postProcessMarkdown()
+        setTimeout(emit, 500, 'ready')
       }
     }
     else {
       renderedContent.value = ''
+    }
+  },
+)
+
+watch(
+  () => markdownBodyRef.value,
+  async (el) => {
+    if (el && renderedContent.value) {
+      await postProcessMarkdown()
+      setTimeout(emit, 500, 'ready')
     }
   },
 )
@@ -146,7 +166,6 @@ function handleSelection(event: MouseEvent) {
 
   const matchedComponents: any[] = []
 
-  // Собираем все плагины, которые могут обработать выделенный текст
   for (const interceptor of pluginStore.textInterceptors) {
     const isValid = interceptor.isValidText
       ? interceptor.isValidText(selectedText)
@@ -157,7 +176,6 @@ function handleSelection(event: MouseEvent) {
     }
   }
 
-  // Если нашли хотя бы один плагин — открываем тултип
   if (matchedComponents.length > 0) {
     tooltipRef.value?.open(event.clientX, event.clientY, selectedText, matchedComponents)
   }
@@ -174,19 +192,16 @@ function handleContentClick(event: MouseEvent) {
   const matchedComponents: any[] = []
   let detectedWord = ''
 
-  // Ищем все плагины, которые реагируют на клик
   for (const interceptor of pluginStore.textInterceptors) {
     const word = getWordFromEvent(event, interceptor.isValidChar)
     if (word) {
       matchedComponents.push(interceptor.tooltipComponent)
-      // Берем самое длинное совпадение, если плагины вернули разные слова
       if (word.length > detectedWord.length) {
         detectedWord = word
       }
     }
   }
 
-  // Если нашли плагины — открываем единый тултип
   if (matchedComponents.length > 0 && detectedWord) {
     tooltipRef.value?.open(event.clientX, event.clientY, detectedWord, matchedComponents)
     event.preventDefault()
@@ -196,7 +211,6 @@ function handleContentClick(event: MouseEvent) {
 
   tooltipRef.value?.close()
 
-  // Обработка кликов по ссылкам
   const link = target.closest('a')
   if (link && link.getAttribute('href')?.startsWith('/')) {
     event.preventDefault()
@@ -207,7 +221,6 @@ function handleContentClick(event: MouseEvent) {
     return
   }
 
-  // Обработка кликов по картинкам
   if (target.tagName === 'IMG') {
     const img = target as HTMLImageElement
     if (target.closest('.callout-content') || target.closest('.markdown-body')) {
@@ -238,6 +251,7 @@ onBeforeUnmount(() => {
       <PageLoader v-if="isLoading" />
       <div
         v-else
+        ref="markdownBodyRef"
         class="markdown-body"
         @click="handleContentClick"
         @mouseup="handleSelection"

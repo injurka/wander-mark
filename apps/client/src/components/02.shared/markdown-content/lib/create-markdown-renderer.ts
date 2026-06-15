@@ -23,14 +23,13 @@ interface CreateMarkdownRendererParams {
 
 let cachedHighlighter: Highlighter | null = null
 
-// Грузим инстанс без языков, только с темами (мгновенная инициализация)
 async function getHighlighter(): Promise<Highlighter> {
   if (cachedHighlighter)
     return cachedHighlighter
 
   cachedHighlighter = await createHighlighter({
     themes: [catppuccinMocha, catppuccinMacchiato, catppuccinFrappe, catppuccinLatte],
-    langs: [], // Пусто! Грузим языки по запросу
+    langs: [],
   })
 
   return cachedHighlighter
@@ -49,49 +48,13 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       if (!lang)
         return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
 
-      if (lang === 'mermaid') {
-        return `<div class="mermaid">${md.utils.escapeHtml(str)}</div>`
-      }
-
-      if (lang === 'd2') {
-        try {
-          // 1. Превращаем строку в байты
-          const data = new TextEncoder().encode(str)
-          // 2. Сжимаем с помощью deflate
-          const compressed = pako.deflate(data, { level: 9 })
-          // 3. Собираем бинарную строку (безопасно для больших диаграмм)
-          let binaryString = ''
-          for (let i = 0; i < compressed.length; i++) {
-            binaryString += String.fromCharCode(compressed[i])
-          }
-          // 4. Кодируем в Base64 и делаем URL-safe (заменяем + на -, / на _)
-          const encoded = btoa(binaryString)
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '')
-
-          // Замените на свой URL, если подняли Docker-контейнер
-          const krokiUrl = 'https://kroki.io'
-          const imgUrl = `${krokiUrl}/d2/svg/${encoded}`
-
-          return `<div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;">
-                    <img src="${imgUrl}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
-                  </div>`
-        }
-        catch (e) {
-          console.error('Ошибка при генерации D2:', e)
-          return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
-        }
-      }
-      // Если язык еще не загружен — загружаем его в фоне
       if (!highlighter.getLoadedLanguages().includes(lang)) {
         highlighter.loadLanguage(lang as any).then(() => {
-          onHighlightNeeded() // Перерисовываем контент после загрузки парсера
+          onHighlightNeeded()
         }).catch((err) => {
           console.warn(`[Shiki] Не удалось загрузить язык: ${lang}`, err)
         })
 
-        // Пока грузится, отдаем код без подсветки
         return `<pre class="shiki-loading"><code>${md.utils.escapeHtml(str)}</code></pre>`
       }
 
@@ -104,6 +67,44 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       }
     },
   })
+
+  const defaultFence = md.renderer.rules.fence || function (tokens, idx, options, _env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+
+  md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
+    const token = tokens[idx]
+    const lang = token.info ? token.info.trim().split(/\s+/)[0] : ''
+
+    if (lang === 'mermaid') {
+      return `<div class="mermaid">${md.utils.escapeHtml(token.content)}</div>\n`
+    }
+
+    if (lang === 'd2') {
+      try {
+        const data = new TextEncoder().encode(token.content)
+        const compressed = pako.deflate(data, { level: 9 })
+        let binaryString = ''
+        for (let i = 0; i < compressed.length; i++) {
+          binaryString += String.fromCharCode(compressed[i])
+        }
+        const encoded = btoa(binaryString)
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '')
+
+        const krokiUrl = 'https://kroki.io'
+        const imgUrl = `${krokiUrl}/d2/svg/${encoded}`
+
+        return `<div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;">\n<img src="${imgUrl}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />\n</div>\n`
+      }
+      catch (e) {
+        console.error('Ошибка при генерации D2:', e)
+      }
+    }
+
+    return defaultFence(tokens, idx, options, env, slf)
+  }
 
   md.renderer.rules.table_open = (tokens, idx, options, _env, self) => {
     return `<div class="table-container">${self.renderToken(tokens, idx, options)}`
