@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { Highlighter } from 'shiki'
 import catppuccinFrappe from '@shikijs/themes/catppuccin-frappe'
 import catppuccinLatte from '@shikijs/themes/catppuccin-latte'
@@ -9,6 +10,7 @@ import MarkdownItAttrs from 'markdown-it-attrs'
 import MarkdownItCollapsible from 'markdown-it-collapsible'
 // @ts-expect-error no dts
 import MarkdownItObsidianCallouts from 'markdown-it-obsidian-callouts'
+import pako from 'pako'
 import { createHighlighter } from 'shiki'
 import { markdownItWikiImages } from './markdownIt-wiki-images'
 import { markdownItWikiLinks } from './markdownIt-wiki-links'
@@ -16,7 +18,7 @@ import { markdownItWikiLinks } from './markdownIt-wiki-links'
 interface CreateMarkdownRendererParams {
   imageBasePath: string
   shikiTheme: string
-  onHighlightNeeded: () => void 
+  onHighlightNeeded: () => void
 }
 
 let cachedHighlighter: Highlighter | null = null
@@ -51,6 +53,36 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
         return `<div class="mermaid">${md.utils.escapeHtml(str)}</div>`
       }
 
+      if (lang === 'd2') {
+        try {
+          // 1. Превращаем строку в байты
+          const data = new TextEncoder().encode(str)
+          // 2. Сжимаем с помощью deflate
+          const compressed = pako.deflate(data, { level: 9 })
+          // 3. Собираем бинарную строку (безопасно для больших диаграмм)
+          let binaryString = ''
+          for (let i = 0; i < compressed.length; i++) {
+            binaryString += String.fromCharCode(compressed[i])
+          }
+          // 4. Кодируем в Base64 и делаем URL-safe (заменяем + на -, / на _)
+          const encoded = btoa(binaryString)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '')
+
+          // Замените на свой URL, если подняли Docker-контейнер
+          const krokiUrl = 'https://kroki.io'
+          const imgUrl = `${krokiUrl}/d2/svg/${encoded}`
+
+          return `<div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;">
+                    <img src="${imgUrl}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+                  </div>`
+        }
+        catch (e) {
+          console.error('Ошибка при генерации D2:', e)
+          return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
+        }
+      }
       // Если язык еще не загружен — загружаем его в фоне
       if (!highlighter.getLoadedLanguages().includes(lang)) {
         highlighter.loadLanguage(lang as any).then(() => {
