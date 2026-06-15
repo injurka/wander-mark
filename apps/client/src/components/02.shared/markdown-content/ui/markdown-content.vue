@@ -69,7 +69,6 @@ async function initRenderer() {
   }
 }
 
-// Вынесли логику обработки DOM в отдельную функцию
 async function postProcessMarkdown() {
   if (!markdownBodyRef.value || !props.vault)
     return
@@ -78,7 +77,6 @@ async function postProcessMarkdown() {
     const mermaidNodes = markdownBodyRef.value.querySelectorAll('.mermaid')
     if (mermaidNodes.length > 0) {
       applyMermaidTheme()
-      // Передаём только конкретные ноды, а не глобальный querySelector
       await mermaid.run({
         nodes: Array.from(mermaidNodes) as HTMLElement[],
         suppressErrors: true,
@@ -89,6 +87,26 @@ async function postProcessMarkdown() {
     console.warn('Mermaid rendering failed', e)
   }
 
+  const d2Images = markdownBodyRef.value.querySelectorAll('img.d2-diagram') as NodeListOf<HTMLImageElement>
+  d2Images.forEach((img) => {
+    img.onerror = () => {
+      const raw = img.getAttribute('data-raw')
+      if (raw && img.parentElement) {
+        img.parentElement.innerHTML = `
+          <div class="callout" style="--callout-color: 229, 57, 53; text-align: left;">
+            <div class="callout-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="callout-title-icon" style="margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Ошибка генерации D2 (kroki.io недоступен)
+            </div>
+            <div class="callout-content">
+              <pre style="background: var(--bg-tertiary-color); padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.85rem;"><code>${raw}</code></pre>
+            </div>
+          </div>`
+      }
+    }
+  })
+
+  // Резолв картинок из Vault
   const images = markdownBodyRef.value.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
   for (const img of images) {
     const originalSrc = img.getAttribute('data-src')
@@ -117,7 +135,6 @@ watch(
       renderedContent.value = html
 
       await nextTick()
-
       if (markdownBodyRef.value) {
         await postProcessMarkdown()
         setTimeout(emit, 500, 'ready')
@@ -152,7 +169,6 @@ watch(theme, () => {
 })
 
 function openImageViewer() {
-  // eslint-disable-next-line no-console
   console.log('Open image viewer with:', currentImages.value)
 }
 

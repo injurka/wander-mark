@@ -48,13 +48,37 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       if (!lang)
         return `<pre class="shiki-fallback"><code>${md.utils.escapeHtml(str)}</code></pre>`
 
+      if (lang === 'mermaid') {
+        return `<pre class="mermaid" style="all:unset; display:flex; justify-content:center; margin: 1.5rem 0; overflow-x:auto;">${md.utils.escapeHtml(str)}</pre>`
+      }
+
+      if (lang === 'd2') {
+        try {
+          const data = new TextEncoder().encode(str)
+          const compressed = pako.deflate(data, { level: 9 })
+          let binaryString = ''
+          for (let i = 0; i < compressed.length; i++) {
+            binaryString += String.fromCharCode(compressed[i])
+          }
+          const encoded = btoa(binaryString).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+          const imgUrl = `https://kroki.io/d2/svg/${encoded}`
+
+          const safeRaw = md.utils.escapeHtml(str)
+
+          // Оборачиваем в <pre>, чтобы обмануть парсер markdown-it, и сохраняем исходный код в data-raw для fallback'а
+          return `<pre class="d2-wrapper" style="all:unset;display:block;"><div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;"><img src="${imgUrl}" class="d2-diagram" data-raw="${safeRaw}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" /></div></pre>`
+        }
+        catch (e) {
+          console.error('Ошибка при генерации D2:', e)
+        }
+      }
+
       if (!highlighter.getLoadedLanguages().includes(lang)) {
         highlighter.loadLanguage(lang as any).then(() => {
           onHighlightNeeded()
         }).catch((err) => {
           console.warn(`[Shiki] Не удалось загрузить язык: ${lang}`, err)
         })
-
         return `<pre class="shiki-loading"><code>${md.utils.escapeHtml(str)}</code></pre>`
       }
 
@@ -67,44 +91,6 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       }
     },
   })
-
-  const defaultFence = md.renderer.rules.fence || function (tokens, idx, options, _env, self) {
-    return self.renderToken(tokens, idx, options)
-  }
-
-  md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
-    const token = tokens[idx]
-    const lang = token.info ? token.info.trim().split(/\s+/)[0] : ''
-
-    if (lang === 'mermaid') {
-      return `<div class="mermaid">${md.utils.escapeHtml(token.content)}</div>\n`
-    }
-
-    if (lang === 'd2') {
-      try {
-        const data = new TextEncoder().encode(token.content)
-        const compressed = pako.deflate(data, { level: 9 })
-        let binaryString = ''
-        for (let i = 0; i < compressed.length; i++) {
-          binaryString += String.fromCharCode(compressed[i])
-        }
-        const encoded = btoa(binaryString)
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/=+$/, '')
-
-        const krokiUrl = 'https://kroki.io'
-        const imgUrl = `${krokiUrl}/d2/svg/${encoded}`
-
-        return `<div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;">\n<img src="${imgUrl}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />\n</div>\n`
-      }
-      catch (e) {
-        console.error('Ошибка при генерации D2:', e)
-      }
-    }
-
-    return defaultFence(tokens, idx, options, env, slf)
-  }
 
   md.renderer.rules.table_open = (tokens, idx, options, _env, self) => {
     return `<div class="table-container">${self.renderToken(tokens, idx, options)}`
