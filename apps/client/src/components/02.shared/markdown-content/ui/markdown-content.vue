@@ -372,6 +372,14 @@ onBeforeUnmount(() => {
   .shiki {
     padding: 10px;
     border-radius: 8px;
+    overflow-x: auto;
+    max-width: 100%;
+
+    code {
+      display: block;
+      width: max-content;
+      min-width: 100%;
+    }
   }
   pre:not(.shiki) {
     background: var(--bg-tertiary-color);

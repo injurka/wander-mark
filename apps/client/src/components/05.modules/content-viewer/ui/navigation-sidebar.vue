@@ -107,13 +107,13 @@ function stopResize() {
       </div>
 
       <div class="sidebar-footer">
-        <button class="home-link" @click="router.push(`/${params.vault}`)">
+        <button class="home-link" :title="t('sidebar.vaultHome')" @click="router.push(`/${params.vault}`)">
           <Icon icon="mdi:book-open-page-variant-outline" class="home-icon" />
-          <span>{{ t('sidebar.vaultHome') }}</span>
+          <span class="home-link-label">{{ t('sidebar.vaultHome') }}</span>
         </button>
-        <button class="home-link" @click="router.push(AppRoutePaths.Root)">
+        <button class="home-link" :title="t('sidebar.allVaults')" @click="router.push(AppRoutePaths.Root)">
           <Icon icon="mdi:home-outline" class="home-icon" />
-          <span>{{ t('sidebar.allVaults') }}</span>
+          <span class="home-link-label">{{ t('sidebar.allVaults') }}</span>
         </button>
       </div>
     </div>
@@ -137,6 +137,7 @@ function stopResize() {
   flex-shrink: 0;
   will-change: width;
   z-index: 20;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.is-closed {
     overflow: hidden;
@@ -198,33 +199,42 @@ function stopResize() {
 }
 
 .sidebar-footer {
-  padding: 6px;
+  padding: 6px 8px;
   border-top: 1px solid var(--border-secondary-color);
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 4px;
-  height: 86px;
 }
 
 .home-link {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
+  gap: 6px;
+  flex: 1;
+  padding: 6px 8px;
   border: none;
   background: transparent;
   color: var(--fg-muted-color);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
 
   .home-icon {
-    font-size: 1.1rem;
-    opacity: 0.8;
+    font-size: 1rem;
+    opacity: 0.75;
+    flex-shrink: 0;
+  }
+
+  .home-link-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &:hover {
