@@ -62,9 +62,11 @@ export function useVaultManagement() {
   // --- Модальное окно ошибки ---
   const isErrorDialogVisible = ref(false)
   const errorMessage = ref('')
+  const errorFiles = ref<string[]>([])
 
-  function showError(msg: string) {
+  function showError(msg: string, files: string[] = []) {
     errorMessage.value = msg
+    errorFiles.value = files
     isErrorDialogVisible.value = true
   }
 
@@ -102,7 +104,7 @@ export function useVaultManagement() {
       iconErrors.value[vaultId] = false
     }
     catch (e: any) {
-      showError(`Ошибка при скачивании: ${e.message}`)
+      showError(`Ошибка при скачивании: ${e.message}`, e.failedFiles || [])
     }
     finally {
       setTimeout(() => {
@@ -130,6 +132,7 @@ export function useVaultManagement() {
     addForm,
     isErrorDialogVisible,
     errorMessage,
+    errorFiles,
     isDeleteDialogVisible,
     openAddDialog,
     submitAddRemote,

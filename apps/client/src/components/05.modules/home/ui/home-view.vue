@@ -44,6 +44,7 @@ const {
   addForm,
   isErrorDialogVisible,
   errorMessage,
+  errorFiles,
   isDeleteDialogVisible,
   openAddDialog,
   submitAddRemote,
@@ -224,6 +225,11 @@ const {
       icon="mdi:alert-circle-outline"
       :max-width="450"
     >
+      <div v-if="errorFiles.length > 0" class="error-files-list custom-scrollbar">
+        <ul>
+          <li v-for="file in errorFiles" :key="file">{{ file }}</li>
+        </ul>
+      </div>
       <template #footer>
         <KitBtn @click="isErrorDialogVisible = false">
           OK
@@ -234,6 +240,23 @@ const {
 </template>
 
 <style lang="scss" scoped>
+.error-files-list {
+  margin-top: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-secondary-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary-color);
+  padding: 8px 12px;
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.85rem;
+    color: var(--fg-secondary-color);
+    font-family: monospace;
+  }
+}
 .landing-page {
   min-height: 100dvh;
   background-color: var(--bg-primary-color);

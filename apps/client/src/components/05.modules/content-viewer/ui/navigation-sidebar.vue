@@ -67,11 +67,13 @@ function stopResize() {
 </script>
 
 <template>
-  <div
-    v-if="menu"
-    class="sidebar-scrim"
-    @click="menu = false"
-  />
+  <Transition name="fade">
+    <div
+      v-if="menu"
+      class="sidebar-scrim"
+      @click="menu = false"
+    />
+  </Transition>
 
   <aside
     ref="sidebarRef"
@@ -79,8 +81,9 @@ function stopResize() {
     :class="{ 'is-closed': !menu }"
     :style="{ width: menu ? `${sidebarWidth}px` : '0px' }"
   >
-    <div class="sidebar-inner">
-      <div class="sidebar-header">
+    <div class="sidebar-inner-container">
+      <div class="sidebar-inner">
+        <div class="sidebar-header">
         <KitBtn
           variant="text"
           size="sm"
@@ -115,6 +118,7 @@ function stopResize() {
           <Icon icon="mdi:home-outline" class="home-icon" />
           <span class="home-link-label">{{ t('sidebar.allVaults') }}</span>
         </button>
+      </div>
       </div>
     </div>
 
@@ -159,6 +163,12 @@ function stopResize() {
       width: 0 !important;
     }
   }
+}
+
+.sidebar-inner-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-inner {
@@ -276,6 +286,16 @@ function stopResize() {
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 9998;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .mobile-close-btn {

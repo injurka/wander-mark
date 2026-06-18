@@ -239,7 +239,10 @@ export const useVaultStore = defineStore('vault', () => {
       const vIndex = vaults.value.findIndex(v => v.id === vaultId)
       if (vIndex !== -1)
         vaults.value[vIndex].isDownloaded = true
-      throw new Error(`Хранилище скачано частично. Не удалось скачать ${failedFiles.length} файлов. Посмотрите консоль для подробностей.`)
+      
+      const err = new Error(`Хранилище скачано частично. Не удалось скачать ${failedFiles.length} файлов.`)
+      ;(err as any).failedFiles = failedFiles
+      throw err
     }
 
     const vIndex = vaults.value.findIndex(v => v.id === vaultId)
