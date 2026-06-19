@@ -223,6 +223,7 @@ function stopResize() {
   align-items: center;
   gap: 6px;
   flex: 1;
+  min-width: 0;
   padding: 6px 8px;
   border: none;
   background: transparent;

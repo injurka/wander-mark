@@ -306,6 +306,14 @@ onBeforeUnmount(() => {
     font-weight: 600;
     line-height: 1.3;
     color: var(--fg-primary-color);
+
+    a {
+      border-bottom: none;
+      &:hover {
+        background-color: transparent;
+        border-bottom-color: transparent;
+      }
+    }
   }
   h1 {
     font-size: 2rem;
@@ -319,9 +327,6 @@ onBeforeUnmount(() => {
     background: linear-gradient(90deg, rgba(var(--bg-accent-color-rgb), 0.5) 0%, transparent 100%);
     padding: 0.5rem 1rem;
     border-radius: 0 8px 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
   h3 {
     font-size: 1.25rem;
