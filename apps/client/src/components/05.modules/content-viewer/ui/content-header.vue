@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'openSearch'): void
   (e: 'openPlugins'): void
-  (e: 'openAiSettings'): void 
+  (e: 'openAiSettings'): void
 }>()
 const menu = defineModel('menu', { required: true })
 
@@ -104,6 +104,15 @@ const currentVault = computed(() => route.params.vault as string)
         class="menu-btn flex-shrink-0"
         :title="t('sidebar.vaultHome')"
         @click="router.push(`/${currentVault}`)"
+      />
+      <KitBtn
+        v-else
+        variant="text"
+        size="sm"
+        icon="mdi:arrow-left"
+        class="menu-btn flex-shrink-0"
+        :title="t('sidebar.allVaults')"
+        @click="router.push('/')"
       />
 
       <nav class="breadcrumbs">
