@@ -35,6 +35,96 @@ async function getHighlighter(): Promise<Highlighter> {
   return cachedHighlighter
 }
 
+/**
+ * Плагин для очистки автоматических <br> и <p> внутри HTML-блоков с отступами.
+ * Из-за отключенного правила 'code', отформатированный HTML воспринимается как абзацы,
+ * а настройка breaks: true вставляет <br> при каждом переносе строки.
+ */
+function cleanHtmlBreaksPlugin(md: MarkdownIt) {
+  md.core.ruler.push('clean_html_breaks', (state) => {
+    const blockTags = ['div', 'p', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'tbody', 'thead', 'section', 'article', 'header', 'footer', 'nav', 'aside', 'figure', 'figcaption', 'details', 'summary']
+    // eslint-disable-next-line regexp/no-super-linear-backtracking, regexp/no-useless-lazy
+    const blockTagRegex = new RegExp(`^<\\/?(?:${blockTags.join('|')})(?:\\s+[^>]*?)?>`, 'i')
+
+    for (let i = 0; i < state.tokens.length; i++) {
+      const token = state.tokens[i]
+
+      if (token.type === 'inline' && token.children && token.children.length > 0) {
+        const children = token.children
+
+        let firstToken = null
+        for (let j = 0; j < children.length; j++) {
+          if (children[j].type !== 'text' || children[j].content.trim() !== '') {
+            firstToken = children[j]
+            break
+          }
+        }
+
+        let lastToken = null
+        for (let j = children.length - 1; j >= 0; j--) {
+          if (children[j].type !== 'text' || children[j].content.trim() !== '') {
+            lastToken = children[j]
+            break
+          }
+        }
+
+        const isFullHtmlBlock = firstToken && firstToken.type === 'html_inline' && blockTagRegex.test(firstToken.content.trim())
+          && lastToken && lastToken.type === 'html_inline' && blockTagRegex.test(lastToken.content.trim())
+
+        if (isFullHtmlBlock) {
+          for (let j = 0; j < children.length; j++) {
+            if (children[j].type === 'softbreak') {
+              children[j].type = 'text'
+              children[j].content = '\n'
+            }
+          }
+
+          if (i > 0 && state.tokens[i - 1].type === 'paragraph_open') {
+            state.tokens[i - 1].hidden = true
+          }
+          if (i < state.tokens.length - 1 && state.tokens[i + 1].type === 'paragraph_close') {
+            state.tokens[i + 1].hidden = true
+          }
+          continue
+        }
+
+        for (let j = 0; j < children.length; j++) {
+          if (children[j].type === 'softbreak') {
+            let prevHtml = false
+            for (let k = j - 1; k >= 0; k--) {
+              const prev = children[k]
+              if (prev.type === 'html_inline') {
+                if (blockTagRegex.test(prev.content.trim()))
+                  prevHtml = true
+                break
+              }
+              if (prev.type !== 'text' || prev.content.trim() !== '')
+                break
+            }
+
+            let nextHtml = false
+            for (let k = j + 1; k < children.length; k++) {
+              const next = children[k]
+              if (next.type === 'html_inline') {
+                if (blockTagRegex.test(next.content.trim()))
+                  nextHtml = true
+                break
+              }
+              if (next.type !== 'text' || next.content.trim() !== '')
+                break
+            }
+
+            if (prevHtml || nextHtml) {
+              children[j].type = 'text'
+              children[j].content = '\n'
+            }
+          }
+        }
+      }
+    }
+  })
+}
+
 export async function createMarkdownRenderer(params: CreateMarkdownRendererParams): Promise<MarkdownIt> {
   const { imageBasePath, shikiTheme, onHighlightNeeded } = params
   const highlighter = await getHighlighter()
@@ -100,7 +190,8 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
     return `${self.renderToken(tokens, idx, options)}</div>`
   }
 
-  md.use(markdownItWikiImages, { baseURL: imageBasePath, defaultAlt: '' })
+  md.use(cleanHtmlBreaksPlugin)
+    .use(markdownItWikiImages, { baseURL: imageBasePath, defaultAlt: '' })
     .use(markdownItWikiLinks)
     .use(MarkdownItObsidianCallouts)
     .use(MarkdownItAttrs)
