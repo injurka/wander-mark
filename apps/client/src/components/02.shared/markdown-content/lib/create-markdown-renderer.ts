@@ -65,7 +65,6 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
 
           const safeRaw = md.utils.escapeHtml(str)
 
-          // Оборачиваем в <pre>, чтобы обмануть парсер markdown-it, и сохраняем исходный код в data-raw для fallback'а
           return `<pre class="d2-wrapper" style="all:unset;display:block;"><div class="d2-diagram-wrapper" style="text-align: center; margin: 1rem 0;"><img src="${imgUrl}" class="d2-diagram" data-raw="${safeRaw}" alt="D2 Diagram" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" /></div></pre>`
         }
         catch (e) {
@@ -91,6 +90,8 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       }
     },
   })
+
+  md.disable('code')
 
   md.renderer.rules.table_open = (tokens, idx, options, _env, self) => {
     return `<div class="table-container">${self.renderToken(tokens, idx, options)}`
