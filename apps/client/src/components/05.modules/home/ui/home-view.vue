@@ -227,7 +227,9 @@ const {
     >
       <div v-if="errorFiles.length > 0" class="error-files-list custom-scrollbar">
         <ul>
-          <li v-for="file in errorFiles" :key="file">{{ file }}</li>
+          <li v-for="file in errorFiles" :key="file">
+            {{ file }}
+          </li>
         </ul>
       </div>
       <template #footer>

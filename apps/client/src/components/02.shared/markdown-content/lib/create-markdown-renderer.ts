@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { Highlighter } from 'shiki'
 import catppuccinFrappe from '@shikijs/themes/catppuccin-frappe'
 import catppuccinLatte from '@shikijs/themes/catppuccin-latte'

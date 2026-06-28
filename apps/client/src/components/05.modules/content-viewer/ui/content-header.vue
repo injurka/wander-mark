@@ -4,6 +4,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { KitBtn } from '~/components/01.kit'
+import { useContentViewerStore } from '../store'
 import ViewerSettingsMenu from './viewer-settings-menu.vue'
 
 interface Props {
@@ -25,6 +26,7 @@ const menu = defineModel('menu', { required: true })
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const store = useContentViewerStore()
 
 const breadcrumbsTrackRef = ref<HTMLElement | null>(null)
 
@@ -83,6 +85,29 @@ watch(
 )
 
 const currentVault = computed(() => route.params.vault as string)
+
+function revealInTree() {
+  menu.value = true // Open sidebar
+  if (route.params.pwd) {
+    const pwd = (Array.isArray(route.params.pwd) ? route.params.pwd : [route.params.pwd].filter(Boolean)) as string[]
+    const parents = pwd.slice(0, -1)
+    if (parents.length > 0) {
+      const newOpenFolders = new Set(store.openFolders)
+      parents.forEach(p => newOpenFolders.add(p))
+      store.setOpenFolders(Array.from(newOpenFolders))
+    }
+
+    // Scroll to the active item after the sidebar opens and tree updates
+    nextTick(() => {
+      setTimeout(() => {
+        const activeItem = document.getElementById('active-tree-item')
+        if (activeItem) {
+          activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 300) // Small delay to let sidebar animation finish
+    })
+  }
+}
 </script>
 
 <template>
@@ -120,10 +145,11 @@ const currentVault = computed(() => route.params.vault as string)
           <template v-for="(item, i) in breadcrumbs" :key="i">
             <Icon v-if="i > 0" icon="mdi:chevron-right" size="14" class="separator" />
             <component
-              :is="item.disabled ? 'span' : 'router-link'"
+              :is="item.disabled ? 'a' : 'router-link'"
               :to="item.disabled ? undefined : item.to"
               class="breadcrumb-item"
               :class="{ 'is-active': item.disabled, 'breadcrumb-link': !item.disabled }"
+              @click.prevent="item.disabled ? revealInTree() : undefined"
             >
               <span>{{ item.title }}</span>
             </component>
@@ -243,8 +269,12 @@ const currentVault = computed(() => route.params.vault as string)
   &.is-active {
     background-color: var(--bg-secondary-color);
     color: var(--fg-primary-color);
-    pointer-events: none;
+    cursor: pointer;
     border: 1px solid var(--border-secondary-color);
+
+    &:hover {
+      background-color: var(--bg-hover-color);
+    }
   }
 }
 

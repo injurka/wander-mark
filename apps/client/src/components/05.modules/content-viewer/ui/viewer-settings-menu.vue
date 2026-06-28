@@ -6,11 +6,11 @@ import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-t
 import { useLocale } from '~/shared/composables/use-locale'
 import { useContentViewerStore } from '../store'
 
-const props = defineProps<{ vault: string }>()
+defineProps<{ vault: string }>()
 
 const emit = defineEmits<{
   (e: 'openPlugins'): void
-   (e: 'openAiSettings'): void
+  (e: 'openAiSettings'): void
 }>()
 
 const { setTheme, theme } = useChangeTheme()

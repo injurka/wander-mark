@@ -64,7 +64,8 @@ export const useVaultStore = defineStore('vault', () => {
         }
       }
     }
-    catch (e) {
+    catch {
+      // eslint-disable-next-line no-console
       console.log('No config.json found or failed to parse, skipping predefined vaults.')
     }
   }
@@ -158,7 +159,7 @@ export const useVaultStore = defineStore('vault', () => {
         }
       }
     }
-    catch (e) { }
+    catch { }
 
     let loaded = 0
     const mediaToSync = new Set<string>()
@@ -186,7 +187,9 @@ export const useVaultStore = defineStore('vault', () => {
                 }
               }
             }
+            // eslint-disable-next-line no-cond-assign
             while ((match = imgRegex.exec(content)) !== null) extractMedia(match[1])
+            // eslint-disable-next-line no-cond-assign
             while ((match = wikiRegex.exec(content)) !== null) extractMedia(match[1])
           }
         }
@@ -194,7 +197,7 @@ export const useVaultStore = defineStore('vault', () => {
           failedFiles.push(file)
         }
       }
-      catch (e) {
+      catch {
         console.error(`Failed to load text file: ${file}`)
         failedFiles.push(file)
       }
@@ -215,7 +218,7 @@ export const useVaultStore = defineStore('vault', () => {
           failedFiles.push(media)
         }
       }
-      catch (e) {
+      catch {
         console.error(`Failed to load media file: ${media}`)
         failedFiles.push(media)
       }
@@ -239,9 +242,9 @@ export const useVaultStore = defineStore('vault', () => {
       const vIndex = vaults.value.findIndex(v => v.id === vaultId)
       if (vIndex !== -1)
         vaults.value[vIndex].isDownloaded = true
-      
+
       const err = new Error(`Хранилище скачано частично. Не удалось скачать ${failedFiles.length} файлов.`)
-      ;(err as any).failedFiles = failedFiles
+        ; (err as any).failedFiles = failedFiles
       throw err
     }
 

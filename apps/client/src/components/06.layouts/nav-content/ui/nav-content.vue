@@ -1,24 +1,25 @@
 <script lang="ts" setup>
+import type { ContentNavItem, VaultMetaSettings } from '~/components/05.modules/content-viewer'
+import type { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/models'
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
+import { get, set } from 'idb-keyval'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { get, set } from 'idb-keyval'
 import AiSettingsDialog from '~/components/02.shared/global-dialogs/ui/ai-settings-dialog.vue'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
-import { ContentNavItem, ContentViewerHeader, ContentViewerNavigation, useContentViewerStore, VaultMetaSettings } from '~/components/05.modules/content-viewer'
+import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
 import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
 import { isNative } from '~/shared/services/fs.client'
-import { useVaultStore } from '~/shared/store/vault.store'
 import { useGlobalSettingsStore } from '~/shared/store/settings.store'
-import { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/models'
+import { useVaultStore } from '~/shared/store/vault.store'
 
 interface InititalData {
   nav: ContentNavItem[] | null
@@ -57,10 +58,10 @@ const lastScrollTop = ref(0)
 const scrollThreshold = 50
 const status = ref<'pending' | 'success'>('pending')
 const data = ref<InititalData>({
-  nav: null, 
+  nav: null,
   settings: null,
-  backlinks: null, 
-  searchIndex: null
+  backlinks: null,
+  searchIndex: null,
 })
 
 function handleScroll() {
@@ -151,7 +152,7 @@ watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
       settings: settingsRes,
       backlinks: backlinksRes,
       searchIndex: searchRes || [],
-    } 
+    }
   }
   finally {
     if (!isCancelled) {
@@ -275,17 +276,19 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     locale: currentLocale,
     t,
     storage: {
-      get: async <T>(key: string): Promise<T | null> => {
+      async get<T>(key: string): Promise<T | null> {
         const val = await get<T>(`plugin::${vault}::${key}`)
         return val ?? null
       },
-      set: async <T>(key: string, value: T) => set(`plugin::${vault}::${key}`, value),
+      async set<T>(key: string, value: T) {
+        return set(`plugin::${vault}::${key}`, value)
+      },
     },
     ai: {
       getModel: () => globalSettings.aiModel,
       fetch: (endpoint, options = {}) => {
         if (!globalSettings.aiKey) {
-          aiSettingsDialogOpen.value = true 
+          aiSettingsDialogOpen.value = true
           return Promise.reject(new Error('API ключ не настроен.'))
         }
         const headers = {
@@ -293,12 +296,12 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
           ...options.headers,
           'Authorization': `Bearer ${globalSettings.aiKey}`,
         }
-        
+
         const baseUrl = globalSettings.aiUrl || 'https://api.aihubmix.com/v1'
-        const url = endpoint.startsWith('http') 
-          ? endpoint 
+        const url = endpoint.startsWith('http')
+          ? endpoint
           : `${baseUrl.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
-          
+
         return fetch(url, { ...options, headers })
       },
     },
