@@ -112,10 +112,10 @@ export async function processDirectoryRecursive(
 
           const extractedTags = extractTags(yamlContent, bodyForTags)
 
-          // 2. Удаление Frontmatter для итогового файла
-          if (frontMatterMatch) {
-            content = content.substring(frontMatterMatch[0].length).trimStart()
-          }
+          // 2. Оставляем Frontmatter для плагинов
+          // if (frontMatterMatch) {
+          //   content = content.substring(frontMatterMatch[0].length).trimStart()
+          // }
 
           const uniqueOutboundLinks = new Set<string>()
 

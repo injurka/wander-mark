@@ -54,7 +54,8 @@ async function initRenderer() {
       shikiTheme: shikiTheme.value,
       onHighlightNeeded: () => {
         if (mdInstance.value && props.content) {
-          let html = mdInstance.value.render(props.content)
+          const cleanContent = props.content.replace(/^---\s*[\s\S]*?\s*---\n*/, '')
+          let html = mdInstance.value.render(cleanContent)
           html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
           renderedContent.value = html
         }
@@ -130,7 +131,8 @@ watch(
   async ([newContent, md]) => {
     if (md && newContent) {
       vaultStore.clearBlobUrls()
-      let html = md.render(newContent)
+      const cleanContent = newContent.replace(/^---\s*[\s\S]*?\s*---\n*/, '')
+      let html = md.render(cleanContent)
       html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
       renderedContent.value = html
 
@@ -163,7 +165,8 @@ watch(shikiTheme, async () => {
 watch(theme, () => {
   applyMermaidTheme()
   if (mdInstance.value && props.content) {
-    const html = mdInstance.value.render(props.content)
+    const cleanContent = props.content.replace(/^---\s*[\s\S]*?\s*---\n*/, '')
+    const html = mdInstance.value.render(cleanContent)
     renderedContent.value = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
   }
 })
