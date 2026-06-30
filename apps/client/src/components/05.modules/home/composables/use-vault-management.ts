@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVaultStore } from '~/shared/store/vault.store'
 
@@ -7,7 +7,6 @@ export function useVaultManagement() {
   const vaultStore = useVaultStore()
 
   const progressMap = ref<Record<string, number>>({})
-  const installingMap = ref<Record<string, boolean>>({})
 
   // --- Иконки ---
   const iconUrls = ref<Record<string, string>>({})
@@ -23,6 +22,7 @@ export function useVaultManagement() {
   onBeforeUnmount(() => {
     vaultStore.clearBlobUrls()
   })
+
   function handleIconError(vaultId: string) {
     iconErrors.value[vaultId] = true
   }
@@ -89,27 +89,23 @@ export function useVaultManagement() {
     vaultToDelete.value = null
   }
 
-  // --- Методы управления ---
-  async function handleInstall(vaultId: string) {
-    if (installingMap.value[vaultId])
+  // --- Инкрементальная синхронизация ---
+  async function handleSync(vaultId: string) {
+    const vault = vaultStore.getVault(vaultId)
+    if (!vault || vault.syncStatus === 'syncing')
       return
-    installingMap.value[vaultId] = true
+
     progressMap.value[vaultId] = 0
 
     try {
-      await vaultStore.installVault(vaultId, (p) => {
+      await vaultStore.syncVault(vaultId, (p) => {
         progressMap.value[vaultId] = p
       })
       iconUrls.value[vaultId] = await vaultStore.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
       iconErrors.value[vaultId] = false
     }
     catch (e: any) {
-      showError(`Ошибка при скачивании: ${e.message}`, e.failedFiles || [])
-    }
-    finally {
-      setTimeout(() => {
-        installingMap.value[vaultId] = false
-      }, 1000)
+      showError(`Ошибка при синхронизации: ${e.message}`, e.failedFiles || [])
     }
   }
 
@@ -123,7 +119,6 @@ export function useVaultManagement() {
   return {
     vaults: computed(() => vaultStore.vaults),
     progressMap,
-    installingMap,
     iconUrls,
     iconErrors,
     handleIconError,
@@ -138,7 +133,7 @@ export function useVaultManagement() {
     submitAddRemote,
     confirmDelete,
     proceedDelete,
-    handleInstall,
+    handleSync,
     openVault,
   }
 }

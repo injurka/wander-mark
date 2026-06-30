@@ -1,47 +1,61 @@
 {
 	"folders": [
 		{
+			"name": "wander-mark",
 			"path": "."
 		},
 		{
+			"name": "client",
 			"path": "apps/client"
 		},
 		{
+			"name": "server",
 			"path": "apps/server"
 		},
 		{
+			"name": "cli",
 			"path": "apps/cli"
 		},
 		{
+			"name": "plugin-hanzi-saver",
 			"path": "apps/plugin-hanzi-saver"
 		},
 		{
+			"name": "plugin-ai-assistant",
 			"path": "apps/plugin-ai-assistant"
 		},
 		{
+			"name": "plugin-reading-tracker",
 			"path": "apps/plugin-reading-tracker"
 		},
 		{
+			"name": "plugin-smart-textbook",
 			"path": "apps/plugin-smart-textbook"
 		},
 		{
+			"name": "plugin-russian-tooltip",
 			"path": "apps/plugin-russian-tooltip"
 		},
 		{
+			"name": "plugin-chinese-tooltip",
 			"path": "apps/plugin-chinese-tooltip"
 		},
 		{
+			"name": "plugin-recipe-viewer",
 			"path": "apps/plugin-recipe-viewer"
 		},
 		{
+			"name": "vaults-example",
 			"path": "vaults-example"
 		},
 		{
+			"name": "plugin-api",
 			"path": "packages/plugin-api"
 		},
 		{
+			"name": "docker",
 			"path": "docker"
-		},
+		}
 	],
 	"settings": {
 		"explorer.fileNesting.expand": false

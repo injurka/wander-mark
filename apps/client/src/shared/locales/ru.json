@@ -60,7 +60,9 @@
     "noResults": "Ничего не найдено",
     "resetFilters": "Сбросить фильтры",
     "toNavigate": "для перехода",
-    "toSelect": "для навигации"
+    "toSelect": "для навигации",
+    "modeAll": "Полнотекстовый",
+    "modeFiles": "По файлам"
   },
   "confirm": {
     "title": "Подтверждение",

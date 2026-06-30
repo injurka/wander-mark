@@ -11,6 +11,7 @@ const modelValue = defineModel<boolean>({ required: true })
 
 const store = useContentViewerStore()
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 
 const query = ref('')
@@ -20,13 +21,27 @@ const modalRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
 const searchResults = ref<FuseResult<SearchIndexItem>[]>([])
 
+const searchMode = useLocalStorage<'all' | 'files'>('search_mode', 'all')
 const worker = new SearchWorker()
 
-const fuseOptions = {
+const fuseOptionsAll = {
   keys: [
     { name: 'title', weight: 0.7 },
     { name: 'tags', weight: 0.5 },
     { name: 'content', weight: 0.3 },
+  ],
+  includeMatches: true,
+  minMatchCharLength: 2,
+  threshold: 0.4,
+  ignoreLocation: true,
+  findAllMatches: true,
+  useExtendedSearch: true,
+}
+
+const fuseOptionsFiles = {
+  keys: [
+    { name: 'title', weight: 0.9 },
+    { name: 'url', weight: 0.5 },
   ],
   includeMatches: true,
   minMatchCharLength: 2,
@@ -45,13 +60,23 @@ worker.addEventListener('message', (e) => {
 watch(() => store.searchIndex, (newIndex) => {
   if (newIndex && newIndex.length > 0) {
     const rawIndex = JSON.parse(JSON.stringify(newIndex))
-    worker.postMessage({ type: 'INIT', payload: { index: rawIndex, options: fuseOptions } })
+    worker.postMessage({
+      type: 'INIT',
+      payload: {
+        index: rawIndex,
+        optionsAll: fuseOptionsAll,
+        optionsFiles: fuseOptionsFiles,
+      },
+    })
   }
 }, { immediate: true })
 
-watch(query, (newQuery) => {
+watch([query, searchMode], ([newQuery, newMode]) => {
   if (newQuery) {
-    worker.postMessage({ type: 'SEARCH', payload: { query: newQuery } })
+    worker.postMessage({
+      type: 'SEARCH',
+      payload: { query: newQuery, mode: newMode },
+    })
   }
   else {
     searchResults.value = []
@@ -193,6 +218,14 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
   const matchedText = text.slice(start, end + 1)
   return snippet.split(matchedText).join(`<mark>${matchedText}</mark>`)
 }
+
+function getFormattedPath(url: string) {
+  const vaultPrefix = `/${route.params.vault}`
+  if (url.startsWith(vaultPrefix)) {
+    return url.slice(vaultPrefix.length).replace(/^\//, '')
+  }
+  return url.replace(/^\//, '')
+}
 </script>
 
 <template>
@@ -213,6 +246,25 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
           <div class="search-hint">
             ESC
           </div>
+        </div>
+
+        <div class="search-modes-bar">
+          <button
+            class="mode-btn"
+            :class="{ 'is-active': searchMode === 'all' }"
+            @click="searchMode = 'all'"
+          >
+            <Icon icon="mdi:text-search" class="mode-icon" />
+            <span>{{ t('search.modeAll') }}</span>
+          </button>
+          <button
+            class="mode-btn"
+            :class="{ 'is-active': searchMode === 'files' }"
+            @click="searchMode = 'files'"
+          >
+            <Icon icon="mdi:file-document-outline" class="mode-icon" />
+            <span>{{ t('search.modeFiles') }}</span>
+          </button>
         </div>
 
         <div v-if="availableTags.length > 0" class="tags-bar custom-scrollbar">
@@ -242,9 +294,16 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
                 <span>{{ result.item.title }}</span>
               </div>
               <div
+                v-if="searchMode === 'all'"
                 class="result-snippet"
                 v-html="getHighlightedSnippet(result as any)"
               />
+              <div
+                v-else
+                class="result-path"
+              >
+                {{ getFormattedPath(result.item.url) }}
+              </div>
             </div>
 
             <div v-if="result.item.tags && result.item.tags.length > 0" class="result-tags">
@@ -531,5 +590,56 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
   .search-modal {
     transform: scale(0.96) translateY(-10px);
   }
+}
+
+.search-modes-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--bg-primary-color);
+  border-bottom: 1px solid var(--border-secondary-color);
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  color: var(--fg-secondary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    color: var(--fg-primary-color);
+    background-color: var(--bg-hover-color);
+  }
+
+  &.is-active {
+    color: var(--fg-accent-color);
+    background-color: var(--bg-accent-color);
+    border-color: rgba(var(--fg-accent-color-rgb), 0.2);
+    font-weight: 600;
+  }
+}
+
+.mode-icon {
+  font-size: 1.1rem;
+}
+
+.result-path {
+  font-size: 0.8rem;
+  color: var(--fg-secondary-color);
+  opacity: 0.85;
+  margin-left: 28px;
+  margin-top: 2px;
+  font-family: 'Maple Mono CN', monospace;
+  word-break: break-all;
 }
 </style>

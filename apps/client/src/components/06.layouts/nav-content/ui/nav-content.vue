@@ -4,7 +4,7 @@ import type { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/mode
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
 import { get, set } from 'idb-keyval'
-import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AiSettingsDialog from '~/components/02.shared/global-dialogs/ui/ai-settings-dialog.vue'
@@ -103,13 +103,19 @@ useSwipe(mainAreaRef, {
   passive: true,
   onSwipeStart: (e) => { isSwipingOnScrollable.value = !!(e.target as HTMLElement).closest('table') },
   onSwipeEnd: (_, direction) => {
-    // Разрешаем свайп только если сайдбар разрешен
     if (!isSwipingOnScrollable.value && !menu.value && direction === 'right' && isSidebarEnabled.value)
       menu.value = true
   },
 })
 
 useEventListener(scrollableRef, 'scroll', handleScroll)
+
+useEventListener(window, 'keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    searchOpen.value = true
+  }
+})
 
 watch(() => route.path, () => {
   if (!isSidebarEnabled.value) {
@@ -121,16 +127,45 @@ watch(() => route.path, () => {
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
+watch(() => params.value.pwd, async (pwd) => {
+  if (pwd && pwd.length > 0) {
+    const folders = pwd.slice(0, -1)
+    if (folders.length > 0) {
+      const newOpen = new Set(contentViewerStore.openFolders)
+      folders.forEach(f => newOpen.add(f))
+      contentViewerStore.setOpenFolders(Array.from(newOpen))
+    }
+
+    await nextTick()
+    setTimeout(() => {
+      const activeItem = document.getElementById('active-tree-item')
+      if (activeItem) {
+        // Мягкий скролл сайдбара к активному элементу
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }, 150)
+  }
+}, { immediate: true })
+// ====================
+
+// ФОНОВАЯ АВТОСИНХРОНИЗАЦИЯ (добавленная в прошлом ответе)
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
-
   let isCancelled = false
-  onCleanup(() => {
-    isCancelled = true
-  })
+  onCleanup(() => { isCancelled = true })
 
   status.value = 'pending'
+
+  const vaultConfig = vaultStore.getVault(vault)
+  if (vaultConfig && vaultConfig.isDownloaded && vaultConfig.syncStatus !== 'syncing') {
+    const oneHour = 1000 * 60 * 60
+    const timeSinceLastSync = Date.now() - (vaultConfig.lastSync || 0)
+    if (timeSinceLastSync > oneHour && navigator.onLine) {
+      vaultStore.syncVault(vault).catch(() => {})
+    }
+  }
+
   try {
     async function parseJson<T>(path: string) {
       const content = await vaultStore.getFileContent(vault, path)

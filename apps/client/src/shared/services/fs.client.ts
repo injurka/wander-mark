@@ -72,6 +72,19 @@ export async function writeBinaryFile(path: string, data: Blob, absolute = false
   }
 }
 
+export async function deleteFile(path: string, absolute = false): Promise<void> {
+  if (isTauri) {
+    const { remove, BaseDirectory } = await import('@tauri-apps/plugin-fs')
+    await remove(path, { baseDir: absolute ? undefined : BaseDirectory.AppData }).catch(() => { })
+  }
+  else if (Capacitor.isNativePlatform()) {
+    await Filesystem.deleteFile({ path, directory: Directory.Data }).catch(() => { })
+  }
+  else {
+    await del(path)
+  }
+}
+
 export async function deleteFilesByPrefix(prefix: string): Promise<void> {
   if (isTauri) {
     const { remove, BaseDirectory } = await import('@tauri-apps/plugin-fs')

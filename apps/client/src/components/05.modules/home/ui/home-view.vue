@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { useTimeAgo } from '@vueuse/core'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { KitBtn, KitDialog, KitInput } from '~/components/01.kit'
@@ -35,7 +36,6 @@ const buildDateFormatted = computed(() => {
 const {
   vaults,
   progressMap,
-  installingMap,
   iconUrls,
   iconErrors,
   handleIconError,
@@ -50,30 +50,25 @@ const {
   submitAddRemote,
   confirmDelete,
   proceedDelete,
-  handleInstall,
+  handleSync,
   openVault,
 } = useVaultManagement()
+
+function getTimeAgo(timestamp?: number) {
+  if (!timestamp)
+    return 'Никогда'
+  return useTimeAgo(timestamp).value
+}
 </script>
 
 <template>
   <div class="landing-page custom-scrollbar">
     <InteractiveGridPattern class="background-pattern" :width="60" :height="60" :squares="[50, 30]" />
 
-    <!-- Панель настроек на главной -->
     <header class="home-header">
       <div class="settings-actions">
-        <KitBtn
-          variant="text"
-          :icon="currentThemeIcon"
-          :title="t('settings.theme')"
-          @click="toggleTheme"
-        />
-        <KitBtn
-          variant="text"
-          prepend-icon="mdi:translate"
-          :title="t('settings.language')"
-          @click="cycleLanguage"
-        >
+        <KitBtn variant="text" :icon="currentThemeIcon" :title="t('settings.theme')" @click="toggleTheme" />
+        <KitBtn variant="text" prepend-icon="mdi:translate" :title="t('settings.language')" @click="cycleLanguage">
           {{ languageNames[currentLocale] }}
         </KitBtn>
       </div>
@@ -103,19 +98,8 @@ const {
           <div v-for="vault in vaults" :key="vault.id" class="vault-item">
             <div class="vault-info" @click="openVault(vault.id)">
               <div class="vault-icon-wrapper">
-                <img
-                  v-if="iconUrls[vault.id] && !iconErrors[vault.id]"
-                  :src="iconUrls[vault.id]"
-                  class="vault-image-icon"
-                  alt="icon"
-                  @error="handleIconError(vault.id)"
-                >
-                <Icon
-                  v-else
-                  :icon="vault.isDownloaded ? 'mdi:database-check-outline' : 'mdi:cloud-outline'"
-                  class="vault-icon"
-                  :class="{ ready: vault.isDownloaded }"
-                />
+                <img v-if="iconUrls[vault.id] && !iconErrors[vault.id]" :src="iconUrls[vault.id]" class="vault-image-icon" alt="icon" @error="handleIconError(vault.id)">
+                <Icon v-else :icon="vault.isDownloaded ? 'mdi:database-check-outline' : 'mdi:cloud-outline'" class="vault-icon" :class="{ ready: vault.isDownloaded }" />
               </div>
 
               <div class="vault-text-content">
@@ -125,37 +109,30 @@ const {
                 <p class="vault-url" :title="vault.description || vault.url">
                   {{ vault.description || vault.url }}
                 </p>
+                <div v-if="vault.isDownloaded" class="vault-sync-status">
+                  <Icon :icon="vault.syncStatus === 'syncing' ? 'mdi:refresh' : (vault.syncStatus === 'error' ? 'mdi:alert-circle-outline' : 'mdi:check')" :class="{ spin: vault.syncStatus === 'syncing', error: vault.syncStatus === 'error' }" />
+                  <span>Синхронизировано: {{ getTimeAgo(vault.lastSync) }}</span>
+                </div>
               </div>
             </div>
 
-            <div v-if="installingMap[vault.id]" class="install-progress-circle">
+            <div v-if="vault.syncStatus === 'syncing'" class="install-progress-circle">
               <svg viewBox="0 0 36 36" class="circular-chart">
-                <path
-                  class="circle-bg"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  class="circle"
-                  :stroke-dasharray="`${progressMap[vault.id] || 0}, 100`"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle" :stroke-dasharray="`${progressMap[vault.id] || 0}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
               </svg>
               <span class="percentage">{{ progressMap[vault.id] || 0 }}</span>
             </div>
 
             <div v-else class="vault-actions">
               <template v-if="!vault.isDownloaded">
-                <KitBtn class="btn-download-desktop" variant="tonal" size="sm" @click="handleInstall(vault.id)">
-                  {{ t('home.download') }}
+                <KitBtn class="btn-download-desktop" variant="tonal" size="sm" @click="handleSync(vault.id)">
+                  Скачать
                 </KitBtn>
-                <KitBtn class="btn-download-mobile" variant="tonal" size="sm" icon="mdi:download" :title="t('home.download')" @click="handleInstall(vault.id)" />
+                <KitBtn class="btn-download-mobile" variant="tonal" size="sm" icon="mdi:download" title="Скачать" @click="handleSync(vault.id)" />
               </template>
 
-              <KitBtn v-else variant="text" size="sm" icon="mdi:refresh" :title="t('home.reinstall')" @click="handleInstall(vault.id)" />
+              <KitBtn v-else variant="text" size="sm" icon="mdi:refresh" title="Синхронизировать" @click="handleSync(vault.id)" />
               <KitBtn variant="text" color="secondary" size="sm" icon="mdi:delete-outline" :title="t('home.delete')" @click="confirmDelete(vault.id)" />
             </div>
           </div>
@@ -170,10 +147,8 @@ const {
     <KitDialog v-model:visible="isAddDialogVisible" :title="t('home.addDialogTitle')" icon="mdi:cloud-plus" :max-width="500">
       <div class="form-content">
         <div v-if="addError" class="alert-error">
-          <Icon icon="mdi:alert-circle-outline" class="mr-2" />
-          <span>{{ addError }}</span>
+          <Icon icon="mdi:alert-circle-outline" class="mr-2" /><span>{{ addError }}</span>
         </div>
-
         <div class="form-group">
           <label>{{ t('home.vaultId') }}</label>
           <p class="input-hint">
@@ -181,7 +156,6 @@ const {
           </p>
           <KitInput v-model="addForm.id" placeholder="Chinese" />
         </div>
-
         <div class="form-group">
           <label>{{ t('home.serverUrl') }}</label>
           <p class="input-hint">
@@ -190,7 +164,6 @@ const {
           <KitInput v-model="addForm.url" placeholder="https://md.chinisik.ru/local-files" />
         </div>
       </div>
-
       <template #footer>
         <KitBtn variant="text" color="secondary" @click="isAddDialogVisible = false">
           {{ t('home.cancel') }}
@@ -201,13 +174,7 @@ const {
       </template>
     </KitDialog>
 
-    <KitDialog
-      v-model:visible="isDeleteDialogVisible"
-      title="Удаление хранилища"
-      description="Вы уверены, что хотите удалить это хранилище и все его скачанные файлы?"
-      icon="mdi:delete-outline"
-      :max-width="400"
-    >
+    <KitDialog v-model:visible="isDeleteDialogVisible" title="Удаление хранилища" description="Вы уверены, что хотите удалить это хранилище и все его скачанные файлы?" icon="mdi:delete-outline" :max-width="400">
       <template #footer>
         <KitBtn variant="text" color="secondary" @click="isDeleteDialogVisible = false">
           {{ t('home.cancel') }}
@@ -218,13 +185,7 @@ const {
       </template>
     </KitDialog>
 
-    <KitDialog
-      v-model:visible="isErrorDialogVisible"
-      title="Ошибка"
-      :description="errorMessage"
-      icon="mdi:alert-circle-outline"
-      :max-width="450"
-    >
+    <KitDialog v-model:visible="isErrorDialogVisible" title="Ошибка" :description="errorMessage" icon="mdi:alert-circle-outline" :max-width="450">
       <div v-if="errorFiles.length > 0" class="error-files-list custom-scrollbar">
         <ul>
           <li v-for="file in errorFiles" :key="file">
@@ -250,7 +211,6 @@ const {
   border-radius: 6px;
   background-color: var(--bg-tertiary-color);
   padding: 8px 12px;
-
   ul {
     margin: 0;
     padding-left: 20px;
@@ -281,7 +241,6 @@ const {
   display: flex;
   justify-content: flex-end;
   z-index: 10;
-
   @include media-down(sm) {
     padding: 12px 16px;
   }
@@ -364,7 +323,6 @@ const {
   &:hover {
     border-color: var(--fg-accent-color);
   }
-
   @include media-down(sm) {
     padding: 12px;
     gap: 10px;
@@ -377,12 +335,10 @@ const {
   flex: 1;
   min-width: 0;
   cursor: pointer;
-
   @include media-down(sm) {
     gap: 10px;
   }
 }
-
 .vault-icon-wrapper {
   width: 44px;
   height: 44px;
@@ -390,32 +346,27 @@ const {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
   @include media-down(sm) {
     width: 36px;
     height: 36px;
   }
 }
-
 .vault-image-icon {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
-
 .vault-icon {
   font-size: 2.2rem;
   color: var(--fg-muted-color);
   &.ready {
     color: var(--fg-accent-color);
   }
-
   @include media-down(sm) {
     font-size: 1.8rem;
   }
 }
-
 .vault-text-content {
   flex: 1;
   min-width: 0;
@@ -423,7 +374,6 @@ const {
   flex-direction: column;
   justify-content: center;
 }
-
 .vault-name {
   font-size: 1.15rem;
   font-weight: 600;
@@ -432,7 +382,6 @@ const {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   @include media-down(sm) {
     font-size: 1rem;
     margin: 0 0 2px;
@@ -445,12 +394,30 @@ const {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   @include media-down(sm) {
     font-size: 0.75rem;
   }
 }
-
+.vault-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--fg-muted-color);
+  margin-top: 4px;
+  .spin {
+    animation: spin 1s linear infinite;
+    color: var(--fg-accent-color);
+  }
+  .error {
+    color: var(--fg-error-color);
+  }
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 .install-progress-circle {
   position: relative;
   width: 38px;
@@ -461,19 +428,16 @@ const {
   flex-shrink: 0;
   margin: 0 4px;
 }
-
 .circular-chart {
   display: block;
   width: 100%;
   height: 100%;
 }
-
 .circle-bg {
   fill: none;
   stroke: var(--bg-tertiary-color);
   stroke-width: 3.5;
 }
-
 .circle {
   fill: none;
   stroke-width: 3.5;
@@ -481,7 +445,6 @@ const {
   stroke: var(--fg-accent-color);
   transition: stroke-dasharray 0.3s ease;
 }
-
 .percentage {
   position: absolute;
   font-size: 0.65rem;
@@ -489,18 +452,15 @@ const {
   font-weight: 600;
   color: var(--fg-primary-color);
 }
-
 .vault-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
-
 .btn-download-mobile {
   display: none !important;
 }
-
 @include media-down(sm) {
   .btn-download-desktop {
     display: none !important;
@@ -509,11 +469,9 @@ const {
     display: inline-flex !important;
   }
 }
-
 .mr-2 {
   margin-right: 8px;
 }
-
 .form-content {
   display: flex;
   flex-direction: column;
@@ -523,7 +481,6 @@ const {
   display: flex;
   flex-direction: column;
   gap: 4px;
-
   label {
     font-size: 0.95rem;
     font-weight: 600;
@@ -556,7 +513,6 @@ const {
   opacity: 0.6;
   user-select: none;
   pointer-events: none;
-
   @include media-down(sm) {
     left: 16px;
     bottom: 8px;

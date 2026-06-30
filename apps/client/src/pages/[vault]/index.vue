@@ -44,6 +44,11 @@ function handleSectionClick(section: ContentNavItem) {
   if (path) {
     navigateTo(path)
   }
+  else {
+    const newOpen = new Set(store.openFolders)
+    newOpen.add(section.sysname)
+    store.setOpenFolders(Array.from(newOpen))
+  }
 }
 
 function formatDate(dateStr?: string) {
@@ -271,7 +276,7 @@ function formatDate(dateStr?: string) {
 }
 
 .section-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--fg-muted-color);
   transition: color 0.2s;
   flex-shrink: 0;
@@ -291,7 +296,7 @@ function formatDate(dateStr?: string) {
 
 .section-name {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--fg-primary-color);
   line-height: 1.3;
   display: -webkit-box;
@@ -302,7 +307,7 @@ function formatDate(dateStr?: string) {
 }
 
 .section-count {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--fg-muted-color);
 }
 
