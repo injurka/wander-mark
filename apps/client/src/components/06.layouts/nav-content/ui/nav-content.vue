@@ -103,19 +103,20 @@ useSwipe(mainAreaRef, {
   passive: true,
   onSwipeStart: (e) => {
     const target = e.target as HTMLElement
-    const isScrollableElement = !!target.closest('table, pre, .mermaid, .shiki, .math, .table-container')
+    const isScrollableElement = !!target.closest('table, pre, .mermaid, .shiki, .math, .table-container, .custom-scrollbar')
 
     let startX = 0
-    if (window.TouchEvent && e instanceof TouchEvent) {
+    if (typeof window !== 'undefined' && window.TouchEvent && e instanceof TouchEvent) {
       startX = e.touches[0].clientX
     }
     else if ('clientX' in e) {
       startX = (e as unknown as MouseEvent).clientX
     }
 
-    const isEdgeSwipe = startX <= 40
+    const maxEdgeWidth = typeof window !== 'undefined' ? Math.max(150, window.innerWidth * 0.2) : 150
+    const isComfortableSwipe = startX <= maxEdgeWidth
 
-    isSwipingOnScrollable.value = isScrollableElement || !isEdgeSwipe
+    isSwipingOnScrollable.value = isScrollableElement || !isComfortableSwipe
   },
   onSwipeEnd: (_, direction) => {
     if (!isSwipingOnScrollable.value && !menu.value && direction === 'right' && isSidebarEnabled.value)
@@ -142,6 +143,7 @@ watch(() => route.path, () => {
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
+// Автоматически раскрываем папки в дереве при навигации к любому файлу
 watch(() => params.value.pwd, async (pwd) => {
   if (pwd && pwd.length > 0) {
     const folders = pwd.slice(0, -1)
@@ -151,16 +153,19 @@ watch(() => params.value.pwd, async (pwd) => {
       contentViewerStore.setOpenFolders(Array.from(newOpen))
     }
 
+    // Ждем пока дерево отрендерится с раскрытыми папками
     await nextTick()
     setTimeout(() => {
       const activeItem = document.getElementById('active-tree-item')
       if (activeItem) {
+        // Мягкий скролл сайдбара к активному элементу
         activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }, 150)
   }
 }, { immediate: true })
 
+// ФОНОВАЯ АВТОСИНХРОНИЗАЦИЯ
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
