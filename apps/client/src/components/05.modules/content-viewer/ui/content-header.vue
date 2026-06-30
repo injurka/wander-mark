@@ -87,7 +87,7 @@ watch(
 const currentVault = computed(() => route.params.vault as string)
 
 function revealInTree() {
-  menu.value = true // Open sidebar
+  menu.value = true
   if (route.params.pwd) {
     const pwd = (Array.isArray(route.params.pwd) ? route.params.pwd : [route.params.pwd].filter(Boolean)) as string[]
     const parents = pwd.slice(0, -1)
@@ -97,14 +97,13 @@ function revealInTree() {
       store.setOpenFolders(Array.from(newOpenFolders))
     }
 
-    // Scroll to the active item after the sidebar opens and tree updates
     nextTick(() => {
       setTimeout(() => {
         const activeItem = document.getElementById('active-tree-item')
         if (activeItem) {
           activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
-      }, 300) // Small delay to let sidebar animation finish
+      }, 300)
     })
   }
 }
@@ -118,7 +117,7 @@ function revealInTree() {
         variant="text"
         size="sm"
         :icon="menu ? 'mdi:arrow-left' : 'mdi:menu'"
-        class="menu-btn flex-shrink-0"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
         @click="menu = !menu"
       />
       <KitBtn
@@ -126,7 +125,7 @@ function revealInTree() {
         variant="text"
         size="sm"
         icon="mdi:home-outline"
-        class="menu-btn flex-shrink-0"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
         :title="t('sidebar.vaultHome')"
         @click="router.push(`/${currentVault}`)"
       />
@@ -135,7 +134,7 @@ function revealInTree() {
         variant="text"
         size="sm"
         icon="mdi:arrow-left"
-        class="menu-btn flex-shrink-0"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
         :title="t('sidebar.allVaults')"
         @click="router.push('/')"
       />
@@ -158,7 +157,7 @@ function revealInTree() {
       </nav>
     </div>
 
-    <div class="header-right flex-shrink-0">
+    <div class="header-right flex-shrink-0 hide-on-mobile">
       <slot name="toolbar-extra" />
 
       <KitBtn
@@ -169,7 +168,6 @@ function revealInTree() {
         @click="emit('openSearch')"
       />
 
-      <!-- Добавили слушатель @open-ai-settings -->
       <ViewerSettingsMenu
         :vault="currentVault"
         @open-plugins="emit('openPlugins')"
@@ -292,10 +290,12 @@ function revealInTree() {
     padding: 0 12px;
     gap: 8px;
   }
-
   .breadcrumb-item {
     font-size: 0.8rem;
     padding: 2px 6px;
+  }
+  .hide-on-mobile {
+    display: none !important;
   }
 }
 </style>

@@ -1,18 +1,21 @@
 <script lang="ts" setup>
 import type { ContentNavItem, VaultMetaSettings } from '~/components/05.modules/content-viewer'
 import type { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/models'
+import { Icon } from '@iconify/vue'
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
 import { get, set } from 'idb-keyval'
 import { computed, nextTick, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { KitCheckbox, KitDialog } from '~/components/01.kit'
 import AiSettingsDialog from '~/components/02.shared/global-dialogs/ui/ai-settings-dialog.vue'
 import { PageLoader } from '~/components/02.shared/page-loader'
 import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
+import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
@@ -39,11 +42,19 @@ const globalSettings = useGlobalSettingsStore()
 
 const pluginsDialogOpen = ref(false)
 const aiSettingsDialogOpen = ref(false)
+const mobileSettingsOpen = ref(false)
 
 const { showToast } = useToast()
 const { confirm } = useConfirm()
 const { t } = useI18n()
-const { currentLocale } = useLocale()
+const { currentLocale, cycleLanguage, languageNames } = useLocale()
+const { theme, setTheme } = useChangeTheme()
+
+const currentThemeIcon = computed(() => theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night')
+
+function toggleTheme() {
+  setTheme(theme.value === ThemesVariant.Light ? ThemesVariant.Dark : ThemesVariant.Light)
+}
 
 const isSidebarEnabled = computed(() => !route.meta.hideSidebar)
 
@@ -51,6 +62,8 @@ const menu = ref(isSidebarEnabled.value && typeof window !== 'undefined' && wind
 const searchOpen = ref(false)
 const scrollableRef = ref<HTMLElement | null>(null)
 const mainAreaRef = ref<HTMLElement | null>(null)
+
+// Флаг защиты от ложных открытий меню
 const isSwipingOnScrollable = ref(false)
 
 const isHeaderVisible = ref(true)
@@ -99,6 +112,66 @@ function handleScroll() {
   lastScrollTop.value = scrollTop
 }
 
+const ptrState = ref<'idle' | 'pulling' | 'refreshing'>('idle')
+const ptrDistance = ref(0)
+let touchStartY = -1
+
+function onTouchStart(e: TouchEvent) {
+  if (scrollableRef.value && scrollableRef.value.scrollTop <= 0) {
+    touchStartY = e.touches[0].clientY
+  }
+  else {
+    touchStartY = -1
+  }
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (touchStartY > 0 && ptrState.value !== 'refreshing') {
+    const y = e.touches[0].clientY
+    const delta = y - touchStartY
+    if (delta > 0) {
+      ptrState.value = 'pulling'
+      ptrDistance.value = Math.min(delta * 0.4, 80)
+    }
+    else {
+      ptrState.value = 'idle'
+      ptrDistance.value = 0
+    }
+  }
+}
+
+async function onTouchEnd() {
+  if (ptrState.value === 'pulling') {
+    if (ptrDistance.value >= 60) {
+      ptrState.value = 'refreshing'
+      ptrDistance.value = 50
+      try {
+        await vaultStore.syncVault(params.value.vault)
+      }
+      catch (e) {
+        console.error('Pull to refresh failed:', e)
+      }
+      finally {
+        ptrState.value = 'idle'
+        ptrDistance.value = 0
+      }
+    }
+    else {
+      ptrState.value = 'idle'
+      ptrDistance.value = 0
+    }
+  }
+  touchStartY = -1
+}
+
+const ptrStyle = computed(() => {
+  if (ptrState.value === 'refreshing')
+    return { height: '50px', opacity: 1 }
+  if (ptrState.value === 'idle')
+    return { height: '0px', opacity: 0 }
+  return { height: `${ptrDistance.value}px`, opacity: Math.min(1, ptrDistance.value / 50) }
+})
+
 useSwipe(mainAreaRef, {
   passive: true,
   onSwipeStart: (e) => {
@@ -143,7 +216,6 @@ watch(() => route.path, () => {
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
-// Автоматически раскрываем папки в дереве при навигации к любому файлу
 watch(() => params.value.pwd, async (pwd) => {
   if (pwd && pwd.length > 0) {
     const folders = pwd.slice(0, -1)
@@ -153,19 +225,16 @@ watch(() => params.value.pwd, async (pwd) => {
       contentViewerStore.setOpenFolders(Array.from(newOpen))
     }
 
-    // Ждем пока дерево отрендерится с раскрытыми папками
     await nextTick()
     setTimeout(() => {
       const activeItem = document.getElementById('active-tree-item')
       if (activeItem) {
-        // Мягкий скролл сайдбара к активному элементу
         activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }, 150)
   }
 }, { immediate: true })
 
-// ФОНОВАЯ АВТОСИНХРОНИЗАЦИЯ
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
@@ -430,18 +499,98 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
             <PluginSlot name="toolbar" />
           </template>
         </ContentViewerHeader>
-        <div ref="scrollableRef" class="content-scrollable" :class="{ borderless: contentViewerStore.borderlessViewEnabled }">
+
+        <!-- Зона контента с обработчиками свайпов -->
+        <div
+          ref="scrollableRef"
+          class="content-scrollable"
+          :class="{ borderless: contentViewerStore.borderlessViewEnabled }"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+        >
+          <!-- Pull-to-refresh индикатор -->
+          <div class="ptr-container" :class="ptrState" :style="ptrStyle">
+            <Icon icon="mdi:refresh" class="ptr-spinner" :class="{ 'is-spinning': ptrState === 'refreshing' }" />
+          </div>
+
           <PluginSlot name="content-before" />
           <router-view />
           <PluginSlot name="content-after" />
         </div>
+
+        <!-- Нижний тулбар для мобильных -->
+        <nav class="mobile-bottom-nav">
+          <button class="bottom-nav-btn" :class="{ 'is-active': menu }" @click="menu = !menu">
+            <Icon icon="mdi:menu" />
+            <span>Меню</span>
+          </button>
+          <button class="bottom-nav-btn" @click="searchOpen = true">
+            <Icon icon="mdi:magnify" />
+            <span>Поиск</span>
+          </button>
+          <button class="bottom-nav-btn" @click="router.push(`/${params.vault}`)">
+            <Icon icon="mdi:home-outline" />
+            <span>Главная</span>
+          </button>
+          <button class="bottom-nav-btn" :class="{ 'is-active': mobileSettingsOpen }" @click="mobileSettingsOpen = true">
+            <Icon icon="mdi:cog-outline" />
+            <span>Опции</span>
+          </button>
+        </nav>
       </main>
+
       <SearchModal v-model="searchOpen" />
 
       <PluginSlot name="overlay" />
 
       <PluginManagerDialog v-model:visible="pluginsDialogOpen" />
       <AiSettingsDialog v-model:visible="aiSettingsDialogOpen" />
+
+      <!-- Мобильные настройки (Модальное окно) -->
+      <KitDialog v-model:visible="mobileSettingsOpen" :title="t('settings.interface')" icon="mdi:cog-outline" :max-width="400">
+        <div class="mobile-settings-list">
+          <div class="menu-item" @click="toggleTheme">
+            <div class="item-label">
+              <Icon :icon="currentThemeIcon" class="item-icon" />
+              <span>{{ t('settings.theme') }}</span>
+            </div>
+            <span class="value-text">{{ theme === 'light' ? t('settings.themeLight') : t('settings.themeDark') }}</span>
+          </div>
+          <div class="menu-item" @click="cycleLanguage">
+            <div class="item-label">
+              <Icon icon="mdi:translate" class="item-icon" />
+              <span>{{ t('settings.language') }}</span>
+            </div>
+            <span class="value-text">{{ languageNames[currentLocale] }}</span>
+          </div>
+
+          <div class="divider" />
+
+          <div class="settings-group">
+            <KitCheckbox v-model="contentViewerStore.pinHeaderEnabled" :label="t('settings.pinHeader')" />
+            <KitCheckbox v-model="contentViewerStore.borderlessViewEnabled" :label="t('settings.borderless')" />
+            <KitCheckbox v-model="contentViewerStore.coloredFoldersEnabled" :label="t('settings.coloredFolders')" />
+            <KitCheckbox v-model="contentViewerStore.showIconsEnabled" :label="t('settings.showIcons')" />
+            <KitCheckbox v-model="contentViewerStore.showOutlineEnabled" :label="t('settings.showOutline')" />
+          </div>
+
+          <div class="divider" />
+
+          <div class="menu-item" @click="mobileSettingsOpen = false; pluginsDialogOpen = true">
+            <div class="item-label">
+              <Icon icon="mdi:puzzle-outline" class="item-icon" />
+              <span>{{ t('settings.plugins') }}</span>
+            </div>
+          </div>
+          <div class="menu-item" @click="mobileSettingsOpen = false; aiSettingsDialogOpen = true">
+            <div class="item-label">
+              <Icon icon="mdi:robot-outline" class="item-icon" />
+              <span>{{ t('settings.aiSettings') }}</span>
+            </div>
+          </div>
+        </div>
+      </KitDialog>
     </div>
   </div>
 </template>
@@ -471,6 +620,12 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
   padding: 50px 0 env(safe-area-inset-bottom, 0) 0;
   -webkit-overflow-scrolling: touch;
 
+  overscroll-behavior-y: none;
+
+  @include media-down(md) {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0) + 70px);
+  }
+
   &.borderless :deep(.content-viewer) {
     width: 100% !important;
     max-width: 100% !important;
@@ -480,5 +635,136 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       padding: 0;
     }
   }
+}
+
+.ptr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  color: var(--fg-accent-color);
+  width: 100%;
+
+  &.idle {
+    transition:
+      height 0.3s cubic-bezier(0.2, 0, 0, 1),
+      opacity 0.3s;
+  }
+  &.refreshing {
+    transition: height 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+}
+
+.ptr-spinner {
+  font-size: 1.8rem;
+  opacity: 0.8;
+  &.is-spinning {
+    animation: spin 1s linear infinite;
+    opacity: 1;
+  }
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// === Mobile Bottom Nav ===
+.mobile-bottom-nav {
+  display: none;
+
+  @include media-down(md) {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom, 0));
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    background-color: rgba(var(--bg-secondary-color-rgb), 0.9);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-secondary-color);
+    z-index: 50;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+
+.bottom-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-secondary-color);
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  gap: 4px;
+  transition: color 0.2s;
+
+  span {
+    font-size: 0.65rem;
+    font-weight: 500;
+  }
+
+  &.is-active,
+  &:active {
+    color: var(--fg-accent-color);
+  }
+}
+
+.mobile-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary-color);
+  border: 1px solid var(--border-secondary-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+
+  &:active {
+    background-color: var(--bg-hover-color);
+    border-color: var(--fg-accent-color);
+  }
+}
+.item-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: var(--fg-primary-color);
+  font-weight: 500;
+}
+.item-icon {
+  font-size: 1.2rem;
+  color: var(--fg-accent-color);
+}
+.value-text {
+  font-size: 0.8rem;
+  color: var(--fg-secondary-color);
+}
+.divider {
+  height: 1px;
+  background-color: var(--border-secondary-color);
+  margin: 4px;
+}
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary-color);
 }
 </style>
