@@ -42,7 +42,7 @@ const globalSettings = useGlobalSettingsStore()
 
 const pluginsDialogOpen = ref(false)
 const aiSettingsDialogOpen = ref(false)
-const mobileSettingsOpen = ref(false)
+const mobileSettingsOpen = ref(false) // Модалка настроек на мобилках
 
 const { showToast } = useToast()
 const { confirm } = useConfirm()
@@ -216,6 +216,7 @@ watch(() => route.path, () => {
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
+// Автоматически раскрываем папки в дереве при навигации к любому файлу
 watch(() => params.value.pwd, async (pwd) => {
   if (pwd && pwd.length > 0) {
     const folders = pwd.slice(0, -1)
@@ -235,6 +236,7 @@ watch(() => params.value.pwd, async (pwd) => {
   }
 }, { immediate: true })
 
+// ФОНОВАЯ АВТОСИНХРОНИЗАЦИЯ
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
@@ -436,14 +438,12 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     for (const p of settings.plugins) {
       if (isCancelled)
         return
-
       const pId = typeof p === 'string' ? p : p.id
       const pUrl = typeof p === 'string' ? p : p.url
       const enabledByDefault = typeof p === 'string' ? true : (p.enabledByDefault ?? true)
 
       if (!pUrl)
         continue
-
       if (isCancelled)
         return
 
@@ -519,11 +519,11 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
           <PluginSlot name="content-after" />
         </div>
 
-        <!-- Нижний тулбар для мобильных -->
+        <!-- Полупрозрачный нижний тулбар для мобильных (Опции слева, Меню справа) -->
         <nav class="mobile-bottom-nav">
-          <button class="bottom-nav-btn" :class="{ 'is-active': menu }" @click="menu = !menu">
-            <Icon icon="mdi:menu" />
-            <span>Меню</span>
+          <button class="bottom-nav-btn" :class="{ 'is-active': mobileSettingsOpen }" @click="mobileSettingsOpen = true">
+            <Icon icon="mdi:cog-outline" />
+            <span>Опции</span>
           </button>
           <button class="bottom-nav-btn" @click="searchOpen = true">
             <Icon icon="mdi:magnify" />
@@ -533,9 +533,9 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
             <Icon icon="mdi:home-outline" />
             <span>Главная</span>
           </button>
-          <button class="bottom-nav-btn" :class="{ 'is-active': mobileSettingsOpen }" @click="mobileSettingsOpen = true">
-            <Icon icon="mdi:cog-outline" />
-            <span>Опции</span>
+          <button class="bottom-nav-btn" :class="{ 'is-active': menu }" @click="menu = !menu">
+            <Icon icon="mdi:menu" />
+            <span>Меню</span>
           </button>
         </nav>
       </main>
@@ -669,7 +669,6 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
   }
 }
 
-// === Mobile Bottom Nav ===
 .mobile-bottom-nav {
   display: none;
 
@@ -681,8 +680,10 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     right: 0;
     height: calc(60px + env(safe-area-inset-bottom, 0));
     padding-bottom: env(safe-area-inset-bottom, 0);
-    background-color: rgba(var(--bg-secondary-color-rgb), 0.9);
-    backdrop-filter: blur(16px);
+
+    background-color: rgba(var(--bg-secondary-color-rgb), 0.65);
+    backdrop-filter: blur(20px);
+
     border-top: 1px solid var(--border-secondary-color);
     z-index: 50;
     justify-content: space-around;
