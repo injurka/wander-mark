@@ -10,6 +10,7 @@ import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentNavItemType, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import { flattenNavItems } from '~/components/05.modules/content-viewer/lib/navigation'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
+import { AppRoutePaths } from '~/shared/constants/routes'
 
 const store = useContentViewerStore()
 const pluginStore = usePluginStore()
@@ -165,6 +166,18 @@ function formatDate(dateStr?: string) {
           </div>
         </div>
       </section>
+
+      <div class="back-to-home-wrapper">
+        <KitBtn
+          variant="outlined"
+          color="secondary"
+          size="lg"
+          prepend-icon="mdi:home-outline"
+          @click="router.push(AppRoutePaths.Root)"
+        >
+          {{ t('sidebar.allVaults') }}
+        </KitBtn>
+      </div>
     </div>
   </div>
 </template>
@@ -462,5 +475,20 @@ function formatDate(dateStr?: string) {
   background-color: var(--bg-secondary-color);
   border-radius: 12px;
   border: 1px dashed var(--border-secondary-color);
+}
+
+.back-to-home-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 40px;
+  border-top: 1px dashed var(--border-secondary-color);
+
+  :deep(.kit-btn) {
+    padding: 0 32px;
+    font-size: 0.95rem;
+    height: 44px;
+    border-radius: 22px;
+  }
 }
 </style>

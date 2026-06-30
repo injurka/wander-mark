@@ -101,7 +101,22 @@ function handleScroll() {
 
 useSwipe(mainAreaRef, {
   passive: true,
-  onSwipeStart: (e) => { isSwipingOnScrollable.value = !!(e.target as HTMLElement).closest('table') },
+  onSwipeStart: (e) => {
+    const target = e.target as HTMLElement
+    const isScrollableElement = !!target.closest('table, pre, .mermaid, .shiki, .math, .table-container')
+
+    let startX = 0
+    if (window.TouchEvent && e instanceof TouchEvent) {
+      startX = e.touches[0].clientX
+    }
+    else if ('clientX' in e) {
+      startX = (e as unknown as MouseEvent).clientX
+    }
+
+    const isEdgeSwipe = startX <= 40
+
+    isSwipingOnScrollable.value = isScrollableElement || !isEdgeSwipe
+  },
   onSwipeEnd: (_, direction) => {
     if (!isSwipingOnScrollable.value && !menu.value && direction === 'right' && isSidebarEnabled.value)
       menu.value = true
@@ -140,15 +155,12 @@ watch(() => params.value.pwd, async (pwd) => {
     setTimeout(() => {
       const activeItem = document.getElementById('active-tree-item')
       if (activeItem) {
-        // Мягкий скролл сайдбара к активному элементу
         activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }, 150)
   }
 }, { immediate: true })
-// ====================
 
-// ФОНОВАЯ АВТОСИНХРОНИЗАЦИЯ (добавленная в прошлом ответе)
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
