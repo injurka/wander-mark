@@ -16,7 +16,7 @@ export async function buildFileMapRecursive(
   ignoredFolderNames: string[],
 ): Promise<void> {
   try {
-    const entries: Dirent = await fs.readdir(currentSourcePath, { withFileTypes: true }) as any
+    const entries: Dirent[] = await fs.readdir(currentSourcePath, { withFileTypes: true }) as any
 
     for (const entry of entries) {
       const entryName = entry.name
@@ -45,10 +45,20 @@ export async function buildFileMapRecursive(
 
         const targetUrl = `/${navigationSysname}/${finalRelativePath}`
 
-        if (fileMap.has(baseName)) {
-          console.warn(`⚠️ Duplicate base file name found: "${baseName}". Link resolution might be ambiguous. Using path: ${targetUrl}`)
+        const fullRelativePath = path.join(relativePathFromSourceBase, baseName).replace(/\\/g, '/')
+        const parts = fullRelativePath.split('/')
+        let currentKey = ''
+        
+        for (let i = parts.length - 1; i >= 0; i--) {
+          currentKey = currentKey ? `${parts[i]}/${currentKey}` : parts[i]
+          
+          if (fileMap.has(currentKey)) {
+            if (currentKey === baseName) {
+              console.warn(`⚠️ Duplicate base file name found: "${baseName}". Link resolution might be ambiguous. Using path: ${targetUrl}`)
+            }
+          }
+          fileMap.set(currentKey, targetUrl)
         }
-        fileMap.set(baseName, targetUrl)
       }
     }
   }

@@ -20,7 +20,7 @@ export async function processDirectoryRecursive(
   const childrenNavItems: ContentNavItem[] = []
 
   try {
-    const entries: Dirent = await fs.readdir(sourceCurrentPath, { withFileTypes: true }) as any
+    const entries: Dirent[] = await fs.readdir(sourceCurrentPath, { withFileTypes: true }) as any
 
     for (const entry of entries) {
       const entryName = entry.name
@@ -121,7 +121,13 @@ export async function processDirectoryRecursive(
 
           content = content.replace(OBSIDIAN_LINK_REGEX, (match, linkedFile, alias) => {
             linksFound++
-            const linkBaseName = decodeURIComponent(linkedFile.trim())
+            let linkBaseName = linkedFile.trim()
+            try {
+              linkBaseName = decodeURIComponent(linkBaseName)
+            }
+            catch {
+              // Ignore URI malformed errors
+            }
             const linkText = alias ? alias.trim() : linkBaseName
             const targetUrl = fileMap.get(linkBaseName)
 
