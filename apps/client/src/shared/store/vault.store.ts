@@ -12,7 +12,7 @@ export interface VaultConfig {
   localPath?: string
   isDownloaded: boolean
   lastSync?: number
-  syncStatus?: 'idle' | 'syncing' | 'error'
+  syncStatus?: 'idle' | 'syncing' | 'error' | 'partial'
   name?: string
 }
 
@@ -87,9 +87,50 @@ export const useVaultStore = defineStore('vault', () => {
         syncStatus: 'idle',
       })
     }
-    catch (e: any) {
+    catch {
       throw new Error('Ошибка сети или хранилище недоступно.')
     }
+  }
+
+  const getVault = (id: string) => vaults.value.find(v => v.id === id)
+
+  // Хелпер для параллельного выполнения промисов с лимитом
+  const runInBatches = async <T, R>(items: T[], batchSize: number, task: (item: T) => Promise<R>): Promise<R[]> => {
+    const results: R[] = []
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize)
+      const batchResults = await Promise.all(batch.map(task))
+      results.push(...batchResults)
+    }
+    return results
+  }
+
+  const getFileContent = async (vaultId: string, filePath: string): Promise<string | null> => {
+    const vault = getVault(vaultId)
+    if (!vault)
+      return null
+
+    if (vault.type === 'local' && vault.localPath) {
+      return await readTextFile(`${vault.localPath}/${filePath}`, true)
+    }
+
+    if (vault.isDownloaded) {
+      const content = await readTextFile(`vaults/${vaultId}/${filePath}`)
+      if (content !== null)
+        return content
+    }
+
+    if (vault.type === 'remote') {
+      try {
+        const res = await fetch(`${vault.url}/${filePath}`)
+        if (res.ok)
+          return await res.text()
+      }
+      catch (e) {
+        console.warn(`[Web Mode] Не удалось загрузить файл по сети: ${filePath}`, e)
+      }
+    }
+    return null
   }
 
   // --- Инкрементальная синхронизация ---
@@ -109,13 +150,39 @@ export const useVaultStore = defineStore('vault', () => {
       const remoteNavRaw = await navRes.json()
       const remoteItems = Array.isArray(remoteNavRaw) ? remoteNavRaw : (remoteNavRaw.children || [])
 
-      // 2. Читаем локальный nav.json (если есть)
-      let localItems: any[] = []
+      // 2. Читаем локальный sync_state.json (реестр успешно скачанных файлов)
+      // Если его нет, используем пустой объект (все будет скачано заново, либо перезаписано)
+      let syncState: Record<string, string> = {}
       if (vault.isDownloaded) {
-        const localNavStr = await getFileContent(vaultId, `content/${vaultId}/nav.json`)
-        if (localNavStr) {
-          const parsed = JSON.parse(localNavStr)
-          localItems = Array.isArray(parsed) ? parsed : (parsed.children || [])
+        const stateStr = await getFileContent(vaultId, `meta/${vaultId}/sync_state.json`)
+        if (stateStr) {
+          try {
+            syncState = JSON.parse(stateStr)
+          }
+          catch { }
+        }
+        else {
+          // Обратная совместимость: если sync_state нет, попытаемся прочитать старый nav.json
+          const localNavStr = await getFileContent(vaultId, `content/${vaultId}/nav.json`)
+          if (localNavStr) {
+            try {
+              const parsed = JSON.parse(localNavStr)
+              const localItems = Array.isArray(parsed) ? parsed : (parsed.children || [])
+              const buildOldMap = (items: any[], currentPath = '', map: Record<string, string> = {}) => {
+                for (const item of items) {
+                  const fullPath = currentPath ? `${currentPath}/${item.sysname}` : item.sysname
+                  if (item.type === 'file') {
+                    map[`content/${vaultId}/${fullPath}.md`] = item.meta?.lastModified || '1970'
+                  }
+                  if (item.children)
+                    buildOldMap(item.children, fullPath, map)
+                }
+                return map
+              }
+              syncState = buildOldMap(localItems)
+            }
+            catch { }
+          }
         }
       }
 
@@ -133,7 +200,6 @@ export const useVaultStore = defineStore('vault', () => {
       }
 
       const remoteMap = buildFileMap(remoteItems)
-      const localMap = buildFileMap(localItems)
 
       const filesToDownload = new Set<string>([
         `content/${vaultId}/nav.json`,
@@ -143,14 +209,14 @@ export const useVaultStore = defineStore('vault', () => {
       ])
       const filesToDelete = new Set<string>()
 
-      // 3. Сравниваем
+      // 3. Сравниваем remoteMap и локальный syncState
       remoteMap.forEach((lastMod, path) => {
-        if (!localMap.has(path) || localMap.get(path) !== lastMod) {
+        if (!syncState[path] || syncState[path] !== lastMod) {
           filesToDownload.add(path) // Новый или измененный
         }
       })
-      localMap.forEach((_, path) => {
-        if (!remoteMap.has(path)) {
+      Object.keys(syncState).forEach((path) => {
+        if (!remoteMap.has(path) && path.startsWith(`content/${vaultId}/`) && path.endsWith('.md')) {
           filesToDelete.add(path) // Удален на сервере
         }
       })
@@ -179,15 +245,18 @@ export const useVaultStore = defineStore('vault', () => {
       // 5. Удаляем локальные файлы, которых больше нет
       for (const file of filesToDelete) {
         await deleteFile(`vaults/${vaultId}/${file}`)
+        delete syncState[file]
       }
 
       // 6. Скачиваем измененные и новые
       let loaded = 0
-      const mediaToSync = new Set<string>()
-      const failedFiles: string[] = []
+      const mediaToSync = new Map<string, Set<string>>() // mediaUrl -> Set of parent markdown files
+      const failedFiles = new Set<string>()
       const fileArray = Array.from(filesToDownload)
 
-      for (const file of fileArray) {
+      const totalItems = fileArray.length
+
+      const downloadFile = async (file: string) => {
         try {
           const res = await fetch(`${vault.url}/${file}`)
           if (res.ok) {
@@ -197,32 +266,43 @@ export const useVaultStore = defineStore('vault', () => {
             if (file.endsWith('.md')) {
               const imgRegex = /!\[.*?\]\((.*?)\)/g
               const wikiRegex = /!\[\[(.*?)\]\]/g
+              const htmlImgRegex = /<img[^>]+src=["']([^"']+)["']/g
+
               let match
               const extractMedia = (imgPath: string) => {
                 imgPath = decodeURIComponent(imgPath.trim())
                 if (!imgPath.startsWith('http') && !imgPath.startsWith('data:')) {
-                  mediaToSync.add(imgPath.startsWith('/images/') ? imgPath.replace(/^\//, '') : `content/${vaultId}/${imgPath}`)
+                  const mediaPath = imgPath.startsWith('/images/') ? imgPath.replace(/^\//, '') : `content/${vaultId}/${imgPath}`
+                  if (!mediaToSync.has(mediaPath))
+                    mediaToSync.set(mediaPath, new Set())
+                  mediaToSync.get(mediaPath)!.add(file)
                 }
               }
               // eslint-disable-next-line no-cond-assign
               while ((match = imgRegex.exec(content)) !== null) extractMedia(match[1])
               // eslint-disable-next-line no-cond-assign
               while ((match = wikiRegex.exec(content)) !== null) extractMedia(match[1])
+              // eslint-disable-next-line no-cond-assign
+              while ((match = htmlImgRegex.exec(content)) !== null) extractMedia(match[1])
             }
           }
           else {
-            failedFiles.push(file)
+            failedFiles.add(file)
           }
         }
-        catch { failedFiles.push(file) }
+        catch { failedFiles.add(file) }
         loaded++
         if (onProgress)
-          onProgress(Math.floor((loaded / (fileArray.length + mediaToSync.size)) * 100))
+          onProgress(Math.floor((loaded / (totalItems + mediaToSync.size)) * 100))
       }
 
+      // Параллельная загрузка текстовых файлов батчами по 15
+      await runInBatches(fileArray, 15, downloadFile)
+
       // 7. Скачиваем картинки (только для измененных файлов)
-      const mediaArray = Array.from(mediaToSync)
-      for (const media of mediaArray) {
+      const mediaArray = Array.from(mediaToSync.keys())
+
+      const downloadMedia = async (media: string) => {
         try {
           const res = await fetch(`${vault.url}/${media}`)
           if (res.ok) {
@@ -230,13 +310,16 @@ export const useVaultStore = defineStore('vault', () => {
             const savePath = media.startsWith('images/') ? media : `vaults/${vaultId}/${media}`
             await writeBinaryFile(savePath, blob)
           }
-          else { failedFiles.push(media) }
+          else { failedFiles.add(media) }
         }
-        catch { failedFiles.push(media) }
+        catch { failedFiles.add(media) }
         loaded++
         if (onProgress)
-          onProgress(Math.floor((loaded / (fileArray.length + mediaArray.length)) * 100))
+          onProgress(Math.floor((loaded / (totalItems + mediaArray.length)) * 100))
       }
+
+      // Параллельная загрузка медиа батчами по 10
+      await runInBatches(mediaArray, 10, downloadMedia)
 
       // Иконка хранилища
       try {
@@ -249,15 +332,44 @@ export const useVaultStore = defineStore('vault', () => {
       }
       catch { }
 
+      // 8. Обновляем sync_state только для успешно скачанных markdown файлов
+      remoteMap.forEach((lastMod, path) => {
+        if (filesToDownload.has(path)) {
+          // Проверяем, не было ли ошибки при скачивании самого md файла
+          if (failedFiles.has(path))
+            return
+
+          // Проверяем, не было ли ошибки при скачивании связанных медиа
+          let mediaFailed = false
+          for (const [mediaPath, parents] of mediaToSync.entries()) {
+            if (parents.has(path) && failedFiles.has(mediaPath)) {
+              mediaFailed = true
+              break
+            }
+          }
+
+          if (!mediaFailed) {
+            syncState[path] = lastMod
+          }
+        }
+      })
+
+      // Сохраняем стейт
+      await writeTextFile(`vaults/${vaultId}/meta/${vaultId}/sync_state.json`, JSON.stringify(syncState))
+
       vault.isDownloaded = true
       vault.lastSync = Date.now()
-      vault.syncStatus = 'idle'
+
+      if (failedFiles.size > 0) {
+        vault.syncStatus = 'partial'
+        console.warn('Ошибки при синхронизации файлов:', Array.from(failedFiles))
+      }
+      else {
+        vault.syncStatus = 'idle'
+      }
+
       if (onProgress)
         onProgress(100)
-
-      if (failedFiles.length > 0) {
-        console.warn('Ошибки при синхронизации файлов:', failedFiles)
-      }
     }
     catch (e: any) {
       vault.syncStatus = 'error'
@@ -268,36 +380,6 @@ export const useVaultStore = defineStore('vault', () => {
   const deleteVault = async (vaultId: string) => {
     await deleteFilesByPrefix(`vaults/${vaultId}`)
     vaults.value = vaults.value.filter(v => v.id !== vaultId)
-  }
-
-  const getVault = (id: string) => vaults.value.find(v => v.id === id)
-
-  const getFileContent = async (vaultId: string, filePath: string): Promise<string | null> => {
-    const vault = getVault(vaultId)
-    if (!vault)
-      return null
-
-    if (vault.type === 'local' && vault.localPath) {
-      return await readTextFile(`${vault.localPath}/${filePath}`, true)
-    }
-
-    if (vault.isDownloaded) {
-      const content = await readTextFile(`vaults/${vaultId}/${filePath}`)
-      if (content !== null)
-        return content
-    }
-
-    if (vault.type === 'remote') {
-      try {
-        const res = await fetch(`${vault.url}/${filePath}`)
-        if (res.ok)
-          return await res.text()
-      }
-      catch (e) {
-        console.warn(`[Web Mode] Не удалось загрузить файл по сети: ${filePath}`, e)
-      }
-    }
-    return null
   }
 
   const resolveMediaUrl = async (vaultId: string, mediaPath: string): Promise<string> => {
