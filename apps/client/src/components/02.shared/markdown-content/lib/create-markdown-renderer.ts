@@ -127,6 +127,7 @@ function cleanHtmlBreaksPlugin(md: MarkdownIt) {
 export async function createMarkdownRenderer(params: CreateMarkdownRendererParams): Promise<MarkdownIt> {
   const { imageBasePath, shikiTheme, onHighlightNeeded } = params
   const highlighter = await getHighlighter()
+  const requestedLangs = new Set<string>()
 
   const md = new MarkdownIt({
     html: true,
@@ -162,11 +163,14 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
       }
 
       if (!highlighter.getLoadedLanguages().includes(lang)) {
-        highlighter.loadLanguage(lang as any).then(() => {
-          onHighlightNeeded()
-        }).catch((err) => {
-          console.warn(`[Shiki] Не удалось загрузить язык: ${lang}`, err)
-        })
+        if (!requestedLangs.has(lang)) {
+          requestedLangs.add(lang)
+          highlighter.loadLanguage(lang as any).then(() => {
+            onHighlightNeeded()
+          }).catch((err) => {
+            console.warn(`[Shiki] Не удалось загрузить язык: ${lang}`, err)
+          })
+        }
         return `<pre class="shiki-loading"><code>${md.utils.escapeHtml(str)}</code></pre>`
       }
 
