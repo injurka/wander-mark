@@ -21,9 +21,7 @@
     "build:server": "bun --parallel run --filter='./apps/server' build",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "bun run --filter='./apps/*' lint",
-    "typecheck": "bun --filter='./apps/*' typecheck",
-    "--------------------------------<     HELPERS   >---------------------------------": "",
-    "postinstall": "lefthook install"
+    "typecheck": "bun --filter='./apps/*' typecheck"
   },
   "devDependencies": {
     "lefthook": "latest"
