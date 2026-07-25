@@ -7,6 +7,8 @@
       command: ["--tls=false"]
   before_script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  rules:
+    - if: $CI_COMMIT_TAG
 
 build_docker_client:
   extends: .docker_base
