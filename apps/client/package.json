@@ -42,6 +42,8 @@
     "@capacitor/core": "^8.3.0",
     "@capacitor/filesystem": "^8.1.2",
     "@iconify-icons/mdi": "^1.2.48",
+    "@injurkx/plugin-api": "workspace:*",
+    "@shikijs/themes": "^4.3.1",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-fs": "^2.4.5",
@@ -63,7 +65,13 @@
     "vite-plugin-pwa": "^1.2.0",
     "vue": "^3.5.31",
     "vue-i18n": "^11.3.0",
-    "vue-router": "^5.0.4"
+    "vue-router": "^5.0.4",
+    "workbox-cacheable-response": "^7.4.1",
+    "workbox-core": "^7.4.1",
+    "workbox-expiration": "^7.4.1",
+    "workbox-precaching": "^7.4.1",
+    "workbox-routing": "^7.4.1",
+    "workbox-strategies": "^7.4.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",
@@ -79,6 +87,7 @@
     "@types/workbox-sw": "^4.3.7",
     "@vite-pwa/assets-generator": "1.0.2",
     "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/shared": "^3.5.40",
     "eslint": "10.1.0",
     "eslint-plugin-format": "2.0.1",
     "rollup-plugin-visualizer": "^7.0.1",

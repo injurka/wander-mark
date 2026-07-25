@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { KitBtn, KitCheckbox, KitDropdown } from '~/components/01.kit'
 import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useLocale } from '~/shared/composables/use-locale'
@@ -17,7 +18,8 @@ const { setTheme, theme } = useChangeTheme()
 const contentViewerStore = useContentViewerStore()
 const dropdownRef = ref<InstanceType<typeof KitDropdown> | null>(null)
 
-const { currentLocale, cycleLanguage, languageNames, t } = useLocale()
+const { currentLocale, cycleLanguage, languageNames } = useLocale()
+const { t } = useI18n()
 
 const currentThemeIcon = computed(() =>
   theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night',

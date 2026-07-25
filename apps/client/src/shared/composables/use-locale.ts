@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 export type LocaleType = 'ru' | 'en' | 'cn'
 
 export function useLocale() {
-  const { locale, t } = useI18n()
+  const { locale } = useI18n()
 
   const currentLocale = useStorage<LocaleType>('app-locale', 'ru')
 
@@ -29,6 +29,5 @@ export function useLocale() {
     currentLocale,
     cycleLanguage,
     languageNames,
-    t,
   }
 }

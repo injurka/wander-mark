@@ -397,7 +397,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       vaultUrl: vaultConfig.url || '',
       searchIndex: data.value.searchIndex,
       navItems: data.value.nav,
-      router,
+      router: router as any,
       getFileContent: (path: string) => vaultStore.getFileContent(vault, path),
       showToast,
       confirm,
@@ -414,7 +414,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       },
       ai: {
         getModel: () => globalSettings.aiModel,
-        fetch: (endpoint, options = {}) => {
+        fetch: (endpoint: string, options: RequestInit = {}) => {
           if (!globalSettings.aiKey) {
             aiSettingsDialogOpen.value = true
             return Promise.reject(new Error('API ключ не настроен.'))
