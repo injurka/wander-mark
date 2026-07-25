@@ -1,4 +1,6 @@
-import type { WanderMarkPluginContext } from '@injurkx/plugin-api'
+import type { ContentNavItem, WanderMarkPluginContext } from '@injurkx/plugin-api'
+import type { Raw } from 'vue'
+import type { Router } from 'vue-router'
 import { get, set } from 'idb-keyval'
 import { markRaw, reactive, watch } from 'vue'
 
@@ -20,8 +22,24 @@ export interface ReviewCategories {
   mastered: ReadLog[]
 }
 
-export const trackerState = reactive({
-  logs: [] as ReadLog[],
+export interface TrackerState {
+  logs: ReadLog[]
+  syncUrl: string
+  identifier: string
+  lastSync: number
+  isSyncing: boolean
+  scope: string
+
+  vaultId: string
+  vaultUrl: string
+  navItems: ContentNavItem[]
+  router: Raw<Router> | null
+  showToast: WanderMarkPluginContext['showToast'] | null
+  getFileContent: WanderMarkPluginContext['getFileContent'] | null
+}
+
+export const trackerState = reactive<TrackerState>({
+  logs: [],
   syncUrl: '',
   identifier: '',
   lastSync: 0,
@@ -30,10 +48,10 @@ export const trackerState = reactive({
 
   vaultId: '',
   vaultUrl: '',
-  navItems: [] as NonNullable<WanderMarkPluginContext['navItems']>,
-  router: null as WanderMarkPluginContext['router'] | null,
-  showToast: null as WanderMarkPluginContext['showToast'] | null,
-  getFileContent: null as WanderMarkPluginContext['getFileContent'] | null,
+  navItems: [],
+  router: null,
+  showToast: null,
+  getFileContent: null,
 })
 
 export const trackerActions = {
@@ -41,7 +59,7 @@ export const trackerActions = {
     trackerState.vaultId = ctx.vaultId
     trackerState.vaultUrl = ctx.vaultUrl
     trackerState.navItems = ctx.navItems || []
-    trackerState.router = markRaw(ctx.router)
+    trackerState.router = markRaw(ctx.router as unknown as Router)
     trackerState.showToast = ctx.showToast
     trackerState.getFileContent = ctx.getFileContent
 

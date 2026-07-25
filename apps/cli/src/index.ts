@@ -3,31 +3,37 @@ import { parseArgs } from 'node:util'
 import { runAutoGeneration } from './auto'
 import { loadConfig } from './config'
 import { runDeploy } from './deploy'
+import { runDeployS3 } from './deploy-s3'
 
 async function bootstrap() {
   const { values } = parseArgs({
     args: process.argv.slice(2),
     options: {
-      config: {
+      'config': {
         type: 'string',
         short: 'c',
         default: 'config.json',
       },
-      deploy: {
+      'deploy': {
         type: 'boolean',
         short: 'd',
         default: false,
       },
-      host: {
+      'deploy-mode': {
+        type: 'string',
+        short: 'm',
+        default: 'static',
+      },
+      'host': {
         type: 'string',
       },
-      user: {
+      'user': {
         type: 'string',
       },
-      path: {
+      'path': {
         type: 'string',
       },
-      help: {
+      'help': {
         type: 'boolean',
         short: 'h',
         default: false,
@@ -44,9 +50,10 @@ Wander Mark CLI
 Опции:
   -c, --config <path>  Путь к конфигурационному файлу (по умолчанию: ./config.json)
   -d, --deploy         Выполнить деплой на сервер после сборки
-      --host <ip>      IP или домен сервера для деплоя (переопределяет конфиг)
-      --user <name>    Имя пользователя для SSH (переопределяет конфиг)
-      --path <dir>     Путь на сервере для деплоя (переопределяет конфиг)
+  -m, --deploy-mode    Режим деплоя (static или s3, по умолчанию: static)
+      --host <ip>      IP или домен сервера для деплоя (переопределяет конфиг, только для static)
+      --user <name>    Имя пользователя для SSH (переопределяет конфиг, только для static)
+      --path <dir>     Путь на сервере для деплоя (переопределяет конфиг, только для static)
   -h, --help           Показать эту справку
     `)
     process.exit(0)
@@ -61,20 +68,23 @@ Wander Mark CLI
 
     // Шаг 2: Деплой (если передан флаг --deploy)
     if (values.deploy) {
-      const deployUser = values.user || config.deploy?.user
-      const deployHost = values.host || config.deploy?.host
-      const deployPath = values.path || config.deploy?.path
+      const mode = values['deploy-mode'] || config.deploy?.mode || 'static'
+      const outputDir = path.resolve(config.paths.sourceNotesRoot, '.output')
 
-      if (!deployUser || !deployHost || !deployPath) {
-        throw new Error('Для деплоя необходимо указать user, host и path либо в config.json, либо через флаги CLI.')
+      if (mode === 's3') {
+        await runDeployS3(outputDir)
       }
+      else {
+        const deployUser = values.user || config.deploy?.user
+        const deployHost = values.host || config.deploy?.host
+        const deployPath = values.path || config.deploy?.path
 
-      await runDeploy(
-        deployUser,
-        deployHost,
-        deployPath,
-        path.resolve(config.paths.sourceNotesRoot, '.output'),
-      )
+        if (!deployUser || !deployHost || !deployPath) {
+          throw new Error('Для static деплоя необходимо указать user, host и path либо в config.json, либо через флаги CLI.')
+        }
+
+        await runDeploy(deployUser, deployHost, deployPath, outputDir)
+      }
     }
 
     console.log('\n🎉 Все задачи успешно выполнены!')

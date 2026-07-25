@@ -22,8 +22,8 @@ export const useVaultStore = defineStore('vault', () => {
 
   const initPredefinedVaults = async () => {
     try {
-      const basePath = import.meta.env.BASE_URL || '/'
-      const res = await fetch(`${basePath}configs/server.json`)
+      const configUrl = import.meta.env.VITE_CONFIG_URL || 'https://s3.firstvds.ru/wander-mark/config/server.json'
+      const res = await fetch(configUrl)
 
       if (res.ok) {
         const config = await res.json()

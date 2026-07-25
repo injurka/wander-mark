@@ -17,7 +17,10 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "bunx tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "dotenv": "^17.4.2"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.0",
     "@types/bun": "latest",
