@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import dotenv from 'dotenv'
 
 const WINDOWS_SLASH_REGEX = /\\/g
 
@@ -26,8 +25,7 @@ async function findNearestEnv(startDir: string): Promise<string | null> {
 export async function runDeployS3(outputBaseDir: string) {
   const envPath = await findNearestEnv(process.cwd())
   if (envPath) {
-    console.log(`-> Загрузка переменных окружения из: ${envPath}`)
-    dotenv.config({ path: envPath })
+    console.log(`-> Переменные окружения загружены из: ${envPath}`)
   }
   else {
     console.log('-> Файл .env не найден, используются текущие переменные окружения')

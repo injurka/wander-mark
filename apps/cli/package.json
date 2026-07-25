@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1095.0",
-    "dotenv": "^17.4.2"
+    "dotenv-safe": "^8.2.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.0",

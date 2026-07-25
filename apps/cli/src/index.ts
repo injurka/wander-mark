@@ -4,6 +4,7 @@ import { runAutoGeneration } from './auto'
 import { loadConfig } from './config'
 import { runDeploy } from './deploy'
 import { runDeployS3 } from './deploy-s3'
+import { runDeployS3Rclone } from './deploy-s3-rclone'
 
 async function bootstrap() {
   const { values } = parseArgs({
@@ -50,7 +51,7 @@ Wander Mark CLI
 Опции:
   -c, --config <path>  Путь к конфигурационному файлу (по умолчанию: ./config.json)
   -d, --deploy         Выполнить деплой на сервер после сборки
-  -m, --deploy-mode    Режим деплоя (static или s3, по умолчанию: static)
+  -m, --deploy-mode    Режим деплоя (static, s3 или s3-rclone, по умолчанию: static)
       --host <ip>      IP или домен сервера для деплоя (переопределяет конфиг, только для static)
       --user <name>    Имя пользователя для SSH (переопределяет конфиг, только для static)
       --path <dir>     Путь на сервере для деплоя (переопределяет конфиг, только для static)
@@ -73,6 +74,9 @@ Wander Mark CLI
 
       if (mode === 's3') {
         await runDeployS3(outputDir)
+      }
+      else if (mode === 's3-rclone') {
+        await runDeployS3Rclone(outputDir)
       }
       else {
         const deployUser = values.user || config.deploy?.user
