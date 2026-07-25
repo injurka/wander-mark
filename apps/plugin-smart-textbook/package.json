@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "--------------------------------<      DEV       >--------------------------------": "",
-    "dev": "vite build --watch",
+    "dev": "wm-plugin-build --watch",
     "--------------------------------<      BUILD     >--------------------------------": "",
-    "build": "vite build",
+    "build": "wm-plugin-build",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

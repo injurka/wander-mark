@@ -1,6 +1,6 @@
 import type { PluginContext } from './types'
 import { markRaw, unref } from 'vue'
-import MarkButton from './components/mark-button.vue'
+import AutoTracker from './components/auto-tracker.vue'
 import SidebarWidget from './components/sidebar-widget.vue'
 
 import { setupPluginI18n } from './i18n'
@@ -15,7 +15,7 @@ export default {
   icon: 'mdi:book-check-outline',
 
   slots: {
-    'content-after': markRaw(MarkButton),
+    'content-top': markRaw(AutoTracker),
     'sidebar-bottom': markRaw(SidebarWidget),
   },
 
@@ -29,8 +29,5 @@ export default {
     if (ctx.locale) {
       setupPluginI18n(() => unref(ctx.locale as any))
     }
-
-    // eslint-disable-next-line no-console
-    console.log('[Reading Tracker] Activated')
   },
 }

@@ -10,6 +10,7 @@
   },
   "report": {
     "title": "Отчет об активности",
+    "scopeFilter": "Фильтр по папке (напр. Chinese/)",
     "tabs": {
       "overview": "Обзор",
       "review": "Повторение",
@@ -22,6 +23,7 @@
     "totalSessions": "Всего сессий чтения",
     "recentlyRead": "Недавно прочитанные",
     "mostRead": "Часто читаемые",
+    "topFolders": "Топ папок",
     "readCount": "Раз: {n}",
     "noData": "Пока нет данных"
   },

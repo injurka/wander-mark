@@ -10,6 +10,7 @@
   },
   "report": {
     "title": "活动报告",
+    "scopeFilter": "按文件夹过滤 (例如 Chinese/)",
     "tabs": {
       "overview": "概览",
       "review": "复习",
@@ -22,6 +23,7 @@
     "totalSessions": "总阅读次数",
     "recentlyRead": "最近阅读",
     "mostRead": "常读文章",
+    "topFolders": "热门文件夹",
     "readCount": "{n} 次",
     "noData": "暂无数据"
   },

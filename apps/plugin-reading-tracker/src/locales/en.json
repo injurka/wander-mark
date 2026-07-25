@@ -10,6 +10,7 @@
   },
   "report": {
     "title": "Activity Report",
+    "scopeFilter": "Filter by folder (e.g. Chinese/)",
     "tabs": {
       "overview": "Overview",
       "review": "Review",
@@ -22,6 +23,7 @@
     "totalSessions": "Total Reading Sessions",
     "recentlyRead": "Recently Read",
     "mostRead": "Most Read",
+    "topFolders": "Top Folders",
     "readCount": "{n} times",
     "noData": "No data yet"
   },
