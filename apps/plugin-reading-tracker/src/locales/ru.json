@@ -52,7 +52,7 @@
     "placeholder": "https://api.yourdomain.com/sync/reading",
     "identifierLabel": "Ваш идентификатор (Логин)",
     "identifierPlaceholder": "Например: my-username",
-    "syncBtn": "Запустить синхронизацию",
+    "syncBtn": "Запустить",
     "syncing": "Синхронизация...",
     "lastSync": "Последняя синхронизация",
     "never": "Никогда",

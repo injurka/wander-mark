@@ -11,11 +11,11 @@ export default {
   id: 'reading-tracker',
   name: 'Reading Tracker',
   description: 'Логирование прочитанных материалов, интервальное повторение и синхронизация.',
-  version: '1.0.0',
+  version: '1.1.0',
   icon: 'mdi:book-check-outline',
 
   slots: {
-    'content-top': markRaw(AutoTracker),
+    'content-before': markRaw(AutoTracker),
     'sidebar-bottom': markRaw(SidebarWidget),
   },
 

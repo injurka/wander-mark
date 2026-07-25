@@ -1,3 +1,4 @@
+import type { WanderMarkPluginContext } from '@injurkx/plugin-api'
 import { get, set } from 'idb-keyval'
 import { markRaw, reactive, watch } from 'vue'
 
@@ -25,19 +26,21 @@ export const trackerState = reactive({
   identifier: '',
   lastSync: 0,
   isSyncing: false,
-  scope: '', 
+  scope: '',
 
   vaultId: '',
   vaultUrl: '',
-  router: null as any,
-  showToast: null as any,
-  getFileContent: null as any,
+  navItems: [] as NonNullable<WanderMarkPluginContext['navItems']>,
+  router: null as WanderMarkPluginContext['router'] | null,
+  showToast: null as WanderMarkPluginContext['showToast'] | null,
+  getFileContent: null as WanderMarkPluginContext['getFileContent'] | null,
 })
 
 export const trackerActions = {
-  init(ctx: any) {
+  init(ctx: WanderMarkPluginContext) {
     trackerState.vaultId = ctx.vaultId
     trackerState.vaultUrl = ctx.vaultUrl
+    trackerState.navItems = ctx.navItems || []
     trackerState.router = markRaw(ctx.router)
     trackerState.showToast = ctx.showToast
     trackerState.getFileContent = ctx.getFileContent
@@ -47,7 +50,7 @@ export const trackerActions = {
       if (savedLogs && Array.isArray(savedLogs)) {
         trackerState.logs = savedLogs.map(log => ({
           ...log,
-          visits: log.visits || log.readDates.map((ts: number) => ({ timestamp: ts, duration: 60 }))
+          visits: log.visits || log.readDates.map((ts: number) => ({ timestamp: ts, duration: 60 })),
         }))
       }
     })
@@ -83,11 +86,16 @@ export const trackerActions = {
   },
 
   getFilteredLogs() {
-    if (!trackerState.scope) return trackerState.logs
+    if (!trackerState.scope)
+      return trackerState.logs
     return trackerState.logs.filter(l => l.path.startsWith(trackerState.scope))
   },
 
   addVisit(path: string, title: string, duration: number) {
+    if (!path) {
+      return
+    }
+
     const existing = trackerState.logs.find(l => l.path === path)
     const now = Date.now()
 
@@ -174,12 +182,12 @@ export const trackerActions = {
         if (mergedMap.has(rl.path)) {
           const local = mergedMap.get(rl.path)!
           local.readDates = Array.from(new Set([...local.readDates, ...rl.readDates])).sort((a, b) => a - b)
-          
+
           const visitMap = new Map<number, ReadLogVisit>()
           local.visits.forEach(v => visitMap.set(v.timestamp, v))
-          ;(rl.visits || []).forEach(v => visitMap.set(v.timestamp, v))
+          ; (rl.visits || []).forEach(v => visitMap.set(v.timestamp, v))
           local.visits = Array.from(visitMap.values()).sort((a, b) => a.timestamp - b.timestamp)
-          
+
           local.title = rl.title || local.title
         }
         else {

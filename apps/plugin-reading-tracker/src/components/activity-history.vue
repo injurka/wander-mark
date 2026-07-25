@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { usePluginI18n } from '../i18n'
-import { trackerState, trackerActions } from '../store/tracker.store'
+import { trackerActions, trackerState } from '../store/tracker.store'
 
 const { t, locale } = usePluginI18n()
 

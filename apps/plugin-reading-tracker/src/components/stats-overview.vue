@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { usePluginI18n } from '../i18n'
-import { trackerState, trackerActions } from '../store/tracker.store'
+import { trackerActions, trackerState } from '../store/tracker.store'
 
 const { t } = usePluginI18n()
 
@@ -30,7 +30,7 @@ const mostRead = computed(() => {
 
 const foldersTime = computed(() => {
   const map = new Map<string, number>()
-  trackerActions.getFilteredLogs().forEach(log => {
+  trackerActions.getFilteredLogs().forEach((log) => {
     const parts = log.path.split('/')
     if (parts.length > 1) {
       parts.pop() // remove file name
@@ -39,7 +39,7 @@ const foldersTime = computed(() => {
       map.set(folder, (map.get(folder) || 0) + time)
     }
   })
-  
+
   return Array.from(map.entries())
     .map(([folder, time]) => ({ folder, time }))
     .sort((a, b) => b.time - a.time)
@@ -47,10 +47,12 @@ const foldersTime = computed(() => {
 })
 
 function formatDuration(seconds: number) {
-  if (seconds < 60) return `${seconds}s`
+  if (seconds < 60)
+    return `${seconds}s`
   const min = Math.floor(seconds / 60)
   const hr = Math.floor(min / 60)
-  if (hr > 0) return `${hr}h ${min % 60}m`
+  if (hr > 0)
+    return `${hr}h ${min % 60}m`
   return `${min}m`
 }
 

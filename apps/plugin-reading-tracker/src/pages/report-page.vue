@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ActivityHistory from '../components/activity-history.vue'
+import FolderSelector from '../components/folder-selector.vue'
 import NeedsReview from '../components/needs-review.vue'
 import StatsOverview from '../components/stats-overview.vue'
 import SyncSettings from '../components/sync-settings.vue'
 import { usePluginI18n } from '../i18n'
-import { trackerState } from '../store/tracker.store'
 
 const { t } = usePluginI18n()
 const activeTab = ref('overview')
@@ -19,9 +19,7 @@ const activeTab = ref('overview')
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rt-title-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
           <h1>{{ t('report.title') }}</h1>
         </div>
-        <div class="rt-scope-input">
-          <input v-model="trackerState.scope" type="text" :placeholder="t('report.scopeFilter') || 'Filter by folder (e.g. Chinese/)'">
-        </div>
+        <FolderSelector />
       </div>
 
       <div class="rt-tabs">

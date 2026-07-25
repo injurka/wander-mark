@@ -404,7 +404,7 @@ export const useVaultStore = defineStore('vault', () => {
             return url
           }
         }
-        catch (e) { }
+        catch { }
       }
     }
 

@@ -240,8 +240,12 @@ watch(() => params.value.pwd, async (pwd) => {
 watch(() => params.value.vault, async (vault, _oldVault, onCleanup) => {
   if (!vault)
     return
+
   let isCancelled = false
-  onCleanup(() => { isCancelled = true })
+
+  onCleanup(() => {
+    isCancelled = true
+  })
 
   status.value = 'pending'
 
@@ -380,55 +384,57 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
     isCancelled = true
   })
 
-  if (!vault || status.value === 'pending')
+  if (!vault || status.value === 'pending') {
     return
+  }
+  if (pluginStore.currentVaultId !== vault) {
+    const vaultConfig = vaultStore.getVault(vault)
+    if (!vaultConfig)
+      return
 
-  const vaultConfig = vaultStore.getVault(vault)
-  if (!vaultConfig)
-    return
-
-  await pluginStore.init(vault, {
-    vaultId: vault,
-    vaultUrl: vaultConfig.url || '',
-    searchIndex: data.value.searchIndex,
-    navItems: data.value.nav,
-    router,
-    getFileContent: (path: string) => vaultStore.getFileContent(vault, path),
-    showToast,
-    confirm,
-    locale: currentLocale,
-    t,
-    storage: {
-      async get<T>(key: string): Promise<T | null> {
-        const val = await get<T>(`plugin::${vault}::${key}`)
-        return val ?? null
+    await pluginStore.init(vault, {
+      vaultId: vault,
+      vaultUrl: vaultConfig.url || '',
+      searchIndex: data.value.searchIndex,
+      navItems: data.value.nav,
+      router,
+      getFileContent: (path: string) => vaultStore.getFileContent(vault, path),
+      showToast,
+      confirm,
+      locale: currentLocale,
+      t,
+      storage: {
+        async get<T>(key: string): Promise<T | null> {
+          const val = await get<T>(`plugin::${vault}::${key}`)
+          return val ?? null
+        },
+        async set<T>(key: string, value: T) {
+          return set(`plugin::${vault}::${key}`, value)
+        },
       },
-      async set<T>(key: string, value: T) {
-        return set(`plugin::${vault}::${key}`, value)
-      },
-    },
-    ai: {
-      getModel: () => globalSettings.aiModel,
-      fetch: (endpoint, options = {}) => {
-        if (!globalSettings.aiKey) {
-          aiSettingsDialogOpen.value = true
-          return Promise.reject(new Error('API ключ не настроен.'))
-        }
-        const headers = {
-          'Content-Type': 'application/json',
-          ...options.headers,
-          'Authorization': `Bearer ${globalSettings.aiKey}`,
-        }
+      ai: {
+        getModel: () => globalSettings.aiModel,
+        fetch: (endpoint, options = {}) => {
+          if (!globalSettings.aiKey) {
+            aiSettingsDialogOpen.value = true
+            return Promise.reject(new Error('API ключ не настроен.'))
+          }
+          const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers,
+            'Authorization': `Bearer ${globalSettings.aiKey}`,
+          }
 
-        const baseUrl = globalSettings.aiUrl || 'https://api.aihubmix.com/v1'
-        const url = endpoint.startsWith('http')
-          ? endpoint
-          : `${baseUrl.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+          const baseUrl = globalSettings.aiUrl || 'https://api.aihubmix.com/v1'
+          const url = endpoint.startsWith('http')
+            ? endpoint
+            : `${baseUrl.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
 
-        return fetch(url, { ...options, headers })
+          return fetch(url, { ...options, headers })
+        },
       },
-    },
-  })
+    })
+  }
   if (isCancelled)
     return
 
