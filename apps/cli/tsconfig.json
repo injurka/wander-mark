@@ -18,7 +18,7 @@
       ]
     },
     "types": [
-      "node"
+      "bun"
     ],
     "allowJs": true,
     // Best practices

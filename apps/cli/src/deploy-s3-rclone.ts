@@ -73,6 +73,8 @@ export async function runDeployS3Rclone(outputBaseDir: string) {
     secretAccessKey,
     '--s3-force-path-style',
     '--progress',
+    '--exclude',
+    'config/**',
   ]
 
   if (region) {
