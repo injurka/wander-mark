@@ -188,6 +188,26 @@
         "vue": "^3.5.0",
       },
     },
+    "apps/plugin-recipe-viewer": {
+      "name": "@injurx/plugin-recipe-viewer",
+      "version": "1.0.0",
+      "dependencies": {
+        "idb-keyval": "^6.2.1",
+        "vue-i18n": "^11.3.2",
+      },
+      "devDependencies": {
+        "@antfu/eslint-config": "7.7.3",
+        "@injurkx/plugin-api": "workspace:*",
+        "eslint": "10.0.3",
+        "eslint-plugin-format": "2.0.1",
+        "typescript": "^5.4.0",
+        "vue": "^3.5.0",
+        "vue-tsc": "^3.2.6",
+      },
+      "peerDependencies": {
+        "vue": "^3.5.0",
+      },
+    },
     "apps/plugin-russian-tooltip": {
       "name": "@injurx/plugin-russian-tooltip",
       "version": "1.0.0",
