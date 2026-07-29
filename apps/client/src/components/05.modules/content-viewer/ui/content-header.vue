@@ -4,6 +4,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { KitBtn } from '~/components/01.kit'
+import { useContentViewerStore } from '../store'
 import ViewerSettingsMenu from './viewer-settings-menu.vue'
 
 interface Props {
@@ -18,13 +19,14 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'openSearch'): void
   (e: 'openPlugins'): void
-  (e: 'openAiSettings'): void 
+  (e: 'openAiSettings'): void
 }>()
 const menu = defineModel('menu', { required: true })
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const store = useContentViewerStore()
 
 const breadcrumbsTrackRef = ref<HTMLElement | null>(null)
 
@@ -83,6 +85,28 @@ watch(
 )
 
 const currentVault = computed(() => route.params.vault as string)
+
+function revealInTree() {
+  menu.value = true
+  if (route.params.pwd) {
+    const pwd = (Array.isArray(route.params.pwd) ? route.params.pwd : [route.params.pwd].filter(Boolean)) as string[]
+    const parents = pwd.slice(0, -1)
+    if (parents.length > 0) {
+      const newOpenFolders = new Set(store.openFolders)
+      parents.forEach(p => newOpenFolders.add(p))
+      store.setOpenFolders(Array.from(newOpenFolders))
+    }
+
+    nextTick(() => {
+      setTimeout(() => {
+        const activeItem = document.getElementById('active-tree-item')
+        if (activeItem) {
+          activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 300)
+    })
+  }
+}
 </script>
 
 <template>
@@ -93,7 +117,7 @@ const currentVault = computed(() => route.params.vault as string)
         variant="text"
         size="sm"
         :icon="menu ? 'mdi:arrow-left' : 'mdi:menu'"
-        class="menu-btn flex-shrink-0"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
         @click="menu = !menu"
       />
       <KitBtn
@@ -101,9 +125,18 @@ const currentVault = computed(() => route.params.vault as string)
         variant="text"
         size="sm"
         icon="mdi:home-outline"
-        class="menu-btn flex-shrink-0"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
         :title="t('sidebar.vaultHome')"
         @click="router.push(`/${currentVault}`)"
+      />
+      <KitBtn
+        v-else
+        variant="text"
+        size="sm"
+        icon="mdi:arrow-left"
+        class="menu-btn flex-shrink-0 hide-on-mobile"
+        :title="t('sidebar.allVaults')"
+        @click="router.push('/')"
       />
 
       <nav class="breadcrumbs">
@@ -111,10 +144,11 @@ const currentVault = computed(() => route.params.vault as string)
           <template v-for="(item, i) in breadcrumbs" :key="i">
             <Icon v-if="i > 0" icon="mdi:chevron-right" size="14" class="separator" />
             <component
-              :is="item.disabled ? 'span' : 'router-link'"
+              :is="item.disabled ? 'a' : 'router-link'"
               :to="item.disabled ? undefined : item.to"
               class="breadcrumb-item"
               :class="{ 'is-active': item.disabled, 'breadcrumb-link': !item.disabled }"
+              @click.prevent="item.disabled ? revealInTree() : undefined"
             >
               <span>{{ item.title }}</span>
             </component>
@@ -123,7 +157,7 @@ const currentVault = computed(() => route.params.vault as string)
       </nav>
     </div>
 
-    <div class="header-right flex-shrink-0">
+    <div class="header-right flex-shrink-0 hide-on-mobile">
       <slot name="toolbar-extra" />
 
       <KitBtn
@@ -134,7 +168,6 @@ const currentVault = computed(() => route.params.vault as string)
         @click="emit('openSearch')"
       />
 
-      <!-- Добавили слушатель @open-ai-settings -->
       <ViewerSettingsMenu
         :vault="currentVault"
         @open-plugins="emit('openPlugins')"
@@ -234,8 +267,12 @@ const currentVault = computed(() => route.params.vault as string)
   &.is-active {
     background-color: var(--bg-secondary-color);
     color: var(--fg-primary-color);
-    pointer-events: none;
+    cursor: pointer;
     border: 1px solid var(--border-secondary-color);
+
+    &:hover {
+      background-color: var(--bg-hover-color);
+    }
   }
 }
 
@@ -253,10 +290,12 @@ const currentVault = computed(() => route.params.vault as string)
     padding: 0 12px;
     gap: 8px;
   }
-
   .breadcrumb-item {
     font-size: 0.8rem;
     padding: 2px 6px;
+  }
+  .hide-on-mobile {
+    display: none !important;
   }
 }
 </style>

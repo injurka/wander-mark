@@ -2,8 +2,6 @@ services:
   wander-mark-client:
     image: ${REGISTRY:-docker.io}/injurka/wander-mark-client:${V_CLIENT:-latest}
     restart: unless-stopped
-    volumes:
-      - ./configs:/usr/share/nginx/html/configs
     networks:
       - trip-net
     labels:
@@ -19,11 +17,12 @@ services:
     restart: unless-stopped
     environment:
       PORT: "4444"
-      FS_BASE_PATH: /data
-      DB_PATH: /db/wander.sqlite
-    volumes:
-      - ${VAULT_PATH:-./vault}:/data:ro
-      - ./db:/db
+      S3_ENDPOINT: "${S3_ENDPOINT}"
+      S3_REGION: "${S3_REGION:-default}"
+      S3_ACCESS_KEY: "${S3_ACCESS_KEY}"
+      S3_SECRET_KEY: "${S3_SECRET_KEY}"
+      S3_BUCKET: "${S3_BUCKET:-wander-mark}"
+      S3_BASE_PATH: "${S3_BASE_PATH:-}"
     networks:
       - trip-net
     labels:

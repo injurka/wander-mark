@@ -17,15 +17,25 @@ function initializePwaUpdater(pinia: Pinia): void {
   } = useRegisterSW({
     onRegistered(r) {
       if (r) {
-        setInterval(async () => {
+        const intervalId = setInterval(async () => {
           try {
             if (r.installing || !navigator.onLine)
               return
 
+            if (r.active?.state === 'redundant') {
+              clearInterval(intervalId)
+              return
+            }
+
             await r.update()
           }
           catch (error) {
-            console.warn('SW update check failed:', error)
+            if (error instanceof DOMException && error.name === 'InvalidStateError') {
+              clearInterval(intervalId)
+            }
+            else {
+              console.warn('SW update check failed:', error)
+            }
           }
         }, intervalMS)
       }

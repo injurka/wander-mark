@@ -3,10 +3,20 @@ import type { SpeakingData } from '../../../types'
 import { ref } from 'vue'
 import { usePluginI18n } from '../../../i18n'
 
-defineProps<{ data: SpeakingData }>()
+const props = defineProps<{ data: SpeakingData }>()
 const { t } = usePluginI18n()
 const activeTab = ref<'grammatical' | 'colloquial' | 'formal'>('colloquial')
 const showReplies = ref(false)
+
+function getVariantText(tab: 'grammatical' | 'colloquial' | 'formal'): string {
+  const val = props.data[tab]
+  return typeof val === 'string' ? val : val.text
+}
+
+function getVariantTranscription(tab: 'grammatical' | 'colloquial' | 'formal'): string | undefined {
+  const val = props.data[tab]
+  return typeof val === 'string' ? undefined : val.transcription
+}
 </script>
 
 <template>
@@ -33,10 +43,10 @@ const showReplies = ref(false)
 
       <div class="tab-content">
         <p class="translated-text">
-          {{ typeof data[activeTab] === 'string' ? data[activeTab] : data[activeTab].text }}
+          {{ getVariantText(activeTab) }}
         </p>
-        <p v-if="typeof data[activeTab] !== 'string' && data[activeTab].transcription" class="transcription-text">
-          {{ data[activeTab].transcription }}
+        <p v-if="getVariantTranscription(activeTab)" class="transcription-text">
+          {{ getVariantTranscription(activeTab) }}
         </p>
       </div>
     </div>
@@ -49,7 +59,7 @@ const showReplies = ref(false)
       <Transition name="slide">
         <div v-if="showReplies" class="accordion-body">
           <ul class="reply-list">
-            <li v-for="(reply, idx) in data.possible_replies" :key="idx">
+            <li v-for="(reply, idx) in data.possiblereplies" :key="idx">
               <div class="reply-text">
                 {{ typeof reply === 'string' ? reply : reply.text }}
               </div>

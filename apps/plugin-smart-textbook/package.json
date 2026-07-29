@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "--------------------------------<      DEV       >--------------------------------": "",
-    "dev": "vite build --watch",
+    "dev": "wm-plugin-build --watch",
     "--------------------------------<      BUILD     >--------------------------------": "",
-    "build": "vite build",
+    "build": "wm-plugin-build",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",
+    "@injurkx/plugin-api": "workspace:*",
     "@vitejs/plugin-vue": "^5.0.0",
     "eslint": "10.0.3",
     "eslint-plugin-format": "2.0.1",

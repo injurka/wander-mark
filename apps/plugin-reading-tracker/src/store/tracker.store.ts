@@ -1,10 +1,19 @@
+import type { ContentNavItem, WanderMarkPluginContext } from '@injurkx/plugin-api'
+import type { Raw } from 'vue'
+import type { Router } from 'vue-router'
 import { get, set } from 'idb-keyval'
 import { markRaw, reactive, watch } from 'vue'
+
+export interface ReadLogVisit {
+  timestamp: number
+  duration: number
+}
 
 export interface ReadLog {
   path: string
   title: string
   readDates: number[]
+  visits: ReadLogVisit[]
 }
 
 export interface ReviewCategories {
@@ -13,32 +22,54 @@ export interface ReviewCategories {
   mastered: ReadLog[]
 }
 
-export const trackerState = reactive({
-  logs: [] as ReadLog[],
+export interface TrackerState {
+  logs: ReadLog[]
+  syncUrl: string
+  identifier: string
+  lastSync: number
+  isSyncing: boolean
+  scope: string
+
+  vaultId: string
+  vaultUrl: string
+  navItems: ContentNavItem[]
+  router: Raw<Router> | null
+  showToast: WanderMarkPluginContext['showToast'] | null
+  getFileContent: WanderMarkPluginContext['getFileContent'] | null
+}
+
+export const trackerState = reactive<TrackerState>({
+  logs: [],
   syncUrl: '',
   identifier: '',
   lastSync: 0,
   isSyncing: false,
+  scope: '',
 
   vaultId: '',
   vaultUrl: '',
-  router: null as any,
-  showToast: null as any,
-  getFileContent: null as any,
+  navItems: [],
+  router: null,
+  showToast: null,
+  getFileContent: null,
 })
 
 export const trackerActions = {
-  init(ctx: any) {
+  init(ctx: WanderMarkPluginContext) {
     trackerState.vaultId = ctx.vaultId
     trackerState.vaultUrl = ctx.vaultUrl
-    trackerState.router = markRaw(ctx.router)
+    trackerState.navItems = ctx.navItems || []
+    trackerState.router = markRaw(ctx.router as unknown as Router)
     trackerState.showToast = ctx.showToast
     trackerState.getFileContent = ctx.getFileContent
 
     // Загрузка логов из IndexedDB
     get(`wm-tracker-logs-${ctx.vaultId}`).then((savedLogs) => {
       if (savedLogs && Array.isArray(savedLogs)) {
-        trackerState.logs = savedLogs
+        trackerState.logs = savedLogs.map(log => ({
+          ...log,
+          visits: log.visits || log.readDates.map((ts: number) => ({ timestamp: ts, duration: 60 })),
+        }))
       }
     })
 
@@ -49,6 +80,7 @@ export const trackerActions = {
       trackerState.syncUrl = cfg.syncUrl || ''
       trackerState.identifier = cfg.identifier || ''
       trackerState.lastSync = cfg.lastSync || 0
+      trackerState.scope = cfg.scope || ''
     }
 
     // Сохранение логов в IndexedDB при изменении
@@ -57,29 +89,45 @@ export const trackerActions = {
     }, { deep: true })
 
     // Сохранение настроек в localStorage при изменении
-    watch(() => [trackerState.syncUrl, trackerState.identifier, trackerState.lastSync], () => {
+    watch(() => [trackerState.syncUrl, trackerState.identifier, trackerState.lastSync, trackerState.scope], () => {
       localStorage.setItem(`wm-tracker-cfg-${ctx.vaultId}`, JSON.stringify({
         syncUrl: trackerState.syncUrl,
         identifier: trackerState.identifier,
         lastSync: trackerState.lastSync,
+        scope: trackerState.scope,
       }))
     })
   },
 
-  markAsRead(path: string, title: string) {
+  setScope(scope: string) {
+    trackerState.scope = scope
+  },
+
+  getFilteredLogs() {
+    if (!trackerState.scope)
+      return trackerState.logs
+    return trackerState.logs.filter(l => l.path.startsWith(trackerState.scope))
+  },
+
+  addVisit(path: string, title: string, duration: number) {
+    if (!path) {
+      return
+    }
+
     const existing = trackerState.logs.find(l => l.path === path)
     const now = Date.now()
 
     if (existing) {
-      const lastRead = existing.readDates.at(-1) ?? 0
-      if (now - lastRead > 5000) {
-        existing.readDates.push(now)
-      }
+      existing.visits.push({ timestamp: now, duration })
+      existing.readDates.push(now)
     }
     else {
-      trackerState.logs.push({ path, title, readDates: [now] })
+      trackerState.logs.push({ path, title, readDates: [now], visits: [{ timestamp: now, duration }] })
     }
+  },
 
+  markAsRead(path: string, title: string) {
+    this.addVisit(path, title, 60)
     if (trackerState.showToast) {
       trackerState.showToast('Отмечено как прочитанное!', { type: 'success' })
     }
@@ -95,13 +143,14 @@ export const trackerActions = {
     const ONE_DAY = 24 * 60 * 60 * 1000
 
     const INTERVALS = [1, 3, 7, 14, 30]
+    const logs = this.getFilteredLogs()
 
-    trackerState.logs.forEach((log) => {
-      const timesRead = log.readDates.length
+    logs.forEach((log) => {
+      const timesRead = log.visits.length
       if (timesRead === 0)
         return
 
-      const lastRead = log.readDates.at(-1) ?? 0
+      const lastRead = log.visits.at(-1)?.timestamp ?? 0
       const daysSinceLastRead = (now - lastRead) / ONE_DAY
       const targetInterval = INTERVALS[Math.min(timesRead - 1, INTERVALS.length - 1)]
 
@@ -116,9 +165,9 @@ export const trackerActions = {
       }
     })
 
-    categories.forgotten.sort((a, b) => (a.readDates.at(-1) || 0) - (b.readDates.at(-1) || 0))
-    categories.due.sort((a, b) => (a.readDates.at(-1) || 0) - (b.readDates.at(-1) || 0))
-    categories.mastered.sort((a, b) => b.readDates.length - a.readDates.length)
+    categories.forgotten.sort((a, b) => (a.visits.at(-1)?.timestamp || 0) - (b.visits.at(-1)?.timestamp || 0))
+    categories.due.sort((a, b) => (a.visits.at(-1)?.timestamp || 0) - (b.visits.at(-1)?.timestamp || 0))
+    categories.mastered.sort((a, b) => b.visits.length - a.visits.length)
 
     return categories
   },
@@ -145,16 +194,22 @@ export const trackerActions = {
       const remoteLogs: ReadLog[] = await res.json()
       const mergedMap = new Map<string, ReadLog>()
 
-      trackerState.logs.forEach(l => mergedMap.set(l.path, { ...l, readDates: [...l.readDates] }))
+      trackerState.logs.forEach(l => mergedMap.set(l.path, { ...l, readDates: [...l.readDates], visits: [...l.visits] }))
 
       remoteLogs.forEach((rl) => {
         if (mergedMap.has(rl.path)) {
           const local = mergedMap.get(rl.path)!
           local.readDates = Array.from(new Set([...local.readDates, ...rl.readDates])).sort((a, b) => a - b)
+
+          const visitMap = new Map<number, ReadLogVisit>()
+          local.visits.forEach(v => visitMap.set(v.timestamp, v))
+          ; (rl.visits || []).forEach(v => visitMap.set(v.timestamp, v))
+          local.visits = Array.from(visitMap.values()).sort((a, b) => a.timestamp - b.timestamp)
+
           local.title = rl.title || local.title
         }
         else {
-          mergedMap.set(rl.path, rl)
+          mergedMap.set(rl.path, { ...rl, visits: rl.visits || rl.readDates.map((ts: number) => ({ timestamp: ts, duration: 60 })) })
         }
       })
 

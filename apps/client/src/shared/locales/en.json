@@ -60,7 +60,9 @@
     "noResults": "No results found",
     "resetFilters": "Reset filters",
     "toNavigate": "to navigate",
-    "toSelect": "to select"
+    "toSelect": "to select",
+    "modeAll": "Full-text",
+    "modeFiles": "Files"
   },
   "confirm": {
     "title": "Confirm",

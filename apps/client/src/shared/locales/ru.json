@@ -11,7 +11,7 @@
     "showIcons": "Иконки в меню",
     "showOutline": "Линии структуры",
     "plugins": "Менеджер плагинов",
-    "aiSettings": "Настройки AI", 
+    "aiSettings": "Настройки AI",
     "language": "Язык"
   },
   "home": {
@@ -60,7 +60,9 @@
     "noResults": "Ничего не найдено",
     "resetFilters": "Сбросить фильтры",
     "toNavigate": "для перехода",
-    "toSelect": "для навигации"
+    "toSelect": "для навигации",
+    "modeAll": "Полнотекстовый",
+    "modeFiles": "По файлам"
   },
   "confirm": {
     "title": "Подтверждение",

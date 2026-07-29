@@ -1,13 +1,13 @@
 {
   "name": "@injurx/plugin-reading-tracker",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "--------------------------------<      DEV       >--------------------------------": "",
-    "dev": "vite build --watch",
+    "dev": "wm-plugin-build --watch",
     "--------------------------------<      BUILD     >--------------------------------": "",
-    "build": "vite build",
+    "build": "wm-plugin-build",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "7.7.3",
+    "@injurkx/plugin-api": "workspace:*",
     "@vitejs/plugin-vue": "^6.0.5",
     "eslint": "10.1.0",
     "eslint-plugin-format": "2.0.1",

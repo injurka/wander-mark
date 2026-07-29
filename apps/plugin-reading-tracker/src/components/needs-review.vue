@@ -48,8 +48,8 @@ function formatDate(ts: number) {
             <span class="rt-item-path" :title="item.path">{{ item.path }}</span>
           </div>
           <div class="rt-item-meta">
-            <span class="rt-badge">{{ t('review.times', { n: item.readDates.length }) }}</span>
-            <span class="rt-date">{{ formatDate(item.readDates[item.readDates.length - 1]) }}</span>
+            <span class="rt-badge">{{ t('review.times', { n: item.visits.length }) }}</span>
+            <span class="rt-date">{{ formatDate(item.visits[item.visits.length - 1]?.timestamp || 0) }}</span>
           </div>
         </div>
       </div>
@@ -73,8 +73,8 @@ function formatDate(ts: number) {
             <span class="rt-item-path" :title="item.path">{{ item.path }}</span>
           </div>
           <div class="rt-item-meta">
-            <span class="rt-badge">{{ t('review.times', { n: item.readDates.length }) }}</span>
-            <span class="rt-date">{{ formatDate(item.readDates[item.readDates.length - 1]) }}</span>
+            <span class="rt-badge">{{ t('review.times', { n: item.visits.length }) }}</span>
+            <span class="rt-date">{{ formatDate(item.visits[item.visits.length - 1]?.timestamp || 0) }}</span>
           </div>
         </div>
       </div>
@@ -98,8 +98,8 @@ function formatDate(ts: number) {
             <span class="rt-item-path" :title="item.path">{{ item.path }}</span>
           </div>
           <div class="rt-item-meta">
-            <span class="rt-badge">{{ t('review.times', { n: item.readDates.length }) }}</span>
-            <span class="rt-date">{{ formatDate(item.readDates[item.readDates.length - 1]) }}</span>
+            <span class="rt-badge">{{ t('review.times', { n: item.visits.length }) }}</span>
+            <span class="rt-date">{{ formatDate(item.visits[item.visits.length - 1]?.timestamp || 0) }}</span>
           </div>
         </div>
       </div>

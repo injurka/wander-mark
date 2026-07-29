@@ -1,0 +1,13 @@
+.node_bun_base:
+  image: $NODE_IMAGE
+  before_script:
+    - npm install -g bun@$BUN_VERSION
+  cache:
+    key:
+      files:
+        - bun.lock
+      prefix: bun-cache
+    paths:
+      - .bun-cache
+      - node_modules/
+    policy: pull

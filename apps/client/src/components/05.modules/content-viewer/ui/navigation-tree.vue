@@ -89,9 +89,14 @@ function getNextRootIndex(currentIndex: number) {
       <!-- Файл -->
       <div
         v-else
+        :id="store.activeItem === item ? 'active-tree-item' : undefined"
         class="tree-row file-row"
-        :class="[getColorClass(index)]"
+        :class="[
+          getColorClass(index),
+          { 'is-active': store.activeItem === item },
+        ]"
         :style="{ paddingLeft: `${level * 16 + 22}px` }"
+        :data-sysname="item.sysname"
         @click.stop="emit('select', item)"
       >
         <span v-if="store.showIconsEnabled" class="tree-icon flex-shrink-0">
@@ -159,6 +164,12 @@ function getNextRootIndex(currentIndex: number) {
   &:hover {
     background-color: var(--bg-hover-color);
     color: var(--fg-primary-color);
+  }
+
+  &.is-active {
+    background-color: var(--bg-active-color, rgba(var(--fg-accent-color-rgb), 0.15));
+    color: var(--fg-primary-color);
+    font-weight: 600;
   }
 }
 

@@ -1,40 +1,47 @@
-import { stat } from 'node:fs/promises'
-import path from 'node:path'
-import { BASE_PATH, CORS_HEADERS } from '../config'
+import { CORS_HEADERS, S3_BASE_PATH } from '../config'
+import { getS3File, statS3File } from '../s3'
 import { withCors } from '../utils/cors'
 import { getMimeOverride } from '../utils/mime'
 
-export async function handleFile(req: Request): Promise<Response> {
-  if (!BASE_PATH) {
-    return withCors(new Response('File system not configured', { status: 404 }))
-  }
+function getKey(reqPath: string) {
+  const p = S3_BASE_PATH ? `${S3_BASE_PATH}/${reqPath}` : reqPath
+  // eslint-disable-next-line e18e/prefer-static-regex
+  return p.replace(/^\/+/, '')
+}
 
+export async function handleFile(req: Request): Promise<Response> {
   const url = new URL(req.url)
   // eslint-disable-next-line e18e/prefer-static-regex
   const reqPath = decodeURIComponent(url.pathname.replace(/^\//, ''))
+  const key = getKey(reqPath)
 
-  const fullPath = path.resolve(BASE_PATH, reqPath)
-  if (!fullPath.startsWith(path.resolve(BASE_PATH))) {
-    return withCors(new Response('Forbidden', { status: 403 }))
+  if (req.method === 'HEAD') {
+    const stat = await statS3File(key)
+    if (!stat) {
+      return withCors(new Response('File not found', { status: 404 }))
+    }
+    const mimeOverride = getMimeOverride(key)
+    return new Response(null, {
+      headers: {
+        ...CORS_HEADERS,
+        ...(mimeOverride ? { 'Content-Type': mimeOverride } : (stat.ContentType ? { 'Content-Type': stat.ContentType } : {})),
+        'Content-Length': stat.ContentLength?.toString() || '0',
+      },
+    })
   }
 
-  const file = Bun.file(fullPath)
+  const fileBuf = await getS3File(key)
 
-  if (!(await file.exists())) {
-    console.error(`[404] File not found: ${fullPath}`)
+  if (!fileBuf) {
+    console.error(`[404] File not found: ${key}`)
     return withCors(new Response('File not found', { status: 404 }))
   }
 
-  const fileStat = await stat(fullPath)
-  if (!fileStat.isFile()) {
-    return withCors(new Response('Not a file', { status: 404 }))
-  }
-
-  const mimeOverride = getMimeOverride(fullPath)
-  return new Response(file, {
+  const mimeOverride = getMimeOverride(key)
+  return new Response(fileBuf as unknown as BodyInit, {
     headers: {
       ...CORS_HEADERS,
-      ...(mimeOverride ? { 'Content-Type': mimeOverride } : {}),
+      'Content-Type': mimeOverride || 'application/octet-stream',
     },
   })
 }
