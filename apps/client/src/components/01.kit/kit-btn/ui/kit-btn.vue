@@ -44,9 +44,18 @@ const componentClasses = computed(() => [
     type="button"
   >
     <span class="kit-btn-content">
-      <Icon v-if="finalIcon" :icon="finalIcon" class="kit-btn-icon" :class="{ 'mr-2': !isIconOnly && slots.default }" />
+      <Icon
+        v-if="finalIcon"
+        :icon="finalIcon"
+        class="kit-btn-icon"
+        :class="{ 'mr-2': !isIconOnly && slots.default }"
+      />
       <slot />
-      <Icon v-if="props.appendIcon" :icon="props.appendIcon" class="kit-btn-icon ml-2" />
+      <Icon
+        v-if="props.appendIcon"
+        :icon="props.appendIcon"
+        class="kit-btn-icon ml-2"
+      />
     </span>
   </button>
 </template>

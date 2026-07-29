@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVaultStore } from '~/shared/store/vault.store'
 
@@ -6,22 +6,18 @@ export function useVaultManagement() {
   const router = useRouter()
   const vaultStore = useVaultStore()
 
-  const progressMap = ref<Record<string, number>>({})
+  // Прогресс синхронизации пушится в стор (скачивание — из syncVault, запись — из воркера через birpc)
+  const progressMap = computed(() => vaultStore.syncProgress)
 
   // --- Иконки ---
   const iconUrls = ref<Record<string, string>>({})
   const iconErrors = ref<Record<string, boolean>>({})
 
   watch(() => vaultStore.vaults, async (vaults) => {
-    vaultStore.clearBlobUrls()
     for (const vault of vaults) {
       iconUrls.value[vault.id] = await vaultStore.resolveMediaUrl(vault.id, `meta/${vault.id}/images/icon.png`)
     }
   }, { immediate: true, deep: true })
-
-  onBeforeUnmount(() => {
-    vaultStore.clearBlobUrls()
-  })
 
   function handleIconError(vaultId: string) {
     iconErrors.value[vaultId] = true
@@ -95,12 +91,10 @@ export function useVaultManagement() {
     if (!vault || vault.syncStatus === 'syncing')
       return
 
-    progressMap.value[vaultId] = 0
+    vaultStore.setSyncProgress(vaultId, 0)
 
     try {
-      await vaultStore.syncVault(vaultId, (p) => {
-        progressMap.value[vaultId] = p
-      })
+      await vaultStore.syncVault(vaultId)
       iconUrls.value[vaultId] = await vaultStore.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
       iconErrors.value[vaultId] = false
     }

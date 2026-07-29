@@ -78,10 +78,16 @@ export const usePluginStore = defineStore('plugins', () => {
     let urlToLoad = sourceUrl
     let isBlob = false
 
-    // Разрешаем локальные пути до скачанных плагинов или Blob
+    // Разрешаем локальные пути до скачанных плагинов: текстовые файлы лежат в SQLite
     if (!urlToLoad.startsWith('http') && !urlToLoad.startsWith('blob:') && !urlToLoad.startsWith('data:')) {
-      urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
-      isBlob = urlToLoad.startsWith('blob:')
+      const content = await vaultStore.getFileContent(currentVaultId.value, urlToLoad)
+      if (content !== null) {
+        urlToLoad = URL.createObjectURL(new Blob([content], { type: 'application/javascript' }))
+        isBlob = true
+      }
+      else {
+        urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
+      }
     }
 
     const module = await loadPluginModule(urlToLoad)
@@ -195,8 +201,14 @@ export const usePluginStore = defineStore('plugins', () => {
         && !urlToLoad.startsWith('blob:')
         && !urlToLoad.startsWith('data:')
       ) {
-        urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
-        isBlob = urlToLoad.startsWith('blob:')
+        const content = await vaultStore.getFileContent(currentVaultId.value, urlToLoad)
+        if (content !== null) {
+          urlToLoad = URL.createObjectURL(new Blob([content], { type: 'application/javascript' }))
+          isBlob = true
+        }
+        else {
+          urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
+        }
       }
 
       const module = existingModule || await loadPluginModule(urlToLoad)

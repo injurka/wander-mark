@@ -4,7 +4,6 @@ import type { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/mode
 import { Icon } from '@iconify/vue'
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
-import { get, set } from 'idb-keyval'
 import { computed, nextTick, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -399,11 +398,11 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       t,
       storage: {
         async get<T>(key: string): Promise<T | null> {
-          const val = await get<T>(`plugin::${vault}::${key}`)
-          return val ?? null
+          const raw = localStorage.getItem(`plugin::${vault}::${key}`)
+          return raw ? JSON.parse(raw) as T : null
         },
         async set<T>(key: string, value: T) {
-          return set(`plugin::${vault}::${key}`, value)
+          localStorage.setItem(`plugin::${vault}::${key}`, JSON.stringify(value))
         },
       },
       ai: {

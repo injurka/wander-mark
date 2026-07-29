@@ -130,7 +130,6 @@ watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {
     if (md && newContent) {
-      vaultStore.clearBlobUrls()
       const cleanContent = newContent.replace(/^---[\s\S]*?---\n*/, '')
       let html = md.render(cleanContent)
       html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
@@ -257,9 +256,6 @@ function handleContentClick(event: MouseEvent) {
 
 onMounted(() => {
   initRenderer()
-})
-onBeforeUnmount(() => {
-  vaultStore.clearBlobUrls()
 })
 </script>
 
