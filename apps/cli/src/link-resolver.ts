@@ -48,10 +48,10 @@ export async function buildFileMapRecursive(
         const fullRelativePath = path.join(relativePathFromSourceBase, baseName).replace(/\\/g, '/')
         const parts = fullRelativePath.split('/')
         let currentKey = ''
-        
+
         for (let i = parts.length - 1; i >= 0; i--) {
           currentKey = currentKey ? `${parts[i]}/${currentKey}` : parts[i]
-          
+
           if (fileMap.has(currentKey)) {
             if (currentKey === baseName) {
               console.warn(`⚠️ Duplicate base file name found: "${baseName}". Link resolution might be ambiguous. Using path: ${targetUrl}`)

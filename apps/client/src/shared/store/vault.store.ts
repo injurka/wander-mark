@@ -1,7 +1,8 @@
+import type { TextFilePayload } from '~/shared/types/rpc'
 import { useLocalStorage } from '@vueuse/core'
-import { get } from 'idb-keyval'
 import { defineStore } from 'pinia'
-import { deleteFile, deleteFilesByPrefix, getMediaUrl, isNative, readTextFile, writeBinaryFile, writeTextFile } from '../services/fs.client'
+import { ref } from 'vue'
+import { dbRpc, setSyncProgressHandler } from '../services/db.client'
 
 export interface VaultConfig {
   id: string
@@ -18,12 +19,26 @@ export interface VaultConfig {
 
 export const useVaultStore = defineStore('vault', () => {
   const vaults = useLocalStorage<VaultConfig[]>('app-vaults', [])
-  const createdObjectUrls = new Set<string>()
+  const syncProgress = ref<Record<string, number>>({})
+
+  const setSyncProgress = (vaultId: string, progress: number) => {
+    syncProgress.value[vaultId] = progress
+  }
+
+  // Прогресс фазы записи пушится из SQLite-воркера напрямую через birpc
+  setSyncProgressHandler(setSyncProgress)
 
   const initPredefinedVaults = async () => {
     try {
-      const basePath = import.meta.env.BASE_URL || '/'
-      const res = await fetch(`${basePath}configs/server.json`)
+      await dbRpc.initDb()
+    }
+    catch (e) {
+      console.error('Не удалось инициализировать SQLite/OPFS:', e)
+    }
+
+    try {
+      const configUrl = import.meta.env.VITE_CONFIG_URL || 'https://s3.firstvds.ru/wander-mark/config/server.json'
+      const res = await fetch(configUrl)
 
       if (res.ok) {
         const config = await res.json()
@@ -110,12 +125,8 @@ export const useVaultStore = defineStore('vault', () => {
     if (!vault)
       return null
 
-    if (vault.type === 'local' && vault.localPath) {
-      return await readTextFile(`${vault.localPath}/${filePath}`, true)
-    }
-
     if (vault.isDownloaded) {
-      const content = await readTextFile(`vaults/${vaultId}/${filePath}`)
+      const content = await dbRpc.getFile(vaultId, filePath)
       if (content !== null)
         return content
     }
@@ -134,13 +145,14 @@ export const useVaultStore = defineStore('vault', () => {
   }
 
   // --- Инкрементальная синхронизация ---
-  const syncVault = async (vaultId: string, onProgress?: (p: number) => void) => {
+  const syncVault = async (vaultId: string) => {
     const vIndex = vaults.value.findIndex(v => v.id === vaultId)
     if (vIndex === -1)
       throw new Error('Хранилище не найдено.')
     const vault = vaults.value[vIndex]
 
     vault.syncStatus = 'syncing'
+    setSyncProgress(vaultId, 0)
 
     try {
       // 1. Получаем удаленный nav.json
@@ -244,12 +256,13 @@ export const useVaultStore = defineStore('vault', () => {
 
       // 5. Удаляем локальные файлы, которых больше нет
       for (const file of filesToDelete) {
-        await deleteFile(`vaults/${vaultId}/${file}`)
+        await dbRpc.deleteFile(vaultId, file)
         delete syncState[file]
       }
 
-      // 6. Скачиваем измененные и новые
+      // 6. Скачиваем измененные и новые (тексты копим в батч для одной транзакции в SQLite)
       let loaded = 0
+      const textBatch: TextFilePayload[] = []
       const mediaToSync = new Map<string, Set<string>>() // mediaUrl -> Set of parent markdown files
       const failedFiles = new Set<string>()
       const fileArray = Array.from(filesToDownload)
@@ -261,7 +274,7 @@ export const useVaultStore = defineStore('vault', () => {
           const res = await fetch(`${vault.url}/${file}`)
           if (res.ok) {
             const content = await res.text()
-            await writeTextFile(`vaults/${vaultId}/${file}`, content)
+            textBatch.push({ path: file, content, lastModified: Date.now() })
 
             if (file.endsWith('.md')) {
               const imgRegex = /!\[.*?\]\((.*?)\)/g
@@ -292,12 +305,15 @@ export const useVaultStore = defineStore('vault', () => {
         }
         catch { failedFiles.add(file) }
         loaded++
-        if (onProgress)
-          onProgress(Math.floor((loaded / (totalItems + mediaToSync.size)) * 100))
+        setSyncProgress(vaultId, Math.floor((loaded / (totalItems + mediaToSync.size)) * 100))
       }
 
       // Параллельная загрузка текстовых файлов батчами по 15
       await runInBatches(fileArray, 15, downloadFile)
+
+      // Транзакционная запись всех текстов в SQLite одним RPC-вызовом
+      if (textBatch.length > 0)
+        await dbRpc.syncTextBatch(vaultId, textBatch)
 
       // 7. Скачиваем картинки (только для измененных файлов)
       const mediaArray = Array.from(mediaToSync.keys())
@@ -306,16 +322,14 @@ export const useVaultStore = defineStore('vault', () => {
         try {
           const res = await fetch(`${vault.url}/${media}`)
           if (res.ok) {
-            const blob = await res.blob()
-            const savePath = media.startsWith('images/') ? media : `vaults/${vaultId}/${media}`
-            await writeBinaryFile(savePath, blob)
+            const buffer = await res.arrayBuffer()
+            await dbRpc.writeMedia(vaultId, media, buffer)
           }
           else { failedFiles.add(media) }
         }
         catch { failedFiles.add(media) }
         loaded++
-        if (onProgress)
-          onProgress(Math.floor((loaded / (totalItems + mediaArray.length)) * 100))
+        setSyncProgress(vaultId, Math.floor((loaded / (totalItems + mediaArray.length)) * 100))
       }
 
       // Параллельная загрузка медиа батчами по 10
@@ -326,8 +340,8 @@ export const useVaultStore = defineStore('vault', () => {
         const iconPath = `meta/${vaultId}/images/icon.png`
         const iconRes = await fetch(`${vault.url}/${iconPath}`)
         if (iconRes.ok) {
-          const blob = await iconRes.blob()
-          await writeBinaryFile(`vaults/${vaultId}/${iconPath}`, blob)
+          const buffer = await iconRes.arrayBuffer()
+          await dbRpc.writeMedia(vaultId, iconPath, buffer)
         }
       }
       catch { }
@@ -355,7 +369,9 @@ export const useVaultStore = defineStore('vault', () => {
       })
 
       // Сохраняем стейт
-      await writeTextFile(`vaults/${vaultId}/meta/${vaultId}/sync_state.json`, JSON.stringify(syncState))
+      await dbRpc.syncTextBatch(vaultId, [
+        { path: `meta/${vaultId}/sync_state.json`, content: JSON.stringify(syncState), lastModified: Date.now() },
+      ])
 
       vault.isDownloaded = true
       vault.lastSync = Date.now()
@@ -368,8 +384,7 @@ export const useVaultStore = defineStore('vault', () => {
         vault.syncStatus = 'idle'
       }
 
-      if (onProgress)
-        onProgress(100)
+      setSyncProgress(vaultId, 100)
     }
     catch (e: any) {
       vault.syncStatus = 'error'
@@ -378,34 +393,19 @@ export const useVaultStore = defineStore('vault', () => {
   }
 
   const deleteVault = async (vaultId: string) => {
-    await deleteFilesByPrefix(`vaults/${vaultId}`)
+    await dbRpc.deleteVault(vaultId)
     vaults.value = vaults.value.filter(v => v.id !== vaultId)
   }
 
+  // Медиа раздаются Service Worker'ом напрямую из OPFS — blob URL больше не нужны
   const resolveMediaUrl = async (vaultId: string, mediaPath: string): Promise<string> => {
     const vault = getVault(vaultId)
     if (!vault)
       return mediaPath
 
-    if (vault.type === 'local' && vault.localPath) {
-      return await getMediaUrl(`${vault.localPath}/${mediaPath}`, true)
-    }
-
     if (vault.isDownloaded) {
-      if (isNative) {
-        return await getMediaUrl(`vaults/${vaultId}/${mediaPath}`)
-      }
-      else {
-        try {
-          const blob = await get(`vaults/${vaultId}/${mediaPath}`)
-          if (blob instanceof Blob) {
-            const url = URL.createObjectURL(blob)
-            createdObjectUrls.add(url)
-            return url
-          }
-        }
-        catch { }
-      }
+      const encoded = mediaPath.split('/').map(encodeURIComponent).join('/')
+      return new URL(`opfs-media/${vaultId}/${encoded}`, document.baseURI).href
     }
 
     if (vault.type === 'remote') {
@@ -414,13 +414,13 @@ export const useVaultStore = defineStore('vault', () => {
     return mediaPath
   }
 
-  const clearBlobUrls = () => {
-    createdObjectUrls.forEach(url => URL.revokeObjectURL(url))
-    createdObjectUrls.clear()
-  }
+  // Пасsthrough для совместимости с local-хранилищами (Tauri)
+  const getMediaUrl = async (path: string, _absolute = false): Promise<string> => path
 
   return {
     vaults,
+    syncProgress,
+    setSyncProgress,
     initPredefinedVaults,
     addRemoteVault,
     syncVault,
@@ -429,6 +429,5 @@ export const useVaultStore = defineStore('vault', () => {
     getFileContent,
     resolveMediaUrl,
     getMediaUrl,
-    clearBlobUrls,
   }
 })

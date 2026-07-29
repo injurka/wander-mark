@@ -1,10 +1,13 @@
 /* eslint-disable no-console */
-import { BASE_PATH, CORS_HEADERS, DATA_DIR, PORT } from './config'
+import { CORS_HEADERS, PORT, S3_BASE_PATH, S3_BUCKET } from './config'
+import { db } from './db'
 import { handleFile } from './handlers/file'
 import { deleteHanzi, getAllHanzi, getHanzi, saveHanzi } from './handlers/hanzi'
 import { handleSync } from './handlers/sync'
 import { withCors } from './utils/cors'
-import './db'
+
+// eslint-disable-next-line antfu/no-top-level-await
+await db.loadDb()
 
 Bun.serve({
   port: PORT,
@@ -48,5 +51,5 @@ Bun.serve({
 })
 
 console.log(`✅ Server running on port ${PORT}`)
-console.log(`📁 Base path: ${BASE_PATH || '(not set)'}`)
-console.log(`🔄 Sync data path: ${DATA_DIR}`)
+console.log(`📁 S3 Bucket: ${S3_BUCKET}`)
+console.log(`🔄 S3 Base path: ${S3_BASE_PATH || '(root)'}`)

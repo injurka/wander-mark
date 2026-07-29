@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { KitBtn, KitInput } from '~/components/01.kit'
+import { AppRoutePaths } from '~/shared/constants/routes'
 import { findPathBySysname } from '../lib/navigation'
 import NavigationTree from './navigation-tree.vue'
 

@@ -190,6 +190,7 @@ function openFile(path: string) {
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-secondary-color);
   border-radius: 12px;
+  min-width: 0;
 }
 .rt-card h2 {
   margin-top: 0;

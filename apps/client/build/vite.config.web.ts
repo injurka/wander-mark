@@ -52,8 +52,28 @@ export default defineConfig({
     },
   },
 
+  // COOP/COEP нужны для crossOriginIsolated (SharedArrayBuffer + OPFS sync access handle в SQLite WASM)
   server: {
     port: 5173,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+
+  worker: {
+    format: 'es',
+  },
+
+  optimizeDeps: {
+    exclude: ['@sqlite.org/sqlite-wasm'],
   },
 
   build: {

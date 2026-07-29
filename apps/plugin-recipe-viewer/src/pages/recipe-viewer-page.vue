@@ -37,6 +37,15 @@ const selectedIngredients = ref<string[]>([])
 const ingredientSearch = ref('')
 const showIngredientDropdown = ref(false)
 
+const categories = [
+  { value: 'классический', label: '🍵 Классический' },
+  { value: 'молочный', label: '🥛 Молочный' },
+  { value: 'фруктовый', label: '🍊 Фруктовый' },
+  { value: 'травяной', label: '🌿 Травяной' },
+  { value: 'холодный', label: '🧊 Холодный' },
+  { value: 'авторский', label: '✨ Авторский' },
+]
+
 const showCategoryDropdown = ref(false)
 const selectedCategoryLabel = computed(() => {
   if (!selectedCategory.value)
@@ -57,15 +66,6 @@ function handleCategoryBlur() {
     showCategoryDropdown.value = false
   }, 200)
 }
-
-const categories = [
-  { value: 'классический', label: '🍵 Классический' },
-  { value: 'молочный', label: '🥛 Молочный' },
-  { value: 'фруктовый', label: '🍊 Фруктовый' },
-  { value: 'травяной', label: '🌿 Травяной' },
-  { value: 'холодный', label: '🧊 Холодный' },
-  { value: 'авторский', label: '✨ Авторский' },
-]
 
 // ─── Parse YAML frontmatter from raw markdown ───
 function parseFrontmatter(raw: string): Record<string, any> | null {
@@ -88,7 +88,7 @@ function parseFrontmatter(raw: string): Record<string, any> | null {
       continue
 
     // Top-level key: value
-    const kvMatch = line.match(/^([a-z_]+):\s*(.*)$/)
+    const kvMatch = line.match(/^([a-z_]+):(.*)$/)
     if (kvMatch) {
       // Flush previous ingredient
       if (currentIngredient && isIngredientsList && currentList) {
@@ -138,7 +138,7 @@ function parseFrontmatter(raw: string): Record<string, any> | null {
     if (currentList !== null) {
       if (isIngredientsList) {
         // Ingredient object item: "  - item: ..."
-        const itemStart = trimmed.match(/^-\s+(\w+):\s*(.*)$/)
+        const itemStart = trimmed.match(/^-\s+(\w+):(.*)$/)
         if (itemStart) {
           // Flush previous ingredient
           if (currentIngredient) {
@@ -165,7 +165,7 @@ function parseFrontmatter(raw: string): Record<string, any> | null {
         }
 
         // Nested key inside ingredient: "    amount: 200"
-        const nestedKV = trimmed.match(/^(\w+):\s*(.*)$/)
+        const nestedKV = trimmed.match(/^(\w+):(.*)$/)
         if (nestedKV && currentIngredient) {
           const key = nestedKV[1]
           let val: any = nestedKV[2].trim().replace(/^["']|["']$/g, '')
@@ -188,7 +188,7 @@ function parseFrontmatter(raw: string): Record<string, any> | null {
       }
       else {
         // Simple list "  - value"
-        const listItem = trimmed.match(/^-\s+(.+)$/)
+        const listItem = trimmed.match(/^- (.*)$/)
         if (listItem) {
           currentList.push(listItem[1].replace(/^["']|["']$/g, ''))
           continue

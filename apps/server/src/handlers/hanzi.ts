@@ -5,15 +5,9 @@ import { withCors } from '../utils/cors'
 // GET /api/hanzi (Получить все)
 export async function getAllHanzi(_req: Request): Promise<Response> {
   try {
-    const results = db.query('SELECT * FROM hanzi ORDER BY created_at DESC').all() as any[]
+    const results = Object.values(db.hanzi).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-    const data = results.map(row => ({
-      ...row,
-      components: JSON.parse(row.components || '[]'),
-      words_breakdown: JSON.parse(row.words_breakdown || '[]'),
-    }))
-
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(results), {
       status: 200,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
     })
@@ -35,12 +29,9 @@ export async function getHanzi(req: Request): Promise<Response> {
     }))
   }
 
-  const query = db.query('SELECT * FROM hanzi WHERE char = $char')
-  const result = query.get({ $char: char }) as any
+  const result = db.hanzi[char]
 
   if (result) {
-    result.components = JSON.parse(result.components as string || '[]')
-    result.words_breakdown = JSON.parse(result.words_breakdown as string || '[]')
     return new Response(JSON.stringify({ found: true, data: result }), {
       status: 200,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -57,36 +48,26 @@ export async function getHanzi(req: Request): Promise<Response> {
 export async function saveHanzi(req: Request): Promise<Response> {
   try {
     const body = await req.json()
+    const char = body.character || body.char
 
-    const insert = db.prepare(`
-      INSERT INTO hanzi (char, type, pinyin, translation, components, etymology, hsk, strokes, part_of_speech, grammar_notes, words_breakdown)
-      VALUES ($char, $type, $pinyin, $translation, $components, $etymology, $hsk, $strokes, $part_of_speech, $grammar_notes, $words_breakdown)
-      ON CONFLICT(char) DO UPDATE SET
-        type=excluded.type,
-        pinyin=excluded.pinyin,
-        translation=excluded.translation,
-        components=excluded.components,
-        etymology=excluded.etymology,
-        hsk=excluded.hsk,
-        strokes=excluded.strokes,
-        part_of_speech=excluded.part_of_speech,
-        grammar_notes=excluded.grammar_notes,
-        words_breakdown=excluded.words_breakdown
-    `)
+    const existing = db.hanzi[char] || { created_at: new Date().toISOString() }
 
-    insert.run({
-      $char: body.character || body.char,
-      $type: body.type || 'word',
-      $pinyin: body.pinyin || '',
-      $translation: body.translation || '',
-      $components: JSON.stringify(body.components || []),
-      $etymology: body.etymology || '',
-      $hsk: body.hsk || 'None',
-      $strokes: body.strokes || 0,
-      $part_of_speech: body.part_of_speech || '',
-      $grammar_notes: body.grammar_notes || '',
-      $words_breakdown: JSON.stringify(body.words_breakdown || []),
-    })
+    db.hanzi[char] = {
+      ...existing,
+      char,
+      type: body.type || existing.type || 'word',
+      pinyin: body.pinyin || existing.pinyin || '',
+      translation: body.translation || existing.translation || '',
+      components: body.components || existing.components || [],
+      etymology: body.etymology || existing.etymology || '',
+      hsk: body.hsk || existing.hsk || 'None',
+      strokes: body.strokes || existing.strokes || 0,
+      part_of_speech: body.part_of_speech || existing.part_of_speech || '',
+      grammar_notes: body.grammar_notes || existing.grammar_notes || '',
+      words_breakdown: body.words_breakdown || existing.words_breakdown || [],
+    }
+
+    await db.saveHanziDb()
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -115,10 +96,10 @@ export async function deleteHanzi(req: Request): Promise<Response> {
   }
 
   try {
-    const query = db.prepare('DELETE FROM hanzi WHERE char = $char')
-    const result = query.run({ $char: char })
+    if (db.hanzi[char]) {
+      delete db.hanzi[char]
+      await db.saveHanziDb()
 
-    if (result.changes > 0) {
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },

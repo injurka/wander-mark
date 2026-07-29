@@ -4,7 +4,6 @@ import type { BacklinksMap, VaultMetaSearchIndexItem } from '~/shared/types/mode
 import { Icon } from '@iconify/vue'
 import { useEventListener, useSwipe } from '@vueuse/core'
 import { useHead } from '@vueuse/head'
-import { get, set } from 'idb-keyval'
 import { computed, nextTick, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -20,7 +19,6 @@ import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
-import { isNative } from '~/shared/services/fs.client'
 import { useGlobalSettingsStore } from '~/shared/store/settings.store'
 import { useVaultStore } from '~/shared/store/vault.store'
 
@@ -321,18 +319,13 @@ async function resolveAppUrl(vaultConfig: any, path: string) {
   }
 
   if (vaultConfig.isDownloaded) {
-    if (isNative) {
-      return await vaultStore.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
-    }
-    else {
-      const content = await vaultStore.getFileContent(vaultConfig.id, cleanPath)
-      if (content) {
-        const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
-        const blob = new Blob([content], { type: mimeType })
-        const url = URL.createObjectURL(blob)
-        appObjectUrls.add(url)
-        return url
-      }
+    const content = await vaultStore.getFileContent(vaultConfig.id, cleanPath)
+    if (content) {
+      const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      appObjectUrls.add(url)
+      return url
     }
   }
 
@@ -397,7 +390,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       vaultUrl: vaultConfig.url || '',
       searchIndex: data.value.searchIndex,
       navItems: data.value.nav,
-      router,
+      router: router as any,
       getFileContent: (path: string) => vaultStore.getFileContent(vault, path),
       showToast,
       confirm,
@@ -405,16 +398,16 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
       t,
       storage: {
         async get<T>(key: string): Promise<T | null> {
-          const val = await get<T>(`plugin::${vault}::${key}`)
-          return val ?? null
+          const raw = localStorage.getItem(`plugin::${vault}::${key}`)
+          return raw ? JSON.parse(raw) as T : null
         },
         async set<T>(key: string, value: T) {
-          return set(`plugin::${vault}::${key}`, value)
+          localStorage.setItem(`plugin::${vault}::${key}`, JSON.stringify(value))
         },
       },
       ai: {
         getModel: () => globalSettings.aiModel,
-        fetch: (endpoint, options = {}) => {
+        fetch: (endpoint: string, options: RequestInit = {}) => {
           if (!globalSettings.aiKey) {
             aiSettingsDialogOpen.value = true
             return Promise.reject(new Error('API ключ не настроен.'))

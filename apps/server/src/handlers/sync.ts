@@ -25,20 +25,23 @@ export async function handleSync(req: Request): Promise<Response> {
       ? String(identifier).replace(/[^\w-]/g, '')
       : 'default'
 
-    // 1. Получаем все существующие записи для этого юзера и хранилища
-    const existingRows = db.query(`
-      SELECT path, title, read_dates
-      FROM reading_logs
-      WHERE vault_id = $vaultId AND identifier = $identifier
-    `).all({ $vaultId: vaultId, $identifier: safeIdentifier }) as any[]
+    // 1. Получаем все существующие записи
+    const existingLogs: Record<string, any> = {}
+    for (const key in db.logs) {
+      const row = db.logs[key]
+      if (row.vault_id === vaultId && row.identifier === safeIdentifier) {
+        existingLogs[row.path] = row
+      }
+    }
 
     // 2. Строим Map для быстрого доступа
     const mergedMap = new Map<string, ReadLog>()
-    for (const row of existingRows) {
+    for (const rowPath in existingLogs) {
+      const row = existingLogs[rowPath]
       mergedMap.set(row.path, {
         path: row.path,
         title: row.title,
-        readDates: JSON.parse(row.read_dates || '[]'),
+        readDates: Array.isArray(row.read_dates) ? row.read_dates : JSON.parse(row.read_dates || '[]'),
       })
     }
 
@@ -59,30 +62,20 @@ export async function handleSync(req: Request): Promise<Response> {
 
     const mergedLogs = [...mergedMap.values()]
 
-    // 4. Подготавливаем запрос на вставку/обновление (Upsert)
-    const upsert = db.prepare(`
-      INSERT INTO reading_logs (vault_id, identifier, path, title, read_dates, updated_at)
-      VALUES ($vaultId, $identifier, $path, $title, $readDates, CURRENT_TIMESTAMP)
-      ON CONFLICT(vault_id, identifier, path) DO UPDATE SET
-        title = excluded.title,
-        read_dates = excluded.read_dates,
-        updated_at = CURRENT_TIMESTAMP
-    `)
-
-    // 5. Выполняем запись в рамках одной транзакции (очень быстро)
-    const transaction = db.transaction((logsToSave: ReadLog[]) => {
-      for (const log of logsToSave) {
-        upsert.run({
-          $vaultId: vaultId,
-          $identifier: safeIdentifier,
-          $path: log.path,
-          $title: log.title,
-          $readDates: JSON.stringify(log.readDates),
-        })
+    // 4. Обновляем в памяти
+    for (const log of mergedLogs) {
+      const dbKey = `${vaultId}:${safeIdentifier}:${log.path}`
+      db.logs[dbKey] = {
+        vault_id: vaultId,
+        identifier: safeIdentifier,
+        path: log.path,
+        title: log.title,
+        read_dates: log.readDates,
+        updated_at: new Date().toISOString(),
       }
-    })
+    }
 
-    transaction(mergedLogs)
+    await db.saveLogsDb()
 
     // Возвращаем объединенные логи клиенту
     return new Response(JSON.stringify(mergedLogs), {

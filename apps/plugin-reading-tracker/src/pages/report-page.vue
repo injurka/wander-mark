@@ -52,7 +52,7 @@ const activeTab = ref('overview')
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 16px;
 }
 .rt-header {
   margin-bottom: 30px;

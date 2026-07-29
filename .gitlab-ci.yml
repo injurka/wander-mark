@@ -1,0 +1,22 @@
+variables:
+  RUN_LINT: 'true'
+  RUN_TYPECHECK: 'true'
+  NODE_IMAGE: 'node:24-bookworm-slim'
+  BUN_VERSION: 1.3.14
+
+default:
+  tags:
+    - docker
+
+stages:
+  - prepare
+  - quality
+  - build_docker
+  - deploy
+
+include:
+  - local: .gitlab/ci/base.yml
+  - local: .gitlab/ci/prepare.yml
+  - local: .gitlab/ci/quality.yml
+  - local: .gitlab/ci/docker.yml
+  - local: .gitlab/ci/deploy.yml

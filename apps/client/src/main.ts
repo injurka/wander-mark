@@ -8,7 +8,6 @@ import { KitBtn, KitCheckbox, KitDialog, KitDropdown, KitInput, KitSelect, KitSk
 import { vRipple } from '~/shared/directives/ripple'
 import router from '~/shared/lib/router'
 import { i18n } from '~/shared/plugins/i18n'
-import { isTauri } from '~/shared/services/fs.client'
 import { useVaultStore } from '~/shared/store/vault.store'
 import App from './app.vue'
 
@@ -46,7 +45,7 @@ async function bootstrap() {
 
   document.getElementById('app-preloader')?.remove()
 
-  if (!isTauri && 'serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
     import('~/shared/services/pwa.service')
       .then(({ initializePwaUpdater }) => {
         initializePwaUpdater(pinia)

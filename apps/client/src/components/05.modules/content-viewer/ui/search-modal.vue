@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { FuseResult } from 'fuse.js'
-import type { SearchIndexItem } from '../models'
+import type { SearchResultItem } from '~/shared/types/rpc'
 import { Icon } from '@iconify/vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
-import SearchWorker from '~/workers/dedicated/search?worker'
+import { dbRpc } from '~/shared/services/db.client'
 import { useContentViewerStore } from '../store'
 
 const modelValue = defineModel<boolean>({ required: true })
@@ -19,72 +18,35 @@ const selectedTags = ref<Set<string>>(new Set())
 const activeIndex = ref(0)
 const modalRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
-const searchResults = ref<FuseResult<SearchIndexItem>[]>([])
+
+interface DisplayResult {
+  id: string
+  title: string
+  url: string
+  tags?: string[]
+  snippet?: string
+}
 
 const searchMode = useLocalStorage<'all' | 'files'>('search_mode', 'all')
-const worker = new SearchWorker()
 
-const fuseOptionsAll = {
-  keys: [
-    { name: 'title', weight: 0.7 },
-    { name: 'tags', weight: 0.5 },
-    { name: 'content', weight: 0.3 },
-  ],
-  includeMatches: true,
-  minMatchCharLength: 2,
-  threshold: 0.4,
-  ignoreLocation: true,
-  findAllMatches: true,
-  useExtendedSearch: true,
-}
+const ftsResults = ref<SearchResultItem[]>([])
+let searchSeq = 0
 
-const fuseOptionsFiles = {
-  keys: [
-    { name: 'title', weight: 0.9 },
-    { name: 'url', weight: 0.5 },
-  ],
-  includeMatches: true,
-  minMatchCharLength: 2,
-  threshold: 0.4,
-  ignoreLocation: true,
-  findAllMatches: true,
-  useExtendedSearch: true,
-}
-
-worker.addEventListener('message', (e) => {
-  if (e.data.type === 'RESULT') {
-    searchResults.value = e.data.payload
+// Полнотекстовый поиск выполняется SQLite FTS5 в воркере
+watch([query, searchMode], async ([newQuery]) => {
+  const seq = ++searchSeq
+  if (!newQuery || newQuery.trim().length < 2) {
+    ftsResults.value = []
+    return
   }
-})
-
-watch(() => store.searchIndex, (newIndex) => {
-  if (newIndex && newIndex.length > 0) {
-    const rawIndex = JSON.parse(JSON.stringify(newIndex))
-    worker.postMessage({
-      type: 'INIT',
-      payload: {
-        index: rawIndex,
-        optionsAll: fuseOptionsAll,
-        optionsFiles: fuseOptionsFiles,
-      },
-    })
+  try {
+    const results = await dbRpc.searchFTS(newQuery, String(route.params.vault))
+    if (seq === searchSeq)
+      ftsResults.value = results
   }
-}, { immediate: true })
-
-watch([query, searchMode], ([newQuery, newMode]) => {
-  if (newQuery) {
-    worker.postMessage({
-      type: 'SEARCH',
-      payload: { query: newQuery, mode: newMode },
-    })
+  catch (e) {
+    console.error('Ошибка FTS-поиска:', e)
   }
-  else {
-    searchResults.value = []
-  }
-})
-
-onBeforeUnmount(() => {
-  worker.terminate()
 })
 
 const availableTags = computed(() => {
@@ -107,22 +69,33 @@ function toggleTag(tag: string) {
   activeIndex.value = 0
 }
 
-const filteredResults = computed(() => {
-  const index = store.searchIndex || []
-  let baseResults = []
+const filteredResults = computed<DisplayResult[]>(() => {
+  let baseResults: DisplayResult[]
 
   if (query.value) {
-    baseResults = searchResults.value
+    baseResults = ftsResults.value.map(r => ({
+      id: r.path,
+      title: r.title || r.path,
+      url: r.path,
+      tags: r.tags ? r.tags.split(/\s+/).filter(Boolean) : [],
+      snippet: r.snippet,
+    }))
   }
   else if (selectedTags.value.size > 0) {
-    baseResults = index.map(item => ({ item }))
+    baseResults = (store.searchIndex || []).map(item => ({
+      id: item.id,
+      title: item.title,
+      url: item.url,
+      tags: item.tags,
+      snippet: `${item.content.slice(0, 100)}...`,
+    }))
   }
   else {
     return []
   }
 
   if (selectedTags.value.size > 0) {
-    return baseResults.filter(({ item }) => {
+    return baseResults.filter((item) => {
       if (!item.tags)
         return false
       const itemTags = new Set(item.tags.map((t: string) => t.replace(/^#/, '')))
@@ -177,7 +150,7 @@ onKeyStroke('Enter', (e) => {
   const result = filteredResults.value[activeIndex.value]
 
   if (result) {
-    navigate(result.item.url)
+    navigate(result.url)
   }
 })
 
@@ -190,34 +163,6 @@ watch(modelValue, async (val) => {
     inputRef.value?.focus()
   }
 })
-
-function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
-  if (!result.matches || result.matches.length === 0) {
-    return `${result.item.content.slice(0, 100)}...`
-  }
-
-  const contentMatch = result.matches.find(m => m.key === 'content')
-  if (!contentMatch || !contentMatch.value || !contentMatch.indices || contentMatch.indices.length === 0) {
-    return `${result.item.content.slice(0, 100)}...`
-  }
-
-  const firstMatch = contentMatch.indices[0]
-  const [start, end] = firstMatch!
-
-  const text = contentMatch.value
-  const snippetStart = Math.max(0, start - 40)
-  const snippetEnd = Math.min(text.length, end + 60)
-
-  let snippet = text.slice(snippetStart, snippetEnd)
-
-  if (snippetStart > 0)
-    snippet = `...${snippet}`
-  if (snippetEnd < text.length)
-    snippet = `${snippet}...`
-
-  const matchedText = text.slice(start, end + 1)
-  return snippet.split(matchedText).join(`<mark>${matchedText}</mark>`)
-}
 
 function getFormattedPath(url: string) {
   const vaultPrefix = `/${route.params.vault}`
@@ -282,36 +227,36 @@ function getFormattedPath(url: string) {
         <div v-if="filteredResults.length > 0" class="search-results custom-scrollbar">
           <div
             v-for="(result, index) in filteredResults"
-            :key="result.item.id"
+            :key="result.id"
             class="result-item"
             :class="{ 'is-active': index === activeIndex }"
-            @click="navigate(result.item.url)"
+            @click="navigate(result.url)"
             @mouseenter="activeIndex = index"
           >
             <div class="result-main">
               <div class="result-title">
                 <Icon icon="mdi:file-document-outline" class="file-icon" />
-                <span>{{ result.item.title }}</span>
+                <span>{{ result.title }}</span>
               </div>
               <div
                 v-if="searchMode === 'all'"
                 class="result-snippet"
-                v-html="getHighlightedSnippet(result as any)"
+                v-html="result.snippet"
               />
               <div
                 v-else
                 class="result-path"
               >
-                {{ getFormattedPath(result.item.url) }}
+                {{ getFormattedPath(result.url) }}
               </div>
             </div>
 
-            <div v-if="result.item.tags && result.item.tags.length > 0" class="result-tags">
-              <span v-for="tag in result.item.tags.slice(0, 3)" :key="tag" class="mini-tag">
+            <div v-if="result.tags && result.tags.length > 0" class="result-tags">
+              <span v-for="tag in result.tags.slice(0, 3)" :key="tag" class="mini-tag">
                 {{ tag }}
               </span>
-              <span v-if="result.item.tags.length > 3" class="mini-tag-more">
-                +{{ result.item.tags.length - 3 }}
+              <span v-if="result.tags.length > 3" class="mini-tag-more">
+                +{{ result.tags.length - 3 }}
               </span>
             </div>
           </div>
