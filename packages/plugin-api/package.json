@@ -8,6 +8,16 @@
     "vite": "^6.0.0",
     "vite-plugin-css-injected-by-js": "^4.0.1"
   },
+  "peerDependencies": {
+    "vue": "^3.5.0",
+    "vue-i18n": "^11.3.2",
+    "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "vue": "^3.5.0",
+    "vue-i18n": "^11.3.2",
+    "vue-router": "^5.2.0"
+  },
   "bin": {
     "wm-plugin-build": "./bin/build.js"
   },
