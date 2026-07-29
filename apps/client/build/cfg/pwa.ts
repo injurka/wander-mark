@@ -35,8 +35,8 @@ export function pwaCfg(revision: string) {
       }],
     },
     injectManifest: {
-      globPatterns: ['**/*.{js,json,css,html,txt,svg,png,ico,webp,woff,woff2,ttf,eot,otf,wasm}'],
-      globIgnores: ['emojis/**', 'manifest**.webmanifest'],
+      globPatterns: ['**/*.{js,json,css,html,txt,svg,png,ico,webp,wasm}'],
+      globIgnores: ['emojis/**', 'fonts/**', 'manifest**.webmanifest'],
       maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
       dontCacheBustURLsMatching: /\.\w{8}\./,
       additionalManifestEntries: [{

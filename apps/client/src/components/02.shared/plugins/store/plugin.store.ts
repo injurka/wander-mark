@@ -1,9 +1,12 @@
 import type { PluginSlotName, TextInterceptor, WanderMarkPlugin, WanderMarkPluginContext } from '@injurkx/plugin-api'
+import type { ComputedRef } from 'vue'
 import type { LoadedPlugin, PluginRecord } from '../models'
 import { defineStore } from 'pinia'
 import { computed, markRaw, ref, shallowRef } from 'vue'
 import { useVaultStore } from '~/shared/store/vault.store'
 import { injectPluginStyles, loadPluginModule, removePluginStyles } from '../lib'
+
+export type { LooseRequired } from '@vue/shared'
 
 function storageKey(vaultId: string) {
   return `wm-plugins::${vaultId}`
@@ -28,9 +31,9 @@ export const usePluginStore = defineStore('plugins', () => {
     textInterceptors.value = textInterceptors.value.filter(i => i.id !== id)
   }
 
-  const getSlotComponents = (slot: PluginSlotName) => {
+  const getSlotComponents = (slot: PluginSlotName): ComputedRef<Array<{ pluginId: string, component: unknown }>> => {
     return computed(() => {
-      const result: Array<{ pluginId: string, component: any }> = []
+      const result: Array<{ pluginId: string, component: unknown }> = []
       for (const record of enabledPlugins.value) {
         const lp = loaded.value.get(record.id)
         if (lp?.module.slots?.[slot]) {
@@ -75,10 +78,16 @@ export const usePluginStore = defineStore('plugins', () => {
     let urlToLoad = sourceUrl
     let isBlob = false
 
-    // Разрешаем локальные пути до скачанных плагинов или Blob
+    // Разрешаем локальные пути до скачанных плагинов: текстовые файлы лежат в SQLite
     if (!urlToLoad.startsWith('http') && !urlToLoad.startsWith('blob:') && !urlToLoad.startsWith('data:')) {
-      urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
-      isBlob = urlToLoad.startsWith('blob:')
+      const content = await vaultStore.getFileContent(currentVaultId.value, urlToLoad)
+      if (content !== null) {
+        urlToLoad = URL.createObjectURL(new Blob([content], { type: 'application/javascript' }))
+        isBlob = true
+      }
+      else {
+        urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
+      }
     }
 
     const module = await loadPluginModule(urlToLoad)
@@ -192,8 +201,14 @@ export const usePluginStore = defineStore('plugins', () => {
         && !urlToLoad.startsWith('blob:')
         && !urlToLoad.startsWith('data:')
       ) {
-        urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
-        isBlob = urlToLoad.startsWith('blob:')
+        const content = await vaultStore.getFileContent(currentVaultId.value, urlToLoad)
+        if (content !== null) {
+          urlToLoad = URL.createObjectURL(new Blob([content], { type: 'application/javascript' }))
+          isBlob = true
+        }
+        else {
+          urlToLoad = await vaultStore.resolveMediaUrl(currentVaultId.value, urlToLoad)
+        }
       }
 
       const module = existingModule || await loadPluginModule(urlToLoad)

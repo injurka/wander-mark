@@ -17,7 +17,7 @@ const layouts: Record<string, any> = {
   default: DefaultLayout,
 }
 
-const siteUrl = 'https://wander-mark.trip-scheduler.ru'
+const siteUrl = 'https://wander-mark.ru'
 const siteName = 'WanderMark'
 const description = 'WanderMark — удобное хранилище личных заметок. Сохраняйте идеи, организуйте мысли и держите важную информацию всегда под рукой.'
 

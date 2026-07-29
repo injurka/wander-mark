@@ -62,6 +62,60 @@ registerRoute(
   ),
 )
 
+// OPFS MEDIA (раздача бинарников хранилищ напрямую из OPFS, без blob URL)
+const MIME_BY_EXT: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  avif: 'image/avif',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  pdf: 'application/pdf',
+}
+
+registerRoute(
+  ({ url }) => url.pathname.includes('/opfs-media/'),
+  async ({ url }) => {
+    try {
+      // {base}/opfs-media/{vaultId}/{...path}
+      const rel = url.pathname.slice(url.pathname.indexOf('/opfs-media/') + '/opfs-media/'.length)
+      const parts = rel.split('/').filter(Boolean).map(decodeURIComponent)
+      const vaultId = parts.shift()
+      const fileName = parts.pop()
+
+      if (!vaultId || !fileName)
+        return new Response('Bad request', { status: 400 })
+
+      let dir = await navigator.storage.getDirectory()
+      dir = await dir.getDirectoryHandle('media')
+      dir = await dir.getDirectoryHandle(vaultId)
+
+      for (const part of parts)
+        dir = await dir.getDirectoryHandle(part)
+
+      const fileHandle = await dir.getFileHandle(fileName)
+      const file = await fileHandle.getFile()
+      const ext = fileName.split('.').pop()?.toLowerCase() || ''
+
+      return new Response(file, {
+        headers: {
+          'Content-Type': MIME_BY_EXT[ext] || 'application/octet-stream',
+          'Content-Length': String(file.size),
+        },
+      })
+    }
+    catch {
+      return new Response('Not found', { status: 404 })
+    }
+  },
+)
+
 // IMAGES
 registerRoute(
   ({ request, url }) => {
@@ -137,6 +191,7 @@ let denylist: undefined | RegExp[]
 if (import.meta.env.PROD) {
   denylist = [
     /^\/api\//,
+    /\/opfs-media\//,
     /^\/sw\.js$/,
     /^\/manifest-(.*)\.webmanifest$/,
     /^\/workbox-.*\.js$/,

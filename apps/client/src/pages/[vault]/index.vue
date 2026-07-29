@@ -10,6 +10,7 @@ import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentNavItemType, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import { flattenNavItems } from '~/components/05.modules/content-viewer/lib/navigation'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
+import { AppRoutePaths } from '~/shared/constants/routes'
 
 const store = useContentViewerStore()
 const pluginStore = usePluginStore()
@@ -43,6 +44,11 @@ function handleSectionClick(section: ContentNavItem) {
   const path = getFirstFile(section)
   if (path) {
     navigateTo(path)
+  }
+  else {
+    const newOpen = new Set(store.openFolders)
+    newOpen.add(section.sysname)
+    store.setOpenFolders(Array.from(newOpen))
   }
 }
 
@@ -160,6 +166,18 @@ function formatDate(dateStr?: string) {
           </div>
         </div>
       </section>
+
+      <div class="back-to-home-wrapper">
+        <KitBtn
+          variant="outlined"
+          color="secondary"
+          size="lg"
+          prepend-icon="mdi:home-outline"
+          @click="router.push(AppRoutePaths.Root)"
+        >
+          {{ t('sidebar.allVaults') }}
+        </KitBtn>
+      </div>
     </div>
   </div>
 </template>
@@ -271,7 +289,7 @@ function formatDate(dateStr?: string) {
 }
 
 .section-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   color: var(--fg-muted-color);
   transition: color 0.2s;
   flex-shrink: 0;
@@ -291,7 +309,7 @@ function formatDate(dateStr?: string) {
 
 .section-name {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--fg-primary-color);
   line-height: 1.3;
   display: -webkit-box;
@@ -302,7 +320,7 @@ function formatDate(dateStr?: string) {
 }
 
 .section-count {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--fg-muted-color);
 }
 
@@ -457,5 +475,20 @@ function formatDate(dateStr?: string) {
   background-color: var(--bg-secondary-color);
   border-radius: 12px;
   border: 1px dashed var(--border-secondary-color);
+}
+
+.back-to-home-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 40px;
+  border-top: 1px dashed var(--border-secondary-color);
+
+  :deep(.kit-btn) {
+    padding: 0 32px;
+    font-size: 0.95rem;
+    height: 44px;
+    border-radius: 22px;
+  }
 }
 </style>

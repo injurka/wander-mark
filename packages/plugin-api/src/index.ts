@@ -32,19 +32,18 @@ export interface TextInterceptor {
   tooltipComponent: Component
 }
 
-interface FileMetaData {
+export interface FileMetaData {
   words: number
   readingTime: number // в минутах
   lastModified: string // ISO date
 }
 
-enum ContentNavItemType {
+export enum ContentNavItemType {
   File = 'file',
   Directory = 'directory',
 }
 
-
-interface ContentNavItem {
+export interface ContentNavItem {
   sysname: string
   title: string
   type: ContentNavItemType

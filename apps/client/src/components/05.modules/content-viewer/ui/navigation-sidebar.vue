@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { KitBtn, KitInput } from '~/components/01.kit'
+import { AppRoutePaths } from '~/shared/constants/routes'
 import { findPathBySysname } from '../lib/navigation'
 import NavigationTree from './navigation-tree.vue'
 
@@ -84,41 +85,41 @@ function stopResize() {
     <div class="sidebar-inner-container">
       <div class="sidebar-inner">
         <div class="sidebar-header">
-        <KitBtn
-          variant="text"
-          size="sm"
-          icon="mdi:arrow-left"
-          class="mobile-close-btn"
-          @click="menu = false"
-        />
+          <KitBtn
+            variant="text"
+            size="sm"
+            icon="mdi:arrow-left"
+            class="mobile-close-btn"
+            @click="menu = false"
+          />
 
-        <KitInput
-          v-model="searchQuery"
-          variant="solo"
-          :placeholder="t('sidebar.search')"
-          rounded
-        />
-      </div>
+          <KitInput
+            v-model="searchQuery"
+            variant="solo"
+            :placeholder="t('sidebar.search')"
+            rounded
+          />
+        </div>
 
-      <div class="sidebar-content custom-scrollbar">
-        <NavigationTree
-          v-if="items"
-          :items="items"
-          :search-query="searchQuery"
-          @select="selectItem"
-        />
-      </div>
+        <div class="sidebar-content custom-scrollbar">
+          <NavigationTree
+            v-if="items"
+            :items="items"
+            :search-query="searchQuery"
+            @select="selectItem"
+          />
+        </div>
 
-      <div class="sidebar-footer">
-        <button class="home-link" :title="t('sidebar.vaultHome')" @click="router.push(`/${params.vault}`)">
-          <Icon icon="mdi:book-open-page-variant-outline" class="home-icon" />
-          <span class="home-link-label">{{ t('sidebar.vaultHome') }}</span>
-        </button>
-        <button class="home-link" :title="t('sidebar.allVaults')" @click="router.push(AppRoutePaths.Root)">
-          <Icon icon="mdi:home-outline" class="home-icon" />
-          <span class="home-link-label">{{ t('sidebar.allVaults') }}</span>
-        </button>
-      </div>
+        <div class="sidebar-footer">
+          <button class="home-link" :title="t('sidebar.vaultHome')" @click="router.push(`/${params.vault}`)">
+            <Icon icon="mdi:book-open-page-variant-outline" class="home-icon" />
+            <span class="home-link-label">{{ t('sidebar.vaultHome') }}</span>
+          </button>
+          <button class="home-link" :title="t('sidebar.allVaults')" @click="router.push(AppRoutePaths.Root)">
+            <Icon icon="mdi:home-outline" class="home-icon" />
+            <span class="home-link-label">{{ t('sidebar.allVaults') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 

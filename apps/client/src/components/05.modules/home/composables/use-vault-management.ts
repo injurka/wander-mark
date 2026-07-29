@@ -6,23 +6,19 @@ export function useVaultManagement() {
   const router = useRouter()
   const vaultStore = useVaultStore()
 
-  const progressMap = ref<Record<string, number>>({})
-  const installingMap = ref<Record<string, boolean>>({})
+  // Прогресс синхронизации пушится в стор (скачивание — из syncVault, запись — из воркера через birpc)
+  const progressMap = computed(() => vaultStore.syncProgress)
 
   // --- Иконки ---
   const iconUrls = ref<Record<string, string>>({})
   const iconErrors = ref<Record<string, boolean>>({})
 
   watch(() => vaultStore.vaults, async (vaults) => {
-    vaultStore.clearBlobUrls()
     for (const vault of vaults) {
       iconUrls.value[vault.id] = await vaultStore.resolveMediaUrl(vault.id, `meta/${vault.id}/images/icon.png`)
     }
   }, { immediate: true, deep: true })
 
-  onBeforeUnmount(() => {
-    vaultStore.clearBlobUrls()
-  })
   function handleIconError(vaultId: string) {
     iconErrors.value[vaultId] = true
   }
@@ -89,27 +85,21 @@ export function useVaultManagement() {
     vaultToDelete.value = null
   }
 
-  // --- Методы управления ---
-  async function handleInstall(vaultId: string) {
-    if (installingMap.value[vaultId])
+  // --- Инкрементальная синхронизация ---
+  async function handleSync(vaultId: string) {
+    const vault = vaultStore.getVault(vaultId)
+    if (!vault || vault.syncStatus === 'syncing')
       return
-    installingMap.value[vaultId] = true
-    progressMap.value[vaultId] = 0
+
+    vaultStore.setSyncProgress(vaultId, 0)
 
     try {
-      await vaultStore.installVault(vaultId, (p) => {
-        progressMap.value[vaultId] = p
-      })
+      await vaultStore.syncVault(vaultId)
       iconUrls.value[vaultId] = await vaultStore.resolveMediaUrl(vaultId, `meta/${vaultId}/images/icon.png`)
       iconErrors.value[vaultId] = false
     }
     catch (e: any) {
-      showError(`Ошибка при скачивании: ${e.message}`, e.failedFiles || [])
-    }
-    finally {
-      setTimeout(() => {
-        installingMap.value[vaultId] = false
-      }, 1000)
+      showError(`Ошибка при синхронизации: ${e.message}`, e.failedFiles || [])
     }
   }
 
@@ -123,7 +113,6 @@ export function useVaultManagement() {
   return {
     vaults: computed(() => vaultStore.vaults),
     progressMap,
-    installingMap,
     iconUrls,
     iconErrors,
     handleIconError,
@@ -138,7 +127,7 @@ export function useVaultManagement() {
     submitAddRemote,
     confirmDelete,
     proceedDelete,
-    handleInstall,
+    handleSync,
     openVault,
   }
 }

@@ -28,3 +28,4 @@ tsconfig.tsbuildinfo
 static/**
 data/**
 docker/vault/**
+db/**

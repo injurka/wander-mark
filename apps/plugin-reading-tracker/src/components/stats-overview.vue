@@ -1,32 +1,60 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { usePluginI18n } from '../i18n'
-import { trackerState } from '../store/tracker.store'
+import { trackerActions, trackerState } from '../store/tracker.store'
 
 const { t } = usePluginI18n()
 
-const totalUniqueRead = computed(() => trackerState.logs.length)
+const totalUniqueRead = computed(() => trackerActions.getFilteredLogs().length)
 
 const totalSessions = computed(() => {
-  return trackerState.logs.reduce((sum, log) => sum + log.readDates.length, 0)
+  return trackerActions.getFilteredLogs().reduce((sum, log) => sum + log.visits.length, 0)
 })
 
 const recentlyRead = computed(() => {
-  return [...trackerState.logs]
-    .filter(log => log.readDates.length > 0)
+  return [...trackerActions.getFilteredLogs()]
+    .filter(log => log.visits.length > 0)
     .sort((a, b) => {
-      const lastA = a.readDates.at(-1) ?? 0
-      const lastB = b.readDates.at(-1) ?? 0
+      const lastA = a.visits.at(-1)?.timestamp ?? 0
+      const lastB = b.visits.at(-1)?.timestamp ?? 0
       return lastB - lastA
     })
     .slice(0, 5)
 })
 
 const mostRead = computed(() => {
-  return [...trackerState.logs]
-    .sort((a, b) => b.readDates.length - a.readDates.length)
+  return [...trackerActions.getFilteredLogs()]
+    .sort((a, b) => b.visits.length - a.visits.length)
     .slice(0, 5)
 })
+
+const foldersTime = computed(() => {
+  const map = new Map<string, number>()
+  trackerActions.getFilteredLogs().forEach((log) => {
+    const parts = log.path.split('/')
+    if (parts.length > 1) {
+      parts.pop() // remove file name
+      const folder = parts.join('/')
+      const time = log.visits.reduce((acc, v) => acc + v.duration, 0)
+      map.set(folder, (map.get(folder) || 0) + time)
+    }
+  })
+
+  return Array.from(map.entries())
+    .map(([folder, time]) => ({ folder, time }))
+    .sort((a, b) => b.time - a.time)
+    .slice(0, 5)
+})
+
+function formatDuration(seconds: number) {
+  if (seconds < 60)
+    return `${seconds}s`
+  const min = Math.floor(seconds / 60)
+  const hr = Math.floor(min / 60)
+  if (hr > 0)
+    return `${hr}h ${min % 60}m`
+  return `${min}m`
+}
 
 function openFile(path: string) {
   if (trackerState.router && trackerState.vaultId) {
@@ -68,7 +96,7 @@ function openFile(path: string) {
               <span class="rt-item-title" :title="item.title">{{ item.title }}</span>
             </div>
             <div class="rt-item-meta">
-              <span class="rt-badge">{{ t('overview.readCount', { n: item.readDates.length }) }}</span>
+              <span class="rt-badge">{{ t('overview.readCount', { n: item.visits.length }) }}</span>
             </div>
           </div>
         </div>
@@ -85,7 +113,24 @@ function openFile(path: string) {
               <span class="rt-item-title" :title="item.title">{{ item.title }}</span>
             </div>
             <div class="rt-item-meta">
-              <span class="rt-badge">{{ t('overview.readCount', { n: item.readDates.length }) }}</span>
+              <span class="rt-badge">{{ t('overview.readCount', { n: item.visits.length }) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rt-card rt-col">
+        <h2>{{ t('overview.topFolders') || 'Top Folders' }}</h2>
+        <div v-if="foldersTime.length === 0" class="rt-empty">
+          {{ t('overview.noData') }}
+        </div>
+        <div v-else class="rt-list">
+          <div v-for="item in foldersTime" :key="item.folder" class="rt-list-item" @click="trackerState.scope = item.folder">
+            <div class="rt-item-main">
+              <span class="rt-item-title" :title="item.folder">{{ item.folder }}</span>
+            </div>
+            <div class="rt-item-meta">
+              <span class="rt-badge">{{ formatDuration(item.time) }}</span>
             </div>
           </div>
         </div>
@@ -102,14 +147,14 @@ function openFile(path: string) {
 }
 .rt-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 16px;
 }
 .rt-stat-card {
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-secondary-color);
   border-radius: 12px;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -117,21 +162,26 @@ function openFile(path: string) {
   text-align: center;
 }
 .rt-stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--fg-accent-color);
   line-height: 1;
   margin-bottom: 8px;
 }
 .rt-stat-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--fg-secondary-color);
   font-weight: 500;
 }
 .rt-overview-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 24px;
+}
+@media (min-width: 768px) {
+  .rt-overview-columns {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
 }
 .rt-col {
   padding: 20px;
@@ -140,6 +190,7 @@ function openFile(path: string) {
   background: var(--bg-secondary-color);
   border: 1px solid var(--border-secondary-color);
   border-radius: 12px;
+  min-width: 0;
 }
 .rt-card h2 {
   margin-top: 0;

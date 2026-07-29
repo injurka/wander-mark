@@ -20,7 +20,7 @@ export async function processDirectoryRecursive(
   const childrenNavItems: ContentNavItem[] = []
 
   try {
-    const entries: Dirent = await fs.readdir(sourceCurrentPath, { withFileTypes: true }) as any
+    const entries: Dirent[] = await fs.readdir(sourceCurrentPath, { withFileTypes: true }) as any
 
     for (const entry of entries) {
       const entryName = entry.name
@@ -112,16 +112,22 @@ export async function processDirectoryRecursive(
 
           const extractedTags = extractTags(yamlContent, bodyForTags)
 
-          // 2. Удаление Frontmatter для итогового файла
-          if (frontMatterMatch) {
-            content = content.substring(frontMatterMatch[0].length).trimStart()
-          }
+          // 2. Оставляем Frontmatter для плагинов
+          // if (frontMatterMatch) {
+          //   content = content.substring(frontMatterMatch[0].length).trimStart()
+          // }
 
           const uniqueOutboundLinks = new Set<string>()
 
           content = content.replace(OBSIDIAN_LINK_REGEX, (match, linkedFile, alias) => {
             linksFound++
-            const linkBaseName = decodeURIComponent(linkedFile.trim())
+            let linkBaseName = linkedFile.trim()
+            try {
+              linkBaseName = decodeURIComponent(linkBaseName)
+            }
+            catch {
+              // Ignore URI malformed errors
+            }
             const linkText = alias ? alias.trim() : linkBaseName
             const targetUrl = fileMap.get(linkBaseName)
 

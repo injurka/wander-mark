@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { FuseResult } from 'fuse.js'
-import type { SearchIndexItem } from '../models'
+import type { SearchResultItem } from '~/shared/types/rpc'
 import { Icon } from '@iconify/vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
-import SearchWorker from '~/workers/dedicated/search?worker'
+import { dbRpc } from '~/shared/services/db.client'
 import { useContentViewerStore } from '../store'
 
 const modelValue = defineModel<boolean>({ required: true })
 
 const store = useContentViewerStore()
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 
 const query = ref('')
@@ -18,48 +18,35 @@ const selectedTags = ref<Set<string>>(new Set())
 const activeIndex = ref(0)
 const modalRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
-const searchResults = ref<FuseResult<SearchIndexItem>[]>([])
 
-const worker = new SearchWorker()
-
-const fuseOptions = {
-  keys: [
-    { name: 'title', weight: 0.7 },
-    { name: 'tags', weight: 0.5 },
-    { name: 'content', weight: 0.3 },
-  ],
-  includeMatches: true,
-  minMatchCharLength: 2,
-  threshold: 0.4,
-  ignoreLocation: true,
-  findAllMatches: true,
-  useExtendedSearch: true,
+interface DisplayResult {
+  id: string
+  title: string
+  url: string
+  tags?: string[]
+  snippet?: string
 }
 
-worker.addEventListener('message', (e) => {
-  if (e.data.type === 'RESULT') {
-    searchResults.value = e.data.payload
-  }
-})
+const searchMode = useLocalStorage<'all' | 'files'>('search_mode', 'all')
 
-watch(() => store.searchIndex, (newIndex) => {
-  if (newIndex && newIndex.length > 0) {
-    const rawIndex = JSON.parse(JSON.stringify(newIndex))
-    worker.postMessage({ type: 'INIT', payload: { index: rawIndex, options: fuseOptions } })
-  }
-}, { immediate: true })
+const ftsResults = ref<SearchResultItem[]>([])
+let searchSeq = 0
 
-watch(query, (newQuery) => {
-  if (newQuery) {
-    worker.postMessage({ type: 'SEARCH', payload: { query: newQuery } })
+// Полнотекстовый поиск выполняется SQLite FTS5 в воркере
+watch([query, searchMode], async ([newQuery]) => {
+  const seq = ++searchSeq
+  if (!newQuery || newQuery.trim().length < 2) {
+    ftsResults.value = []
+    return
   }
-  else {
-    searchResults.value = []
+  try {
+    const results = await dbRpc.searchFTS(newQuery, String(route.params.vault))
+    if (seq === searchSeq)
+      ftsResults.value = results
   }
-})
-
-onBeforeUnmount(() => {
-  worker.terminate()
+  catch (e) {
+    console.error('Ошибка FTS-поиска:', e)
+  }
 })
 
 const availableTags = computed(() => {
@@ -82,22 +69,33 @@ function toggleTag(tag: string) {
   activeIndex.value = 0
 }
 
-const filteredResults = computed(() => {
-  const index = store.searchIndex || []
-  let baseResults = []
+const filteredResults = computed<DisplayResult[]>(() => {
+  let baseResults: DisplayResult[]
 
   if (query.value) {
-    baseResults = searchResults.value
+    baseResults = ftsResults.value.map(r => ({
+      id: r.path,
+      title: r.title || r.path,
+      url: r.path,
+      tags: r.tags ? r.tags.split(/\s+/).filter(Boolean) : [],
+      snippet: r.snippet,
+    }))
   }
   else if (selectedTags.value.size > 0) {
-    baseResults = index.map(item => ({ item }))
+    baseResults = (store.searchIndex || []).map(item => ({
+      id: item.id,
+      title: item.title,
+      url: item.url,
+      tags: item.tags,
+      snippet: `${item.content.slice(0, 100)}...`,
+    }))
   }
   else {
     return []
   }
 
   if (selectedTags.value.size > 0) {
-    return baseResults.filter(({ item }) => {
+    return baseResults.filter((item) => {
       if (!item.tags)
         return false
       const itemTags = new Set(item.tags.map((t: string) => t.replace(/^#/, '')))
@@ -152,7 +150,7 @@ onKeyStroke('Enter', (e) => {
   const result = filteredResults.value[activeIndex.value]
 
   if (result) {
-    navigate(result.item.url)
+    navigate(result.url)
   }
 })
 
@@ -166,32 +164,12 @@ watch(modelValue, async (val) => {
   }
 })
 
-function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
-  if (!result.matches || result.matches.length === 0) {
-    return `${result.item.content.slice(0, 100)}...`
+function getFormattedPath(url: string) {
+  const vaultPrefix = `/${route.params.vault}`
+  if (url.startsWith(vaultPrefix)) {
+    return url.slice(vaultPrefix.length).replace(/^\//, '')
   }
-
-  const contentMatch = result.matches.find(m => m.key === 'content')
-  if (!contentMatch || !contentMatch.value || !contentMatch.indices || contentMatch.indices.length === 0) {
-    return `${result.item.content.slice(0, 100)}...`
-  }
-
-  const firstMatch = contentMatch.indices[0]
-  const [start, end] = firstMatch!
-
-  const text = contentMatch.value
-  const snippetStart = Math.max(0, start - 40)
-  const snippetEnd = Math.min(text.length, end + 60)
-
-  let snippet = text.slice(snippetStart, snippetEnd)
-
-  if (snippetStart > 0)
-    snippet = `...${snippet}`
-  if (snippetEnd < text.length)
-    snippet = `${snippet}...`
-
-  const matchedText = text.slice(start, end + 1)
-  return snippet.split(matchedText).join(`<mark>${matchedText}</mark>`)
+  return url.replace(/^\//, '')
 }
 </script>
 
@@ -215,6 +193,25 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
           </div>
         </div>
 
+        <div class="search-modes-bar">
+          <button
+            class="mode-btn"
+            :class="{ 'is-active': searchMode === 'all' }"
+            @click="searchMode = 'all'"
+          >
+            <Icon icon="mdi:text-search" class="mode-icon" />
+            <span>{{ t('search.modeAll') }}</span>
+          </button>
+          <button
+            class="mode-btn"
+            :class="{ 'is-active': searchMode === 'files' }"
+            @click="searchMode = 'files'"
+          >
+            <Icon icon="mdi:file-document-outline" class="mode-icon" />
+            <span>{{ t('search.modeFiles') }}</span>
+          </button>
+        </div>
+
         <div v-if="availableTags.length > 0" class="tags-bar custom-scrollbar">
           <button
             v-for="tag in availableTags"
@@ -230,29 +227,36 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
         <div v-if="filteredResults.length > 0" class="search-results custom-scrollbar">
           <div
             v-for="(result, index) in filteredResults"
-            :key="result.item.id"
+            :key="result.id"
             class="result-item"
             :class="{ 'is-active': index === activeIndex }"
-            @click="navigate(result.item.url)"
+            @click="navigate(result.url)"
             @mouseenter="activeIndex = index"
           >
             <div class="result-main">
               <div class="result-title">
                 <Icon icon="mdi:file-document-outline" class="file-icon" />
-                <span>{{ result.item.title }}</span>
+                <span>{{ result.title }}</span>
               </div>
               <div
+                v-if="searchMode === 'all'"
                 class="result-snippet"
-                v-html="getHighlightedSnippet(result as any)"
+                v-html="result.snippet"
               />
+              <div
+                v-else
+                class="result-path"
+              >
+                {{ getFormattedPath(result.url) }}
+              </div>
             </div>
 
-            <div v-if="result.item.tags && result.item.tags.length > 0" class="result-tags">
-              <span v-for="tag in result.item.tags.slice(0, 3)" :key="tag" class="mini-tag">
+            <div v-if="result.tags && result.tags.length > 0" class="result-tags">
+              <span v-for="tag in result.tags.slice(0, 3)" :key="tag" class="mini-tag">
                 {{ tag }}
               </span>
-              <span v-if="result.item.tags.length > 3" class="mini-tag-more">
-                +{{ result.item.tags.length - 3 }}
+              <span v-if="result.tags.length > 3" class="mini-tag-more">
+                +{{ result.tags.length - 3 }}
               </span>
             </div>
           </div>
@@ -531,5 +535,56 @@ function getHighlightedSnippet(result: FuseResult<SearchIndexItem>): string {
   .search-modal {
     transform: scale(0.96) translateY(-10px);
   }
+}
+
+.search-modes-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--bg-primary-color);
+  border-bottom: 1px solid var(--border-secondary-color);
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  color: var(--fg-secondary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    color: var(--fg-primary-color);
+    background-color: var(--bg-hover-color);
+  }
+
+  &.is-active {
+    color: var(--fg-accent-color);
+    background-color: var(--bg-accent-color);
+    border-color: rgba(var(--fg-accent-color-rgb), 0.2);
+    font-weight: 600;
+  }
+}
+
+.mode-icon {
+  font-size: 1.1rem;
+}
+
+.result-path {
+  font-size: 0.8rem;
+  color: var(--fg-secondary-color);
+  opacity: 0.85;
+  margin-left: 28px;
+  margin-top: 2px;
+  font-family: 'Maple Mono CN', monospace;
+  word-break: break-all;
 }
 </style>

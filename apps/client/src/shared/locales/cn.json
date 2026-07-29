@@ -60,7 +60,9 @@
     "noResults": "未找到结果",
     "resetFilters": "重置过滤器",
     "toNavigate": "跳转",
-    "toSelect": "选择"
+    "toSelect": "选择",
+    "modeAll": "全文检索",
+    "modeFiles": "按文件名"
   },
   "confirm": {
     "title": "确认",

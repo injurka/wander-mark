@@ -54,7 +54,8 @@ async function initRenderer() {
       shikiTheme: shikiTheme.value,
       onHighlightNeeded: () => {
         if (mdInstance.value && props.content) {
-          let html = mdInstance.value.render(props.content)
+          const cleanContent = props.content.replace(/^---[\s\S]*?---\n*/, '')
+          let html = mdInstance.value.render(cleanContent)
           html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
           renderedContent.value = html
         }
@@ -129,8 +130,8 @@ watch(
   [() => props.content, mdInstance],
   async ([newContent, md]) => {
     if (md && newContent) {
-      vaultStore.clearBlobUrls()
-      let html = md.render(newContent)
+      const cleanContent = newContent.replace(/^---[\s\S]*?---\n*/, '')
+      let html = md.render(cleanContent)
       html = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
       renderedContent.value = html
 
@@ -163,12 +164,14 @@ watch(shikiTheme, async () => {
 watch(theme, () => {
   applyMermaidTheme()
   if (mdInstance.value && props.content) {
-    const html = mdInstance.value.render(props.content)
+    const cleanContent = props.content.replace(/^---[\s\S]*?---\n*/, '')
+    const html = mdInstance.value.render(cleanContent)
     renderedContent.value = html.replace(/<img([^>]*)src="([^"]*)"/g, '<img$1data-src="$2"')
   }
 })
 
 function openImageViewer() {
+  // eslint-disable-next-line no-console
   console.log('Open image viewer with:', currentImages.value)
 }
 
@@ -253,9 +256,6 @@ function handleContentClick(event: MouseEvent) {
 
 onMounted(() => {
   initRenderer()
-})
-onBeforeUnmount(() => {
-  vaultStore.clearBlobUrls()
 })
 </script>
 

@@ -51,6 +51,7 @@ export interface ProcessingContext {
 }
 
 export interface DeployConfig {
+  mode?: 'static' | 's3'
   host?: string
   user?: string
   path?: string

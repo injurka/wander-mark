@@ -1,42 +1,47 @@
-import { mkdirSync } from 'node:fs'
-import path from 'node:path'
-import { Database } from 'bun:sqlite'
-import { DB_PATH } from '../config'
+import { S3_BASE_PATH } from '../config'
+import { getS3File, putS3File } from '../s3'
 
-const dbDir = path.dirname(DB_PATH)
-mkdirSync(dbDir, { recursive: true })
+const hanziData: Record<string, any> = {}
+const readingLogsData: Record<string, any> = {}
 
-export const db = new Database(DB_PATH)
+function getKey(filename: string) {
+  const p = S3_BASE_PATH ? `${S3_BASE_PATH}/db/${filename}` : `db/${filename}`
+  // eslint-disable-next-line e18e/prefer-static-regex
+  return p.replace(/^\/+/, '')
+}
 
-// Таблица для плагина Hanzi Saver
-db.run(`
-  CREATE TABLE IF NOT EXISTS hanzi (
-    char TEXT PRIMARY KEY,
-    type TEXT DEFAULT 'word',
-    pinyin TEXT,
-    translation TEXT,
-    components TEXT,
-    etymology TEXT,
-    hsk TEXT,
-    strokes INTEGER,
-    part_of_speech TEXT,
-    grammar_notes TEXT,
-    words_breakdown TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`)
+export async function loadDb() {
+  const hanziBuf = await getS3File(getKey('hanzi.json'))
+  if (hanziBuf) {
+    const list = JSON.parse(hanziBuf.toString('utf-8'))
+    for (const item of list) {
+      hanziData[item.char] = item
+    }
+  }
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS reading_logs (
-    vault_id TEXT,
-    identifier TEXT,
-    path TEXT,
-    title TEXT,
-    read_dates TEXT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (vault_id, identifier, path)
-  )
-`)
+  const logsBuf = await getS3File(getKey('reading_logs.json'))
+  if (logsBuf) {
+    const list = JSON.parse(logsBuf.toString('utf-8'))
+    for (const item of list) {
+      readingLogsData[`${item.vault_id}:${item.identifier}:${item.path}`] = item
+    }
+  }
+  // eslint-disable-next-line no-console
+  console.log(`🗄️ Database loaded from S3`)
+}
 
-// eslint-disable-next-line no-console
-console.log(`🗄️ SQLite Database initialized at ${DB_PATH}`)
+export async function saveHanziDb() {
+  await putS3File(getKey('hanzi.json'), JSON.stringify(Object.values(hanziData)), 'application/json')
+}
+
+export async function saveLogsDb() {
+  await putS3File(getKey('reading_logs.json'), JSON.stringify(Object.values(readingLogsData)), 'application/json')
+}
+
+export const db = {
+  get hanzi() { return hanziData },
+  get logs() { return readingLogsData },
+  saveHanziDb,
+  saveLogsDb,
+  loadDb,
+}

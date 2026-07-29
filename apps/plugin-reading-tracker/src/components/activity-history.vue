@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { usePluginI18n } from '../i18n'
-import { trackerState } from '../store/tracker.store'
+import { trackerActions, trackerState } from '../store/tracker.store'
 
 const { t, locale } = usePluginI18n()
 
@@ -21,8 +21,9 @@ const chartData = computed(() => {
     })
   }
 
-  trackerState.logs.forEach((log) => {
-    log.readDates.forEach((ts) => {
+  trackerActions.getFilteredLogs().forEach((log) => {
+    log.visits.forEach((v) => {
+      const ts = v.timestamp
       const diffMs = today.getTime() - ts
       const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000))
       if (diffDays >= 0 && diffDays < CHART_DAYS) {
@@ -38,9 +39,9 @@ const chartData = computed(() => {
 
 const recentHistory = computed(() => {
   const list: { path: string, title: string, ts: number }[] = []
-  trackerState.logs.forEach((log) => {
-    log.readDates.forEach((ts) => {
-      list.push({ path: log.path, title: log.title, ts })
+  trackerActions.getFilteredLogs().forEach((log) => {
+    log.visits.forEach((v) => {
+      list.push({ path: log.path, title: log.title, ts: v.timestamp })
     })
   })
   return list.sort((a, b) => b.ts - a.ts).slice(0, 30)

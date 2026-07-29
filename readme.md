@@ -1,16 +1,15 @@
 # 🌍 Wander Mark 
 
-Это комплексная экосистема для экспорта, отображения и управления базами знаний (vaults) из **Obsidian**. Проект превращает ваши сырые Markdown-заметки в полноценное, кроссплатформенное приложение (PWA / Desktop) с поддержкой полнотекстового поиска, графа связей и динамически подгружаемых плагинов.
+Это комплексная экосистема для экспорта, отображения и управления базами знаний (vaults) из **Obsidian**. Проект превращает ваши сырые Markdown-заметки в полноценное, кроссплатформенное приложение (Web / PWA) с поддержкой полнотекстового поиска, графа связей и динамически подгружаемых плагинов.
 
 ![Vue.js](https://img.shields.io/badge/Vue%203-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
 ![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)
-![Tauri](https://img.shields.io/badge/Tauri-FFC131?style=for-the-badge&logo=tauri&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
 ## ✨ Ключевые возможности
 
 - 🔄 **Полная совместимость с Obsidian**: Поддержка вики-ссылок (`[[ссылка]]`), Frontmatter (YAML), Callouts, и встроенных изображений.
-- ⚡ **Быстрый клиент**: Написан на Vue 3 + Vite. Поддерживает работу без интернета (PWA) и может быть скомпилирован как десктопное приложение через Tauri.
+- ⚡ **Быстрый клиент**: Написан на Vue 3 + Vite. Поддерживает работу без интернета (PWA) и устанавливается на устройство прямо из браузера.
 - 🧩 **Динамическая система плагинов**: Плагины (ES-модули) компилируются отдельно и могут подгружаться клиентом прямо в runtime по URL! В комплекте уже идут:
   - 🤖 **AI Assistant**: Чат с ИИ на базе ваших промптов (поддержка API AiHubMix).
   - 🇨🇳 **Chinese Dictionary**: Перевод и пиньинь для китайских иероглифов прямо в тексте по клику.
@@ -28,7 +27,7 @@
 wander-mark/
 ├── apps/
 │   ├── cli/                        # CLI инструмент для сборки и деплоя заметок из Obsidian
-│   ├── client/                     # Frontend приложение (Vue 3, Pinia, Tauri, PWA)
+│   ├── client/                     # Frontend приложение (Vue 3, Pinia, PWA)
 │   ├── server/                     # Простой статический сервер на Bun (для локальной раздачи)
 │   ├── plugin-ai-assistant/        # Плагин: ИИ-ассистент
 │   └── plugin-chinese-dictionary/  # Плагин: Всплывающий китайский словарь
@@ -59,14 +58,7 @@ bun run dev
 - `bun run dev:server` — запуск локального файлового сервера (порт 4444)
 - `bun --cwd ./apps/cli dev` — запуск сборщика заметок
 
-### 3. Desktop (Tauri)
-Если вы хотите запустить проект как нативное десктопное приложение:
-```bash
-cd apps/client
-bun run tauri:dev
-```
-
-### 4. Сборка для продакшена
+### 3. Сборка для продакшена
 Сборка всех пакетов:
 ```bash
 bun run build
@@ -102,7 +94,6 @@ bun run build
 - [Vue 3](https://vuejs.org/) (Composition API, Script Setup)
 - [Vite](https://vitejs.dev/) + [Vite PWA](https://vite-pwa-org.netlify.app/)
 - [Pinia](https://pinia.vuejs.org/) (Управление состоянием)
-- [Tauri](https://tauri.app/) (Десктопные сборки)
 - Markdown-it, Shiki, Mermaid (Рендеринг контента)
 
 **Backend & Tools (CLI, Server):**
