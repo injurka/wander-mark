@@ -1,4 +1,6 @@
 deploy_to_server:
+  tags:
+    - "dns-editor"
   stage: deploy
   image: curlimages/curl:latest
   needs:
