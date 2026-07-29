@@ -1,7 +1,5 @@
 .node_bun_base:
-  image: $NODE_IMAGE
-  before_script:
-    - npm install -g bun@$BUN_VERSION
+  image: $BUN_IMAGE
   cache:
     key:
       files:
@@ -9,5 +7,4 @@
       prefix: bun-cache
     paths:
       - .bun-cache
-      - node_modules/
     policy: pull
