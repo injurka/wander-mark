@@ -60,12 +60,23 @@ watch(
   { immediate: true },
 )
 
+function handleVisibilityChange() {
+  if (document.hidden) {
+    flushTime()
+  }
+  else {
+    startTime = Date.now()
+  }
+}
+
 onMounted(() => {
   startTime = Date.now()
   extractPageInfo()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
   flushTime()
 })
 </script>
