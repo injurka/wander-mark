@@ -20,7 +20,6 @@ import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
 import { useTypedRouteParams } from '~/shared/composables/use-typed-route'
-import { isNative } from '~/shared/services/fs.client'
 import { useGlobalSettingsStore } from '~/shared/store/settings.store'
 import { useVaultStore } from '~/shared/store/vault.store'
 
@@ -321,18 +320,13 @@ async function resolveAppUrl(vaultConfig: any, path: string) {
   }
 
   if (vaultConfig.isDownloaded) {
-    if (isNative) {
-      return await vaultStore.getMediaUrl(`vaults/${params.value.vault}/${cleanPath}`)
-    }
-    else {
-      const content = await vaultStore.getFileContent(vaultConfig.id, cleanPath)
-      if (content) {
-        const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
-        const blob = new Blob([content], { type: mimeType })
-        const url = URL.createObjectURL(blob)
-        appObjectUrls.add(url)
-        return url
-      }
+    const content = await vaultStore.getFileContent(vaultConfig.id, cleanPath)
+    if (content) {
+      const mimeType = cleanPath.endsWith('.css') ? 'text/css' : 'application/javascript'
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob)
+      appObjectUrls.add(url)
+      return url
     }
   }
 

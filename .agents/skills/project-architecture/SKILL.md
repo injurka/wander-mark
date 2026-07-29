@@ -10,10 +10,10 @@ description: Структура проекта. Применяется всег�
 
 ## Пакеты (Workspaces)
 
-### 1. `apps/client` (Frontend / Desktop / Mobile)
-- **Стек:** Vue 3 (Composition API), Vite, Tauri (для десктопа), Capacitor (для мобильных платформ).
-- **Среда:** Браузер, WebView.
-- **Правило:** Здесь ЗАПРЕЩЕНО использовать Bun API (например, `Bun.serve`, `Bun.file`), обращаться к базе данных напрямую или использовать пакеты Node.js (fs, path), кроме случаев взаимодействия через Tauri API (`@tauri-apps/api`).
+### 1. `apps/client` (Frontend / PWA)
+- **Стек:** Vue 3 (Composition API), Vite, PWA.
+- **Среда:** Браузер.
+- **Правило:** Здесь ЗАПРЕЩЕНО использовать Bun API (например, `Bun.serve`, `Bun.file`), обращаться к базе данных напрямую или использовать пакеты Node.js (fs, path).
 
 ### 2. `apps/server` (Backend)
 - **Стек:** Bun, TypeScript.

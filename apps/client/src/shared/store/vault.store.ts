@@ -1,7 +1,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { get } from 'idb-keyval'
 import { defineStore } from 'pinia'
-import { deleteFile, deleteFilesByPrefix, getMediaUrl, isNative, readTextFile, writeBinaryFile, writeTextFile } from '../services/fs.client'
+import { deleteFile, deleteFilesByPrefix, getMediaUrl, readTextFile, writeBinaryFile, writeTextFile } from '../services/fs.client'
 
 export interface VaultConfig {
   id: string
@@ -392,20 +392,15 @@ export const useVaultStore = defineStore('vault', () => {
     }
 
     if (vault.isDownloaded) {
-      if (isNative) {
-        return await getMediaUrl(`vaults/${vaultId}/${mediaPath}`)
-      }
-      else {
-        try {
-          const blob = await get(`vaults/${vaultId}/${mediaPath}`)
-          if (blob instanceof Blob) {
-            const url = URL.createObjectURL(blob)
-            createdObjectUrls.add(url)
-            return url
-          }
+      try {
+        const blob = await get(`vaults/${vaultId}/${mediaPath}`)
+        if (blob instanceof Blob) {
+          const url = URL.createObjectURL(blob)
+          createdObjectUrls.add(url)
+          return url
         }
-        catch { }
       }
+      catch { }
     }
 
     if (vault.type === 'remote') {
