@@ -111,9 +111,13 @@ export async function runDeployS3(outputBaseDir: string) {
       else if (ext === '.js')
         contentType = 'application/javascript'
 
+      // Sanitize key: replace spaces with hyphens, collapse multiple hyphens
+      // eslint-disable-next-line e18e/prefer-static-regex
+      const sanitizedKey = key.replace(/\s+/g, '-').replace(/-+/g, '-')
+
       await s3.send(new PutObjectCommand({
         Bucket: bucket,
-        Key: key,
+        Key: sanitizedKey,
         Body: fileContent,
         ContentType: contentType,
       }))
