@@ -1,7 +1,7 @@
 {
   "name": "@injurka/wander-mark-cli",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI tool for building and deploying Wander Mark static sites",
   "license": "MIT",
   "repository": {
@@ -14,8 +14,8 @@
   },
   "files": [
     "LICENSE",
-    "dist",
-    "readme.md"
+    "README.md",
+    "dist"
   ],
   "engines": {
     "bun": ">=1.4.0"
