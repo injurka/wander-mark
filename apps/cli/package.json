@@ -2,15 +2,34 @@
   "name": "@injurka/wander-mark-cli",
   "type": "module",
   "version": "1.0.0",
-  "private": true,
+  "description": "CLI tool for building and deploying Wander Mark static sites",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/injurka/wander-mark.git",
+    "directory": "apps/cli"
+  },
+  "bin": {
+    "wander-mark": "./dist/index.js"
+  },
+  "files": [
+    "LICENSE",
+    "dist",
+    "readme.md"
+  ],
   "engines": {
-    "bun": ">=1.1.30"
+    "bun": ">=1.4.0"
   },
   "scripts": {
     "start": "bun src/index.ts",
     "--------------------------------<      DEV       >--------------------------------": "",
     "dev": "bun --watch src/index.ts",
+    "--------------------------------<    PUBLISH    >---------------------------------": "",
+    "publish:npm": "bun run build && npm publish --access public",
+    "publish:jsr": "npx jsr publish",
+    "publish:jsr:dry": "npx jsr publish --dry-run",
     "--------------------------------<      BUILD     >--------------------------------": "",
+    "prepack": "bun run build",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun --no-minify",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",

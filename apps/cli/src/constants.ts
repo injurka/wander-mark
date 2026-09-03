@@ -18,7 +18,7 @@ export const OBSIDIAN_LINK_REGEX = /(?<!!)\[\[([^|\]\n]+)(?:\|([^\]\n]+))?\]\]/g
 // Looks for # preceded by start of line or whitespace
 export const INLINE_TAG_REGEX = /(?<=^|\s)#([\wа-яА-Я\-/]+)/g
 
-export const IMAGE_EXTENSIONS = new Set([
+export const IMAGE_EXTENSIONS: Set<string> = new Set([
   '.png',
   '.jpg',
   '.jpeg',

@@ -1,0 +1,28 @@
+src
+dist-ssr
+*.local
+
+# configs
+tsconfig.json
+eslint.config.ts
+.env
+.env.example
+bun.lock
+
+# git
+.gitignore
+.gitattributes
+.gitkeep
+.git
+
+# CI
+.gitlab-ci.yml
+
+# Editor
+.vscode
+.idea
+*.sw?
+*.swo
+
+# JSR
+jsr.json

@@ -526,72 +526,91 @@ onMounted(() => {
     width: 20px;
     height: 20px;
     fill: currentColor;
+    flex-shrink: 0;
   }
-}
-details.callout {
-  & > summary.callout-title {
-    cursor: pointer;
-    list-style: none;
+
+  .callout {
+    --callout-color: var(--co-note);
+    margin: 1.5rem 0;
+    border-radius: var(--co-radius);
+    background-color: rgba(var(--callout-color), var(--co-bg-opacity));
+    border-left: var(--co-border-width) solid rgb(var(--callout-color));
+    border-top: 1px solid rgba(var(--callout-color), 0.15);
+    border-right: 1px solid rgba(var(--callout-color), 0.15);
+    border-bottom: 1px solid rgba(var(--callout-color), 0.15);
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+
+    &[data-callout='abstract'],
+    &[data-callout='summary'],
+    &[data-callout='tldr'] {
+      --callout-color: var(--co-tip);
+    }
+    &[data-callout='info'] {
+      --callout-color: var(--co-info);
+    }
+    &[data-callout='todo'] {
+      --callout-color: var(--co-note);
+    }
+    &[data-callout='tip'],
+    &[data-callout='hint'],
+    &[data-callout='important'] {
+      --callout-color: var(--co-tip);
+    }
+    &[data-callout='success'],
+    &[data-callout='check'],
+    &[data-callout='done'] {
+      --callout-color: var(--co-success);
+    }
+    &[data-callout='question'],
+    &[data-callout='help'],
+    &[data-callout='faq'] {
+      --callout-color: var(--co-warning);
+    }
+    &[data-callout='warning'],
+    &[data-callout='caution'],
+    &[data-callout='attention'] {
+      --callout-color: var(--co-warning);
+    }
+    &[data-callout='failure'],
+    &[data-callout='fail'],
+    &[data-callout='missing'],
+    &[data-callout='danger'],
+    &[data-callout='error'] {
+      --callout-color: var(--co-danger);
+    }
+    &[data-callout='bug'] {
+      --callout-color: var(--co-danger);
+    }
+    &[data-callout='example'] {
+      --callout-color: 124, 77, 255;
+    }
+    &[data-callout='quote'],
+    &[data-callout='cite'] {
+      --callout-color: var(--co-quote);
+    }
   }
-  & > summary.callout-title::-webkit-details-marker {
-    display: none;
+
+  details.callout {
+    & > summary.callout-title {
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+
     .callout-fold {
       margin-left: auto;
       transform: rotate(0deg);
       transition: transform 0.2s;
       opacity: 0.7;
     }
+
     &[open] .callout-fold {
       transform: rotate(90deg);
     }
-  }
-  & .callout[data-callout='abstract'],
-  & .callout[data-callout='summary'],
-  & .callout[data-callout='tldr'] {
-    --callout-color: var(--co-tip);
-  }
-  & .callout[data-callout='info'] {
-    --callout-color: var(--co-info);
-  }
-  & .callout[data-callout='todo'] {
-    --callout-color: var(--co-note);
-  }
-  & .callout[data-callout='tip'],
-  & .callout[data-callout='hint'],
-  & .callout[data-callout='important'] {
-    --callout-color: var(--co-tip);
-  }
-  & .callout[data-callout='success'],
-  & .callout[data-callout='check'],
-  & .callout[data-callout='done'] {
-    --callout-color: var(--co-success);
-  }
-  & .callout[data-callout='question'],
-  & .callout[data-callout='help'],
-  & .callout[data-callout='faq'] {
-    --callout-color: var(--co-warning);
-  }
-  & .callout[data-callout='warning'],
-  & .callout[data-callout='caution'],
-  & .callout[data-callout='attention'] {
-    --callout-color: var(--co-warning);
-  }
-  & .callout[data-callout='failure'],
-  & .callout[data-callout='fail'],
-  & .callout[data-callout='missing'],
-  & .callout[data-callout='danger'],
-  & .callout[data-callout='error'] {
-    --callout-color: var(--co-danger);
-  }
-  & .callout[data-callout='bug'] {
-    --callout-color: var(--co-danger);
-  }
-  & .callout[data-callout='example'] {
-    --callout-color: 124, 77, 255;
-  }
-  & .callout[data-callout='quote'],
-  & .callout[data-callout='cite'] {
-    --callout-color: var(--co-quote);
   }
 
   .mermaid {
