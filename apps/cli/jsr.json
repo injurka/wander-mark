@@ -1,6 +1,6 @@
 {
   "name": "@injurka/wander-mark-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool for building and deploying Wander Mark static sites",
   "exports": "./src/mod.ts",
   "publish": {
