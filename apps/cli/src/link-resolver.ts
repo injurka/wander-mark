@@ -1,3 +1,9 @@
+/**
+ * Link resolver — builds a file-name-to-URL map for Obsidian link resolution.
+ *
+ * @module
+ */
+
 /* eslint-disable e18e/prefer-static-regex */
 import type { Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
@@ -6,7 +12,13 @@ import { IMAGE_DEST_FOLDER } from './constants'
 import { extractSysnameFromFrontMatter } from './utils'
 
 /**
- * Recursively scans the source directory to build a map of base file names to their final URL paths.
+ * Scans a source directory recursively and builds a map from base file names
+ * (and partial path segments) to their final web URLs.
+ *
+ * For each `.md` file, reads optional `sysname` from front matter — if
+ * present, the sysname is used as the URL segment instead of the file name.
+ * Entries are registered for every path segment, so `[[filename]]` links
+ * resolve regardless of depth.
  */
 export async function buildFileMapRecursive(
   sourceBasePath: string,

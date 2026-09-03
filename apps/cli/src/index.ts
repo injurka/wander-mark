@@ -1,3 +1,9 @@
+/**
+ * Wander Mark CLI — main entrypoint (binary).
+ *
+ * @module
+ */
+
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 import { runAutoGeneration } from './auto'

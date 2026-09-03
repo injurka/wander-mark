@@ -1,7 +1,19 @@
+/**
+ * Config loader for Wander Mark.
+ *
+ * @module
+ */
+
 import type { ProjectConfig } from './types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
+/**
+ * Reads and parses a JSON config file from disk.
+ *
+ * Resolves the path relative to the current working directory and throws a
+ * descriptive error if the file is missing or malformed.
+ */
 export async function loadConfig(configPath: string): Promise<ProjectConfig> {
   const resolvedPath = path.resolve(process.cwd(), configPath)
 

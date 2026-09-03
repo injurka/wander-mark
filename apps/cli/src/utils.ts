@@ -1,3 +1,9 @@
+/**
+ * Utility functions for file operations, Markdown parsing, and tag extraction.
+ *
+ * @module
+ */
+
 /* eslint-disable regexp/no-obscure-range */
 /* eslint-disable regexp/no-super-linear-backtracking */
 /* eslint-disable e18e/prefer-static-regex */

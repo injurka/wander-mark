@@ -1,3 +1,13 @@
+/**
+ * Obsidian-to-web migrator.
+ *
+ * Handles the core migration of a single vault: builds a link map, processes
+ * every Markdown file (rewriting Obsidian wiki-links to web URLs), and
+ * persists navigation, search index, backlinks, and graph data.
+ *
+ * @module
+ */
+
 import type { ContentNavItem, ProcessingContext } from './types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -5,6 +15,13 @@ import { IMAGE_DEST_FOLDER, NAV_FILENAME, TREE_FILENAME } from './constants'
 import { buildFileMapRecursive } from './link-resolver'
 import { processDirectoryRecursive } from './processor'
 
+/**
+ * Run the full migration for a single vault.
+ *
+ * Cleans the export directory, builds a file-name-to-URL link map, processes
+ * all Markdown files (rewriting wiki-links and collecting metadata), and
+ * persists nav.json, search.json, backlinks.json, and graph.json.
+ */
 export async function main(
   sourceDir: string,
   exportDir: string,

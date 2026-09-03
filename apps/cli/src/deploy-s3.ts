@@ -1,3 +1,9 @@
+/**
+ * S3 deploy via `@aws-sdk/client-s3`.
+ *
+ * @module
+ */
+
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
@@ -22,6 +28,13 @@ async function findNearestEnv(startDir: string): Promise<string | null> {
   }
 }
 
+/**
+ * S3 bulk upload deploy.
+ *
+ * Walks the output directory recursively and uploads every file to the S3
+ * bucket configured in environment variables (`S3_ENDPOINT`, `S3_ACCESS_KEY`,
+ * `S3_SECRET_KEY`, `S3_BUCKET`). Sets Content-Type based on file extension.
+ */
 export async function runDeployS3(outputBaseDir: string) {
   const envPath = await findNearestEnv(process.cwd())
   if (envPath) {

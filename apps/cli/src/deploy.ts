@@ -1,10 +1,22 @@
 import { exec } from 'node:child_process'
 import fs from 'node:fs/promises'
+/**
+ * Build and deploy helpers for Wander Mark CLI.
+ *
+ * @module
+ */
+
 import path from 'node:path'
 import { promisify } from 'node:util'
 
 const execAsync = promisify(exec)
 
+/**
+ * SSH-based deploy (tar + scp).
+ *
+ * Archives the output directory, sends it to the remote server via scp, and
+ * extracts it in place.
+ */
 export async function runDeploy(user: string, host: string, remotePath: string, outputBaseDir: string) {
   console.log(`\n🚢 Начинаем деплой на ${user}@${host}:${remotePath}...`)
 

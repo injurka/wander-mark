@@ -1,3 +1,9 @@
+/**
+ * Auto-generation orchestrator for Wander Mark sites.
+ *
+ * @module
+ */
+
 import type { ProjectConfig } from './types'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -44,6 +50,13 @@ async function copyPluginsFiles(config: ProjectConfig) {
   catch { /* ignore */ }
 }
 
+/**
+ * Entry point for the auto-generation pipeline.
+ *
+ * Cleans output directories, copies meta files and plugins, then runs the
+ * migrator for each configured vault. This is the main high-level entry
+ * intended for both CLI and programmatic use.
+ */
 export async function runAutoGeneration(config: ProjectConfig) {
   console.log('🚀 Starting Auto Generation process...')
 

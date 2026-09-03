@@ -1,3 +1,9 @@
+/**
+ * S3 deploy via rclone (external binary).
+ *
+ * @module
+ */
+
 import { execFile } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -34,6 +40,14 @@ async function ensureRcloneInstalled(): Promise<void> {
   }
 }
 
+/**
+ * S3 deploy via the `rclone` external binary.
+ *
+ * Syncs the output directory to the configured S3 bucket using rclone's sync
+ * command. Reads credentials from the same env vars as `runDeployS3`, but
+ * delegates the actual transfer to rclone for better performance on large
+ * datasets.
+ */
 export async function runDeployS3Rclone(outputBaseDir: string) {
   const envPath = await findNearestEnv(process.cwd())
   if (envPath) {

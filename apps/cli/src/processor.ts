@@ -1,3 +1,9 @@
+/**
+ * File processor — recursive Markdown-to-HTML conversion and data extraction.
+ *
+ * @module
+ */
+
 /* eslint-disable e18e/prefer-static-regex */
 import type { Dirent } from 'node:fs'
 import type { ContentNavItem, FileMetaData, ProcessingContext } from './types'
@@ -7,6 +13,18 @@ import { FRONT_MATTER_REGEX, OBSIDIAN_LINK_REGEX } from './constants'
 import { ContentNavItemType } from './types'
 import { ensureDirectoryExists, extractSysnameFromFrontMatter, extractTags, isImageExtension, safeCopyFile, stripMarkdown } from './utils'
 
+/**
+ * Recursively processes a directory of Markdown files.
+ *
+ * For each entry:
+ * - Directories recurse into sub-processing.
+ * - Image files are copied to the image destination folder.
+ * - `.md` files are parsed, tags extracted, wiki-links rewritten, metadata
+ *   collected, and the result written to the export destination.
+ * - Other files are copied as-is.
+ *
+ * Returns a sorted navigation tree for the processed directory.
+ */
 export async function processDirectoryRecursive(
   sourceCurrentPath: string,
   destBasePath: string,
