@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 /**
  * Wander Mark CLI — main entrypoint (binary).
  *
