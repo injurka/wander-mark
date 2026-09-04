@@ -13,7 +13,7 @@ export { runDeploy } from './deploy.ts'
 export { buildFileMapRecursive } from './link-resolver.ts'
 export { main as runMigrator } from './migrator.ts'
 export { processDirectoryRecursive } from './processor.ts'
-export {
+export type {
   BacklinksMap,
   ContentNavItem,
   ContentNavItemType,

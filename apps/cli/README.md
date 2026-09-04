@@ -40,7 +40,7 @@ bun run build
 
 Пример `config.json`:
 
-````json
+```json
 {
   "paths": {
     "sourceNotesRoot": "/mnt/c/Users/evai/Documents/obsidian-mark/",
@@ -80,7 +80,7 @@ bun run build
 
 ```bash
 bun start
-````
+```
 
 ### Указать кастомный путь к конфигу
 

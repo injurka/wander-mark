@@ -20,6 +20,7 @@
     "types": [
       "node"
     ],
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     // Best practices
     "strict": true,
@@ -29,6 +30,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "declaration": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
