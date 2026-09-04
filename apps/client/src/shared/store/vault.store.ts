@@ -47,7 +47,16 @@ export const useVaultStore = defineStore('vault', () => {
         if (serverUrl && Array.isArray(config.vaults)) {
           let updated = false
           for (const vaultId of config.vaults) {
-            if (!vaults.value.some(v => v.id === vaultId)) {
+            const existing = vaults.value.find(v => v.id === vaultId)
+            if (existing) {
+              // URL мог смениться в конфиге (переезд домена) — обновляем для predefined-хранилищ
+              const cleanUrl = serverUrl.replace(/\/$/, '')
+              if (existing.type === 'remote' && existing.url !== cleanUrl) {
+                existing.url = cleanUrl
+                updated = true
+              }
+            }
+            else {
               vaults.value.push({
                 id: vaultId,
                 title: vaultId,

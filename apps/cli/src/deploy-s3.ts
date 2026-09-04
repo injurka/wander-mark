@@ -9,6 +9,7 @@ import path from 'node:path'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 const WINDOWS_SLASH_REGEX = /\\/g
+const SLASH_EDGES_REGEX = /^\/+|\/+$/g
 
 async function findNearestEnv(startDir: string): Promise<string | null> {
   let current = startDir
@@ -49,6 +50,8 @@ export async function runDeployS3(outputBaseDir: string) {
   const accessKeyId = process.env.S3_ACCESS_KEY
   const secretAccessKey = process.env.S3_SECRET_KEY
   const bucket = process.env.S3_BUCKET
+  // Нормализуем базовый префикс: без ведущих/хвостовых слешей, '' если не задан
+  const basePath = (process.env.S3_BASE_PATH || '').replace(SLASH_EDGES_REGEX, '')
 
   if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
     throw new Error('Для S3 деплоя необходимо указать S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET в .env')
@@ -113,7 +116,7 @@ export async function runDeployS3(outputBaseDir: string) {
 
       // Sanitize key: replace spaces with hyphens, collapse multiple hyphens
       // eslint-disable-next-line e18e/prefer-static-regex
-      const sanitizedKey = key.replace(/\s+/g, '-').replace(/-+/g, '-')
+      const sanitizedKey = [basePath, key.replace(/\s+/g, '-').replace(/-+/g, '-')].filter(Boolean).join('/')
 
       await s3.send(new PutObjectCommand({
         Bucket: bucket,

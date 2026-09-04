@@ -11,6 +11,8 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
+const SLASH_EDGES_REGEX = /^\/+|\/+$/g
+
 async function findNearestEnv(startDir: string): Promise<string | null> {
   let current = startDir
   while (true) {
@@ -62,6 +64,8 @@ export async function runDeployS3Rclone(outputBaseDir: string) {
   const accessKeyId = process.env.S3_ACCESS_KEY
   const secretAccessKey = process.env.S3_SECRET_KEY
   const bucket = process.env.S3_BUCKET
+  // Нормализуем базовый префикс: без ведущих/хвостовых слешей, '' если не задан
+  const basePath = (process.env.S3_BASE_PATH || '').replace(SLASH_EDGES_REGEX, '')
 
   if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
     throw new Error('Для S3 деплоя необходимо указать S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET в .env')
@@ -76,7 +80,7 @@ export async function runDeployS3Rclone(outputBaseDir: string) {
   const args = [
     'sync',
     absoluteOutputDir,
-    `:s3:${bucket}`,
+    `:s3:${bucket}${basePath ? `/${basePath}` : ''}`,
     '--s3-provider',
     'Other',
     '--s3-endpoint',
