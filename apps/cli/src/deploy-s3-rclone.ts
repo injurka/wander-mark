@@ -73,6 +73,8 @@ export async function runDeployS3Rclone(outputBaseDir: string) {
 
   await ensureRcloneInstalled()
 
+  console.log(`-> Целевой basePath в S3: ${basePath ? `"${basePath}" (путь rclone :s3:${bucket}/${basePath})` : '"(корень бакета)"'}`)
+
   const absoluteOutputDir = path.resolve(process.cwd(), outputBaseDir)
 
   console.log(`\n🚢 Начинаем деплой в S3 бакет: ${bucket} (rclone)...`)

@@ -57,6 +57,9 @@ export async function runDeployS3(outputBaseDir: string) {
     throw new Error('Для S3 деплоя необходимо указать S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_BUCKET в .env')
   }
 
+  const targetPrefix = [bucket, basePath].filter(Boolean).join('/')
+  console.log(`-> Целевой basePath в S3: ${basePath ? `"${basePath}" (ключи вида ${targetPrefix}/<файл>)` : '"(корень бакета)"'}`)
+
   const s3 = new S3Client({
     endpoint,
     region,
@@ -89,8 +92,10 @@ export async function runDeployS3(outputBaseDir: string) {
     const allFiles = await walk(absoluteOutputDir)
     console.log(`-> Найдено файлов для загрузки: ${allFiles.length}`)
 
+    const CONCURRENCY = 16
+
     let uploaded = 0
-    for (const filePath of allFiles) {
+    async function uploadFile(filePath: string) {
       // Ключ - это относительный путь от absoluteOutputDir (с прямыми слешами)
       const key = path.relative(absoluteOutputDir, filePath).replace(WINDOWS_SLASH_REGEX, '/')
       const fileContent = await fs.readFile(filePath)
@@ -130,6 +135,18 @@ export async function runDeployS3(outputBaseDir: string) {
         console.log(`-> Загружено ${uploaded}/${allFiles.length}...`)
       }
     }
+
+    // Ограниченный параллелизм вместо последовательной загрузки
+    const queue = [...allFiles]
+    await Promise.all(
+      Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
+        while (queue.length > 0) {
+          const filePath = queue.shift()
+          if (filePath)
+            await uploadFile(filePath)
+        }
+      }),
+    )
 
     console.log(`✅ Деплой в S3 успешно завершен! Загружено файлов: ${uploaded}`)
   }
