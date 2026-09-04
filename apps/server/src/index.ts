@@ -3,6 +3,7 @@ import { CORS_HEADERS, PORT, S3_BASE_PATH, S3_BUCKET } from './config'
 import { db } from './db'
 import { handleFile } from './handlers/file'
 import { deleteHanzi, getAllHanzi, getHanzi, saveHanzi } from './handlers/hanzi'
+import { handleServerConfig } from './handlers/server-config'
 import { handleSync } from './handlers/sync'
 import { withCors } from './utils/cors'
 
@@ -32,6 +33,9 @@ Bun.serve({
       OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),
       GET: getHanzi,
       DELETE: deleteHanzi,
+    },
+    '/config/server.json': {
+      GET: handleServerConfig,
     },
     '/*': {
       OPTIONS: () => new Response(null, { status: 204, headers: CORS_HEADERS }),

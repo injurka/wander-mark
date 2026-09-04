@@ -37,7 +37,7 @@ export const useVaultStore = defineStore('vault', () => {
     }
 
     try {
-      const configUrl = import.meta.env.VITE_CONFIG_URL || 'https://de-s3.storage.bunnycdn.com/wander-mark/config/server.json'
+      const configUrl = import.meta.env.VITE_CONFIG_URL || 'https://wander-mark.limited-dissolve.ru/config/server.json'
       const res = await fetch(configUrl)
 
       if (res.ok) {
