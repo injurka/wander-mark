@@ -9,6 +9,13 @@ function getKey(reqPath: string) {
   return p.replace(/^\/+/, '')
 }
 
+const SPACES_REGEX = /\s+/
+
+function sanitizeS3Key(k: string): string {
+  // eslint-disable-next-line e18e/prefer-static-regex
+  return k.replace(/\s+/g, '-').replace(/-+/g, '-')
+}
+
 export async function handleFile(req: Request): Promise<Response> {
   const url = new URL(req.url)
   // eslint-disable-next-line e18e/prefer-static-regex
@@ -16,11 +23,19 @@ export async function handleFile(req: Request): Promise<Response> {
   const key = getKey(reqPath)
 
   if (req.method === 'HEAD') {
-    const stat = await statS3File(key)
+    let stat = await statS3File(key)
+    let resolvedKey = key
+    if (!stat && SPACES_REGEX.test(key)) {
+      const hyphenatedKey = sanitizeS3Key(key)
+      stat = await statS3File(hyphenatedKey)
+      if (stat) {
+        resolvedKey = hyphenatedKey
+      }
+    }
     if (!stat) {
       return withCors(new Response('File not found', { status: 404 }))
     }
-    const mimeOverride = getMimeOverride(key)
+    const mimeOverride = getMimeOverride(resolvedKey)
     return new Response(null, {
       headers: {
         ...CORS_HEADERS,
@@ -30,14 +45,23 @@ export async function handleFile(req: Request): Promise<Response> {
     })
   }
 
-  const fileBuf = await getS3File(key)
+  let fileBuf = await getS3File(key)
+  let resolvedKey = key
+
+  if (!fileBuf && SPACES_REGEX.test(key)) {
+    const hyphenatedKey = sanitizeS3Key(key)
+    fileBuf = await getS3File(hyphenatedKey)
+    if (fileBuf) {
+      resolvedKey = hyphenatedKey
+    }
+  }
 
   if (!fileBuf) {
     console.error(`[404] File not found: ${key}`)
     return withCors(new Response('File not found', { status: 404 }))
   }
 
-  const mimeOverride = getMimeOverride(key)
+  const mimeOverride = getMimeOverride(resolvedKey)
   return new Response(fileBuf as unknown as BodyInit, {
     headers: {
       ...CORS_HEADERS,

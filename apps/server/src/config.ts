@@ -22,4 +22,5 @@ export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, HEAD, OPTIONS, DELETE',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept',
+  'Cross-Origin-Resource-Policy': 'cross-origin',
 }
