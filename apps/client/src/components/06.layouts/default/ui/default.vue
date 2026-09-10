@@ -10,6 +10,8 @@
 
 <style scoped lang="scss">
 .main-content {
-  height: 100dvh;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 </style>

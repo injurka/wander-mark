@@ -1,6 +1,7 @@
 <!-- eslint-disable e18e/prefer-static-regex -->
 <script setup lang="ts">
 import type MarkdownIt from 'markdown-it'
+import renderMathInElement from 'katex/contrib/auto-render'
 import mermaid from 'mermaid'
 import { useRouter } from 'vue-router'
 import { PageLoader } from '~/components/02.shared/page-loader'
@@ -71,8 +72,23 @@ async function initRenderer() {
 }
 
 async function postProcessMarkdown() {
-  if (!markdownBodyRef.value || !props.vault)
+  if (!markdownBodyRef.value)
     return
+
+  try {
+    renderMathInElement(markdownBodyRef.value, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true },
+      ],
+      throwOnError: false,
+    })
+  }
+  catch (e) {
+    console.warn('KaTeX auto-render failed', e)
+  }
 
   try {
     const mermaidNodes = markdownBodyRef.value.querySelectorAll('.mermaid')
@@ -108,20 +124,22 @@ async function postProcessMarkdown() {
   })
 
   // Резолв картинок из Vault
-  const images = markdownBodyRef.value.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
-  for (const img of images) {
-    const originalSrc = img.getAttribute('data-src')
+  if (props.vault) {
+    const images = markdownBodyRef.value.querySelectorAll('img[data-src]') as NodeListOf<HTMLImageElement>
+    for (const img of images) {
+      const originalSrc = img.getAttribute('data-src')
 
-    if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
-      const decodedSrc = decodeURIComponent(originalSrc)
-      const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
-        ? decodedSrc.replace(/^\//, '')
-        : `content/${props.vault}/${decodedSrc}`
+      if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith('data:')) {
+        const decodedSrc = decodeURIComponent(originalSrc)
+        const mediaPath = decodedSrc.startsWith('images/') || decodedSrc.startsWith('/images/')
+          ? decodedSrc.replace(/^\//, '')
+          : `content/${props.vault}/${decodedSrc}`
 
-      img.src = await vaultStore.resolveMediaUrl(props.vault, mediaPath)
-    }
-    else if (originalSrc) {
-      img.src = originalSrc
+        img.src = await vaultStore.resolveMediaUrl(props.vault, mediaPath)
+      }
+      else if (originalSrc) {
+        img.src = originalSrc
+      }
     }
   }
 }
@@ -294,6 +312,8 @@ onMounted(() => {
   line-height: 1.7;
   color: var(--fg-primary-color);
   font-size: 1.05rem;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 
   h1,
   h2,
@@ -626,6 +646,27 @@ onMounted(() => {
       max-width: 100%;
       height: auto;
     }
+  }
+
+  .katex {
+    font-size: 1.05em;
+    max-width: 100%;
+  }
+
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 0;
+    margin: 1rem 0;
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+
+  p.katex-block {
+    margin: 1rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
   }
 }
 </style>

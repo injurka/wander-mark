@@ -96,6 +96,7 @@ function getMinString(n: number) {
   margin: 0 auto;
   width: 1200px;
   max-width: 100%;
+  min-width: 0;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -103,6 +104,8 @@ function getMinString(n: number) {
 
 .markdown-wrapper {
   flex-grow: 1;
+  min-width: 0;
+  width: 100%;
 }
 
 .markdown-body-wrapper {
@@ -111,6 +114,8 @@ function getMinString(n: number) {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  width: 100%;
 
   @include media-down(md) {
     padding: 8px;

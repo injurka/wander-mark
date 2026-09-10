@@ -1,8 +1,10 @@
 import type { Highlighter } from 'shiki'
+import { katex as katexPlugin } from '@mdit/plugin-katex'
 import catppuccinFrappe from '@shikijs/themes/catppuccin-frappe'
 import catppuccinLatte from '@shikijs/themes/catppuccin-latte'
 import catppuccinMacchiato from '@shikijs/themes/catppuccin-macchiato'
 import catppuccinMocha from '@shikijs/themes/catppuccin-mocha'
+import katex from 'katex'
 import MarkdownIt from 'markdown-it'
 // @ts-expect-error no dts
 import MarkdownItAttrs from 'markdown-it-attrs'
@@ -124,6 +126,60 @@ function cleanHtmlBreaksPlugin(md: MarkdownIt) {
   })
 }
 
+function renderMathInHtml(html: string): string {
+  const parts = html.split(/(<pre[\s\S]*?<\/pre>|<code[\s\S]*?<\/code>|<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>)/gi)
+  for (let i = 0; i < parts.length; i += 2) {
+    // 1. Block math: $$...$$
+    parts[i] = parts[i].replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
+      try {
+        return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })
+      }
+      catch {
+        return _
+      }
+    })
+    // 2. Inline math: $...$
+    parts[i] = parts[i].replace(/(^|[^\\])\$([^\s$](?:[^$]*?[^\s$])?)\$(?!\d)/g, (match, prefix, math) => {
+      try {
+        return prefix + katex.renderToString(math.trim(), { displayMode: false, throwOnError: false })
+      }
+      catch {
+        return match
+      }
+    })
+    // 3. LaTeX block: \[ ... \]
+    parts[i] = parts[i].replace(/\\\[([\s\S]+?)\\\]/g, (_, math) => {
+      try {
+        return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false })
+      }
+      catch {
+        return _
+      }
+    })
+    // 4. LaTeX inline: \( ... \)
+    parts[i] = parts[i].replace(/\\\(([\s\S]+?)\\\)/g, (_, math) => {
+      try {
+        return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false })
+      }
+      catch {
+        return _
+      }
+    })
+  }
+  return parts.join('')
+}
+
+function htmlMathPlugin(md: MarkdownIt) {
+  md.core.ruler.push('html_math', (state) => {
+    for (let i = 0; i < state.tokens.length; i++) {
+      const token = state.tokens[i]
+      if (token.type === 'html_block' || token.type === 'html_inline') {
+        token.content = renderMathInHtml(token.content)
+      }
+    }
+  })
+}
+
 export async function createMarkdownRenderer(params: CreateMarkdownRendererParams): Promise<MarkdownIt> {
   const { imageBasePath, shikiTheme, onHighlightNeeded } = params
   const highlighter = await getHighlighter()
@@ -194,6 +250,8 @@ export async function createMarkdownRenderer(params: CreateMarkdownRendererParam
   }
 
   md.use(cleanHtmlBreaksPlugin)
+    .use(katexPlugin)
+    .use(htmlMathPlugin)
     .use(markdownItWikiImages, { baseURL: imageBasePath, defaultAlt: '' })
     .use(markdownItWikiLinks)
     .use(MarkdownItObsidianCallouts)

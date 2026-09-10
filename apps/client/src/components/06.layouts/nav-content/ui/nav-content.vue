@@ -596,14 +596,17 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 
 <style lang="scss" scoped>
 .layout-container {
-  height: 100dvh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
   background-color: var(--bg-primary-color);
   overflow: hidden;
 }
 .layout-content {
   display: flex;
   height: 100%;
+  width: 100%;
+  min-width: 0;
 }
 .main-area {
   flex: 1;
@@ -615,7 +618,9 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
 .content-scrollable {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 50px 0 env(safe-area-inset-bottom, 0) 0;
   -webkit-overflow-scrolling: touch;
 

@@ -11,8 +11,9 @@ import { i18n } from '~/shared/plugins/i18n'
 import { useVaultStore } from '~/shared/store/vault.store'
 import App from './app.vue'
 
+import 'katex/dist/katex.min.css'
 import '~/assets/scss/global.scss'
-import '~/assets/scss/normalize.scss';
+import '~/assets/scss/normalize.scss'
 
 (window as any).Vue = Vue
 

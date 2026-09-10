@@ -220,10 +220,13 @@ function getTimeAgo(timestamp?: number) {
   }
 }
 .landing-page {
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
   background-color: var(--bg-primary-color);
   position: relative;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .background-pattern {
   position: fixed;

@@ -87,15 +87,18 @@ watch(params, async (newParams, _oldParams, onCleanup) => {
 <style scoped>
 .page-wrapper {
   width: 100%;
-  min-height: calc(100vh - 50px);
+  min-height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .content-success {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-width: 0;
+  width: 100%;
 }
 
 .loading-state {
