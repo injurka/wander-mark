@@ -227,6 +227,8 @@ function getTimeAgo(timestamp?: number) {
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .background-pattern {
   position: fixed;
@@ -259,6 +261,9 @@ function getTimeAgo(timestamp?: number) {
   border: 1px solid var(--border-secondary-color);
 }
 .container {
+  flex: 1 0 auto;
+  width: 100%;
+  box-sizing: border-box;
   position: relative;
   z-index: 1;
   max-width: 900px;
@@ -506,9 +511,9 @@ function getTimeAgo(timestamp?: number) {
   font-size: 0.9rem;
 }
 .app-build-info {
-  position: absolute;
-  bottom: 12px;
-  left: 20px;
+  position: relative;
+  align-self: flex-start;
+  margin: 0 20px 12px;
   font-size: 0.75rem;
   color: var(--fg-muted-color);
   font-family: 'Maple Mono CN', monospace;
@@ -517,8 +522,7 @@ function getTimeAgo(timestamp?: number) {
   user-select: none;
   pointer-events: none;
   @include media-down(sm) {
-    left: 16px;
-    bottom: 8px;
+    margin: 0 16px 8px;
     font-size: 0.7rem;
   }
 }
