@@ -5,7 +5,14 @@ CLI tool for building and deploying Wander Mark static sites.
 ## Install
 
 ```bash
-bun add @injurka/wander-mark-cli
+npm install --global @injurka/wander-mark-cli
+```
+
+Или установите CLI локально в проект и запускайте через `npx`:
+
+```bash
+npm install --save-dev @injurka/wander-mark-cli
+npx wander-mark --config config.json
 ```
 
 ## Usage
@@ -13,7 +20,7 @@ bun add @injurka/wander-mark-cli
 ### CLI
 
 ```bash
-bun start --config config.json --deploy
+wander-mark --config config.json --deploy
 ```
 
 ### Programmatic API
@@ -28,10 +35,10 @@ await runAutoGeneration(config)
 await runDeploy('user', 'host', '/path', '.output')
 ```
 
-## Build
+## Build from source
 
 ```bash
-bun run build
+npm run build
 ```
 
 ## Конфигурация (`config.json`)
@@ -72,14 +79,14 @@ bun run build
 
 ## 🛠 Использование CLI
 
-Запускайте скрипт с помощью `bun start`. Инструмент поддерживает передачу аргументов для гибкого управления сборкой и деплоем.
+После установки запускайте `wander-mark`. Инструмент поддерживает передачу аргументов для гибкого управления сборкой и деплоем.
 
 ### Базовая сборка
 
 Использует настройки из `config.json` в текущей папке:
 
 ```bash
-bun start
+wander-mark
 ```
 
 ### Указать кастомный путь к конфигу
@@ -87,7 +94,7 @@ bun start
 Если конфиг лежит в другом месте, используйте флаг `-c` или `--config`:
 
 ```bash
-bun start -c ./.obsidian/scripts/my-config.json
+wander-mark -c ./.obsidian/scripts/my-config.json
 ```
 
 ### Сборка + Деплой на сервер
@@ -95,7 +102,7 @@ bun start -c ./.obsidian/scripts/my-config.json
 Добавьте флаг `-d` или `--deploy`. Данные сервера возьмутся из секции `"deploy"` вашего `config.json`:
 
 ```bash
-bun start --deploy
+wander-mark --deploy
 ```
 
 ### Деплой с ручным переопределением сервера
@@ -103,13 +110,13 @@ bun start --deploy
 Если в `config.json` нет секции `"deploy"` или вы хотите отправить билд на другой сервер (например, тестовый), вы можете передать данные прямо в консоль:
 
 ```bash
-bun start --deploy --host 192.168.1.100 --user admin --path /var/www/test-vault
+wander-mark --deploy --host 192.168.1.100 --user admin --path /var/www/test-vault
 ```
 
 ### Справка
 
 ```bash
-bun start --help
+wander-mark --help
 ```
 
 ---
@@ -149,9 +156,9 @@ bun start --help
 <!--
 Пример частой команды локального использования:
 
-bun start -c /home/injurka/Documents/obsidian-mark/.obsidian/export/config.json --deploy --deploy-mode s3
+npx wander-mark -c /home/injurka/Documents/obsidian-mark/.obsidian/export/config.json --deploy --deploy-mode s3
 
-bun start -c /root/my/wander-mark/vaults-example/.export/config.json
+npx wander-mark -c /root/my/wander-mark/vaults-example/.export/config.json
 
-bun start -c /home/evai/my/wander-mark/vaults-example/.export/config.json
+npx wander-mark -c /home/evai/my/wander-mark/vaults-example/.export/config.json
  -->

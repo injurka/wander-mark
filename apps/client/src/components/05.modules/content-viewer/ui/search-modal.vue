@@ -4,17 +4,14 @@ import { Icon } from '@iconify/vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { dbRpc } from '~/shared/services/db.client'
-import { useContentViewerStore } from '../store'
 
 const modelValue = defineModel<boolean>({ required: true })
 
-const store = useContentViewerStore()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
 const query = ref('')
-const selectedTags = ref<Set<string>>(new Set())
 const activeIndex = ref(0)
 const modalRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -49,67 +46,22 @@ watch([query, searchMode], async ([newQuery]) => {
   }
 })
 
-const availableTags = computed(() => {
-  const map = new Map<string, number>()
-  store.searchIndex?.forEach((item) => {
-    item.tags?.forEach((tag) => {
-      const cleanTag = tag.replace(/^#/, '')
-      map.set(cleanTag, (map.get(cleanTag) || 0) + 1)
-    })
-  })
-  return Array.from(map.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([tag]) => tag)
-})
-
-function toggleTag(tag: string) {
-  if (selectedTags.value.has(tag))
-    selectedTags.value.delete(tag)
-  else selectedTags.value.add(tag)
-  activeIndex.value = 0
-}
-
 const filteredResults = computed<DisplayResult[]>(() => {
-  let baseResults: DisplayResult[]
-
-  if (query.value) {
-    baseResults = ftsResults.value.map(r => ({
-      id: r.path,
-      title: r.title || r.path,
-      url: r.path,
-      tags: r.tags ? r.tags.split(/\s+/).filter(Boolean) : [],
-      snippet: r.snippet,
-    }))
-  }
-  else if (selectedTags.value.size > 0) {
-    baseResults = (store.searchIndex || []).map(item => ({
-      id: item.id,
-      title: item.title,
-      url: item.url,
-      tags: item.tags,
-      snippet: `${item.content.slice(0, 100)}...`,
-    }))
-  }
-  else {
+  if (!query.value)
     return []
-  }
 
-  if (selectedTags.value.size > 0) {
-    return baseResults.filter((item) => {
-      if (!item.tags)
-        return false
-      const itemTags = new Set(item.tags.map((t: string) => t.replace(/^#/, '')))
-      return Array.from(selectedTags.value).every(t => itemTags.has(t))
-    })
-  }
-
-  return baseResults.slice(0, 50)
+  return ftsResults.value.slice(0, 50).map(r => ({
+    id: r.path,
+    title: r.title || r.path,
+    url: r.path,
+    tags: r.tags ? r.tags.split(/\s+/).filter(Boolean) : [],
+    snippet: r.snippet,
+  }))
 })
 
 function close() {
   modelValue.value = false
   query.value = ''
-  selectedTags.value.clear()
 }
 
 function navigate(url: string) {
@@ -212,18 +164,6 @@ function getFormattedPath(url: string) {
           </button>
         </div>
 
-        <div v-if="availableTags.length > 0" class="tags-bar custom-scrollbar">
-          <button
-            v-for="tag in availableTags"
-            :key="tag"
-            class="tag-chip"
-            :class="{ 'is-selected': selectedTags.has(tag) }"
-            @click="toggleTag(tag)"
-          >
-            #{{ tag }}
-          </button>
-        </div>
-
         <div v-if="filteredResults.length > 0" class="search-results custom-scrollbar">
           <div
             v-for="(result, index) in filteredResults"
@@ -262,12 +202,9 @@ function getFormattedPath(url: string) {
           </div>
         </div>
 
-        <div v-else-if="query || selectedTags.size > 0" class="no-results">
+        <div v-else-if="query" class="no-results">
           <Icon icon="mdi:file-search-outline" size="48" class="no-results-icon" />
           <p>{{ t('search.noResults') }}</p>
-          <span v-if="selectedTags.size > 0" class="reset-link" @click="selectedTags.clear()">
-            {{ t('search.resetFilters') }}
-          </span>
         </div>
 
         <div v-else class="empty-state">
@@ -349,50 +286,6 @@ function getFormattedPath(url: string) {
   padding: 4px 8px;
   font-weight: 600;
   user-select: none;
-}
-
-.tags-bar {
-  display: flex;
-  gap: 8px;
-  padding: 12px 20px;
-  overflow-x: auto;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border-secondary-color);
-  background-color: var(--bg-tertiary-color);
-  flex-shrink: 0;
-  align-items: center;
-
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.tag-chip {
-  appearance: none;
-  border: 1px solid var(--border-primary-color);
-  background-color: var(--bg-primary-color);
-  color: var(--fg-secondary-color);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-
-  &:hover {
-    border-color: var(--fg-accent-color);
-    color: var(--fg-primary-color);
-  }
-
-  &.is-selected {
-    background-color: var(--fg-accent-color);
-    border-color: var(--fg-accent-color);
-    color: var(--fg-inverted-color);
-    box-shadow: 0 2px 8px rgba(var(--fg-accent-color-rgb), 0.3);
-  }
 }
 
 .search-results {
@@ -491,15 +384,6 @@ function getFormattedPath(url: string) {
 
   .no-results-icon {
     opacity: 0.4;
-  }
-
-  .reset-link {
-    color: var(--fg-accent-color);
-    cursor: pointer;
-    font-size: 0.9rem;
-    &:hover {
-      text-decoration: underline;
-    }
   }
 }
 

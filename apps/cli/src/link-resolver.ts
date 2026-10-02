@@ -12,13 +12,13 @@ import { IMAGE_DEST_FOLDER } from './constants'
 import { extractSysnameFromFrontMatter } from './utils'
 
 /**
- * Scans a source directory recursively and builds a map from base file names
- * (and partial path segments) to their final web URLs.
+ * Scans a source directory recursively and builds a map from unambiguous base
+ * file names (and partial path segments) to their final web URLs.
  *
  * For each `.md` file, reads optional `sysname` from front matter — if
  * present, the sysname is used as the URL segment instead of the file name.
- * Entries are registered for every path segment, so `[[filename]]` links
- * resolve regardless of depth.
+ * Entries are registered for every path suffix; duplicate base names are
+ * omitted so they cannot silently resolve to the wrong note.
  */
 export async function buildFileMapRecursive(
   sourceBasePath: string,
@@ -26,6 +26,7 @@ export async function buildFileMapRecursive(
   navigationSysname: string,
   fileMap: Map<string, string>,
   ignoredFolderNames: string[],
+  ambiguousBaseNames: Set<string> = new Set(),
 ): Promise<void> {
   try {
     const entries: Dirent[] = await fs.readdir(currentSourcePath, { withFileTypes: true }) as any
@@ -45,7 +46,7 @@ export async function buildFileMapRecursive(
       }
 
       if (entry.isDirectory()) {
-        await buildFileMapRecursive(sourceBasePath, sourceFullPath, navigationSysname, fileMap, ignoredFolderNames)
+        await buildFileMapRecursive(sourceBasePath, sourceFullPath, navigationSysname, fileMap, ignoredFolderNames, ambiguousBaseNames)
       }
       else if (entry.isFile() && extension.toLowerCase() === '.md') {
         const baseName = path.basename(entryName, extension)
@@ -59,17 +60,25 @@ export async function buildFileMapRecursive(
 
         const fullRelativePath = path.join(relativePathFromSourceBase, baseName).replace(/\\/g, '/')
         const parts = fullRelativePath.split('/')
+
+        if (!ambiguousBaseNames.has(baseName)) {
+          if (fileMap.has(baseName)) {
+            console.warn(`⚠️ Duplicate base file name found: "${baseName}". Basename links will be left unresolved.`)
+            fileMap.delete(baseName)
+            ambiguousBaseNames.add(baseName)
+          }
+          else {
+            fileMap.set(baseName, targetUrl)
+          }
+        }
+
         let currentKey = ''
 
         for (let i = parts.length - 1; i >= 0; i--) {
           currentKey = currentKey ? `${parts[i]}/${currentKey}` : parts[i]
 
-          if (fileMap.has(currentKey)) {
-            if (currentKey === baseName) {
-              console.warn(`⚠️ Duplicate base file name found: "${baseName}". Link resolution might be ambiguous. Using path: ${targetUrl}`)
-            }
-          }
-          fileMap.set(currentKey, targetUrl)
+          if (currentKey !== baseName)
+            fileMap.set(currentKey, targetUrl)
         }
       }
     }

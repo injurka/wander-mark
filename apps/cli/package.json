@@ -1,5 +1,5 @@
 {
-  "name": "@injurka/wander-mark-cli",
+  "name": "@limiteddissolve/wander-mark-cli",
   "type": "module",
   "version": "1.1.2",
   "description": "CLI tool for building and deploying Wander Mark static sites",
@@ -9,6 +9,14 @@
     "url": "git+https://github.com/injurka/wander-mark.git",
     "directory": "apps/cli"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/mod.d.ts",
+      "import": "./dist/mod.js"
+    }
+  },
+  "main": "./dist/mod.js",
+  "types": "./dist/mod.d.ts",
   "bin": {
     "wander-mark": "./dist/index.js"
   },
@@ -18,19 +26,22 @@
     "dist"
   ],
   "engines": {
-    "bun": ">=1.4.0"
+    "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "start": "bun src/index.ts",
+    "start": "node ./dist/index.js",
     "--------------------------------<      DEV       >--------------------------------": "",
     "dev": "bun --watch src/index.ts",
     "--------------------------------<    PUBLISH    >---------------------------------": "",
-    "publish:npm": "bun run build && npm publish --access public",
-    "publish:jsr": "npx jsr publish",
-    "publish:jsr:dry": "npx jsr publish --dry-run",
+    "publish:npm": "npm publish --access public",
     "--------------------------------<      BUILD     >--------------------------------": "",
-    "prepack": "bun run build",
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun --no-minify",
+    "prepack": "npm run build",
+    "prebuild": "node ./scripts/clean-dist.mjs",
+    "build": "tsc -p tsconfig.build.json",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

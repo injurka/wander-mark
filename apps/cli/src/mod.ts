@@ -4,15 +4,15 @@
  * @module
  */
 
-export { runAutoGeneration } from './auto.ts'
-export { loadConfig } from './config.ts'
-export { FRONT_MATTER_REGEX, IMAGE_DEST_FOLDER, IMAGE_EXTENSIONS, INLINE_TAG_REGEX, NAV_FILENAME, OBSIDIAN_LINK_REGEX, SYSNAME_REGEX, TREE_FILENAME } from './constants.ts'
-export { runDeployS3Rclone } from './deploy-s3-rclone.ts'
-export { runDeployS3 } from './deploy-s3.ts'
-export { runDeploy } from './deploy.ts'
-export { buildFileMapRecursive } from './link-resolver.ts'
-export { main as runMigrator } from './migrator.ts'
-export { processDirectoryRecursive } from './processor.ts'
+export { runAutoGeneration } from './auto'
+export { loadConfig } from './config'
+export { FRONT_MATTER_REGEX, IMAGE_DEST_FOLDER, IMAGE_EXTENSIONS, INLINE_TAG_REGEX, NAV_FILENAME, OBSIDIAN_LINK_REGEX, SYSNAME_REGEX, TREE_FILENAME } from './constants'
+export { runDeploy } from './deploy'
+export { runDeployS3 } from './deploy-s3'
+export { runDeployS3Rclone } from './deploy-s3-rclone'
+export { buildFileMapRecursive } from './link-resolver'
+export { main as runMigrator } from './migrator'
+export { processDirectoryRecursive } from './processor'
 export type {
   BacklinksMap,
   ContentNavItem,
@@ -26,7 +26,7 @@ export type {
   ProjectConfig,
   SearchIndexItem,
   VaultConfig,
-} from './types.ts'
+} from './types'
 export {
   ensureDirectoryExists,
   extractSysnameFromFrontMatter,
@@ -34,4 +34,4 @@ export {
   isImageExtension,
   safeCopyFile,
   stripMarkdown,
-} from './utils.ts'
+} from './utils'

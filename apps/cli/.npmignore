@@ -23,6 +23,3 @@ bun.lock
 .idea
 *.sw?
 *.swo
-
-# JSR
-jsr.json

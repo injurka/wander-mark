@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 /**
  * Wander Mark CLI — main entrypoint (binary).
@@ -54,7 +54,7 @@ async function bootstrap() {
     console.log(`
 Wander Mark CLI
 ===================
-Использование: bun start [options]
+Использование: wander-mark [options]
 
 Опции:
   -c, --config <path>  Путь к конфигурационному файлу (по умолчанию: ./config.json)

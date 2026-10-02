@@ -13,6 +13,17 @@ import { FRONT_MATTER_REGEX, OBSIDIAN_LINK_REGEX } from './constants'
 import { ContentNavItemType } from './types'
 import { ensureDirectoryExists, extractSysnameFromFrontMatter, extractTags, isImageExtension, safeCopyFile, stripMarkdown } from './utils'
 
+function resolveWikiLinkTarget(linkPath: string, fileMap: Map<string, string>): string | undefined {
+  const normalizedPath = linkPath
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .replace(/\.md$/i, '')
+
+  return fileMap.get(linkPath)
+    || fileMap.get(normalizedPath)
+    || fileMap.get(path.posix.basename(normalizedPath))
+}
+
 /**
  * Recursively processes a directory of Markdown files.
  *
@@ -136,6 +147,7 @@ export async function processDirectoryRecursive(
           // }
 
           const uniqueOutboundLinks = new Set<string>()
+          const unresolvedLinks = new Set<string>()
 
           content = content.replace(OBSIDIAN_LINK_REGEX, (match, linkedFile, alias) => {
             linksFound++
@@ -147,7 +159,7 @@ export async function processDirectoryRecursive(
               // Ignore URI malformed errors
             }
             const linkText = alias ? alias.trim() : linkBaseName
-            const targetUrl = fileMap.get(linkBaseName)
+            const targetUrl = resolveWikiLinkTarget(linkBaseName, fileMap)
 
             if (targetUrl) {
               if (!uniqueOutboundLinks.has(targetUrl)) {
@@ -170,8 +182,15 @@ export async function processDirectoryRecursive(
               }
               return `[${linkText}](${targetUrl})`
             }
+            unresolvedLinks.add(linkBaseName)
             return match
           })
+
+          if (unresolvedLinks.size > 0) {
+            const sourceRelativePath = path.join(relativePath, entryName).replace(/\\/g, '/')
+            const unresolvedTargets = Array.from(unresolvedLinks, link => `[[${link}]]`).join(', ')
+            console.warn(`⚠️ Неразрешённые wiki-ссылки в "${sourceRelativePath}": ${unresolvedTargets}`)
+          }
 
           // --- Генерация Метаданных ---
           const cleanText = stripMarkdown(content)
