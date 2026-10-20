@@ -1,6 +1,6 @@
 {
   "name": "@injurka/wander-mark",
-  "version": "2.7.12",
+  "version": "2.8.2",
   "private": true,
   "type": "module",
   "engines": {
@@ -21,7 +21,11 @@
     "build:server": "bun --parallel run --filter='./apps/server' build",
     "--------------------------------< LINT & FORMAT >---------------------------------": "",
     "lint": "bun run --filter='./apps/*' lint",
-    "typecheck": "bun --filter='./apps/*' typecheck"
+    "typecheck": "bun --filter='./apps/*' typecheck",
+    "dev:native": "bun run --cwd apps/native tauri:dev",
+    "build:client:tauri": "bun run --cwd apps/client build:tauri",
+    "build:native": "bun run --cwd apps/native tauri:build",
+    "build:linux": "bun run --cwd apps/native tauri:build:linux:x64"
   },
   "devDependencies": {
     "lefthook": "latest"

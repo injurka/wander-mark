@@ -1,0 +1,38 @@
+build_native_linux:
+  stage: build_native
+  image: rust:1.95-bookworm
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables:
+    BUN_VERSION: '1.3.14'
+    CARGO_HOME: '$CI_PROJECT_DIR/.cargo-cache'
+    APPIMAGE_EXTRACT_AND_RUN: '1'
+  cache:
+    key: tauri-linux-x64
+    paths:
+      - .cargo-cache/registry/
+      - .cargo-cache/git/
+      - .bun-cache/
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends ca-certificates curl unzip build-essential pkg-config libssl-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf file rpm
+    - curl --fail --location --retry 3 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" --output /tmp/bun.zip
+    - unzip -q /tmp/bun.zip -d /tmp/bun-runtime
+    - install /tmp/bun-runtime/bun-linux-x64/bun /usr/local/bin/bun
+    - bun install --frozen-lockfile --ignore-scripts
+  script:
+    - |
+      bun -e '
+        const version = process.env.CI_COMMIT_TAG.replace(/^v/, "");
+        if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version))
+          throw new Error("Release tag must be a semantic version, for example v2.7.13");
+        await Bun.write(".ci-tauri-release.json", JSON.stringify({ version }));
+      '
+    - bun run build:linux --config "$CI_PROJECT_DIR/.ci-tauri-release.json"
+  artifacts:
+    name: 'wander-mark-linux-x64-$CI_COMMIT_TAG'
+    expire_in: 30 days
+    paths:
+      - apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
+      - apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+      - apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage

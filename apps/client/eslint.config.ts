@@ -7,6 +7,7 @@ export default antfu({
     'e18e/prefer-static-regex': 'off',
   },
   ignores: [
+    '**/dist-tauri/**',
     '**/assets/**',
     '**/public/**',
     'auto-imports.d.ts',

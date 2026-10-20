@@ -46,7 +46,7 @@ async function bootstrap() {
 
   document.getElementById('app-preloader')?.remove()
 
-  if ('serviceWorker' in navigator) {
+  if (import.meta.env.MODE !== 'tauri' && 'serviceWorker' in navigator) {
     import('~/shared/services/pwa.service')
       .then(({ initializePwaUpdater }) => {
         initializePwaUpdater(pinia)

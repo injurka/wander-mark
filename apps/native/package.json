@@ -1,0 +1,16 @@
+{
+  "name": "@injurka/wander-mark-native",
+  "version": "2.8.2",
+  "private": true,
+  "type": "module",
+  "description": "wander-mark Native Shell (Tauri)",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:linux:x64": "tauri build --target x86_64-unknown-linux-gnu"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4"
+  }
+}

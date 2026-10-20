@@ -23,7 +23,9 @@
     "typecheck": "vue-tsc --noEmit",
     "--------------------------------<     UTILS     >---------------------------------": "",
     "generate-pwa-assets": "pwa-assets-generator",
-    "icons:bundle": "bun run build/bundle-icons.ts"
+    "icons:bundle": "bun run build/bundle-icons.ts",
+    "dev:tauri": "vite --config build/vite.config.web.ts --mode tauri",
+    "build:tauri": "vite build --config build/vite.config.web.ts --mode tauri"
   },
   "dependencies": {
     "@iconify-icons/mdi": "^1.2.48",

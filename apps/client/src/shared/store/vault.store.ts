@@ -413,6 +413,23 @@ export const useVaultStore = defineStore('vault', () => {
       return mediaPath
 
     if (vault.isDownloaded) {
+      if (import.meta.env.MODE === 'tauri') {
+        const root = await navigator.storage.getDirectory()
+        let dir = await root.getDirectoryHandle('media')
+        dir = await dir.getDirectoryHandle(vaultId)
+        const parts = mediaPath.split('/').filter(Boolean)
+        const filename = parts.pop()!
+        for (const part of parts)
+          dir = await dir.getDirectoryHandle(part)
+        const handle = await dir.getFileHandle(filename)
+        const file = await handle.getFile()
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(reader.error)
+          reader.readAsDataURL(file)
+        })
+      }
       const encoded = mediaPath.split('/').map(encodeURIComponent).join('/')
       return new URL(`opfs-media/${vaultId}/${encoded}`, document.baseURI).href
     }

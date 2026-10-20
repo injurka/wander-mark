@@ -16,7 +16,7 @@ const buildDate = new Date()
 const buildRevision = buildDate.toISOString()
 const appVersion = process.env.VITE_APP_VERSION || '1.0.0'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: './',
   root: resolve(__dirname, '../src'),
   publicDir: resolve(__dirname, '../public'),
@@ -39,7 +39,7 @@ export default defineConfig({
       algorithms: ['gzip'],
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
-    VitePWA(pwaCfg(buildRevision)),
+    ...(mode === 'tauri' ? [] : [VitePWA(pwaCfg(buildRevision))]),
     Icons(iconsCfg),
     ...visualizerPlugin('renderer'),
   ],
@@ -55,6 +55,7 @@ export default defineConfig({
   // COOP/COEP нужны для crossOriginIsolated (SharedArrayBuffer + OPFS sync access handle в SQLite WASM)
   server: {
     port: 5173,
+    strictPort: mode === 'tauri',
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
@@ -77,7 +78,7 @@ export default defineConfig({
   },
 
   build: {
-    outDir: resolve(__dirname, '../dist'),
+    outDir: resolve(__dirname, mode === 'tauri' ? '../dist-tauri' : '../dist'),
     emptyOutDir: true,
     chunkSizeWarningLimit: 800,
     rollupOptions: {
@@ -86,4 +87,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
