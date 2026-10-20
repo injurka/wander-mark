@@ -19,6 +19,18 @@
       }
     </style>
     <script>
+      let preference = 'system'
+      try {
+        preference = localStorage.getItem('app-theme') || 'system'
+      } catch {}
+      const theme =
+        preference === 'light' || preference === 'dark'
+          ? preference
+          : matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light'
+      document.documentElement.dataset.theme = theme
+      document.documentElement.style.colorScheme = theme
       document.addEventListener('DOMContentLoaded', () => {
         document.body.style.visibility = 'visible'
       })
@@ -48,15 +60,13 @@
           animation: spin 1s linear infinite;
         }
 
-        @media (prefers-color-scheme: light) {
-          #app-preloader {
-            background-color: #faf4f2 !important;
-          }
+        html[data-theme='light'] #app-preloader {
+          background-color: #faf4f2 !important;
+        }
 
-          #app-preloader .spinner {
-            border-color: #e0dad9;
-            border-top-color: #f37a51;
-          }
+        html[data-theme='light'] #app-preloader .spinner {
+          border-color: #e0dad9;
+          border-top-color: #f37a51;
         }
 
         @keyframes spin {

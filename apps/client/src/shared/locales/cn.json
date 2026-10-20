@@ -4,6 +4,7 @@
     "appearance": "外观",
     "theme": "主题",
     "themeLight": "浅色",
+    "themeSystem": "跟随系统",
     "themeDark": "深色",
     "interface": "界面",
     "borderless": "无边框视图",

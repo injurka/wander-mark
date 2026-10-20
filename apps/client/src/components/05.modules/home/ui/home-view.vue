@@ -5,21 +5,13 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { KitBtn, KitDialog, KitInput } from '~/components/01.kit'
 import { InteractiveGridPattern } from '~/components/02.shared/interactive-grid-pattern'
-import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
+import { useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useVaultManagement } from '../composables/use-vault-management'
 
 const { t } = useI18n()
 const { currentLocale, cycleLanguage, languageNames } = useLocale()
-const { theme, setTheme } = useChangeTheme()
-
-const currentThemeIcon = computed(() =>
-  theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night',
-)
-
-function toggleTheme() {
-  setTheme(theme.value === ThemesVariant.Light ? ThemesVariant.Dark : ThemesVariant.Light)
-}
+const { themeIcon: currentThemeIcon, themeLabel, toggleTheme } = useChangeTheme()
 
 const version = __APP_VERSION__
 const buildDateFormatted = computed(() => {
@@ -67,7 +59,9 @@ function getTimeAgo(timestamp?: number) {
 
     <header class="home-header">
       <div class="settings-actions">
-        <KitBtn variant="text" :icon="currentThemeIcon" :title="t('settings.theme')" @click="toggleTheme" />
+        <KitBtn variant="text" :icon="currentThemeIcon" :title="t('settings.theme')" @click="toggleTheme">
+          {{ t(themeLabel) }}
+        </KitBtn>
         <KitBtn variant="text" prepend-icon="mdi:translate" :title="t('settings.language')" @click="cycleLanguage">
           {{ languageNames[currentLocale] }}
         </KitBtn>

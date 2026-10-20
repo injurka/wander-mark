@@ -21,7 +21,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{ (e: 'ready'): void }>()
 
-const { theme } = useChangeTheme()
+const { resolvedTheme: theme } = useChangeTheme()
 const vaultStore = useVaultStore()
 const pluginStore = usePluginStore()
 const { getWordFromEvent } = useTextDetection()

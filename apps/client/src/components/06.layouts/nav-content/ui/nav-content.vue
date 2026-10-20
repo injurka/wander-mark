@@ -14,7 +14,7 @@ import { PluginManagerDialog, PluginSlot } from '~/components/02.shared/plugins'
 import { usePluginStore } from '~/components/02.shared/plugins/store'
 import { ContentViewerHeader, ContentViewerNavigation, useContentViewerStore } from '~/components/05.modules/content-viewer'
 import SearchModal from '~/components/05.modules/content-viewer/ui/search-modal.vue'
-import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
+import { useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useConfirm } from '~/shared/composables/use-confirm'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useToast } from '~/shared/composables/use-toast'
@@ -46,13 +46,7 @@ const { showToast } = useToast()
 const { confirm } = useConfirm()
 const { t } = useI18n()
 const { currentLocale, cycleLanguage, languageNames } = useLocale()
-const { theme, setTheme } = useChangeTheme()
-
-const currentThemeIcon = computed(() => theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night')
-
-function toggleTheme() {
-  setTheme(theme.value === ThemesVariant.Light ? ThemesVariant.Dark : ThemesVariant.Light)
-}
+const { themeIcon: currentThemeIcon, themeLabel, toggleTheme } = useChangeTheme()
 
 const isSidebarEnabled = computed(() => !route.meta.hideSidebar)
 
@@ -554,7 +548,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
               <Icon :icon="currentThemeIcon" class="item-icon" />
               <span>{{ t('settings.theme') }}</span>
             </div>
-            <span class="value-text">{{ theme === 'light' ? t('settings.themeLight') : t('settings.themeDark') }}</span>
+            <span class="value-text">{{ t(themeLabel) }}</span>
           </div>
           <div class="menu-item" @click="cycleLanguage">
             <div class="item-label">

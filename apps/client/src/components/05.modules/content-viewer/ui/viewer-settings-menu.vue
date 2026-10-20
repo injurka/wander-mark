@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { Icon } from '@iconify/vue'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { KitBtn, KitCheckbox, KitDropdown } from '~/components/01.kit'
-import { ThemesVariant, useChangeTheme } from '~/shared/composables/use-change-theme'
+import { useChangeTheme } from '~/shared/composables/use-change-theme'
 import { useLocale } from '~/shared/composables/use-locale'
 import { useContentViewerStore } from '../store'
 
@@ -14,20 +14,12 @@ const emit = defineEmits<{
   (e: 'openAiSettings'): void
 }>()
 
-const { setTheme, theme } = useChangeTheme()
+const { themeIcon: currentThemeIcon, themeLabel, toggleTheme } = useChangeTheme()
 const contentViewerStore = useContentViewerStore()
 const dropdownRef = ref<InstanceType<typeof KitDropdown> | null>(null)
 
 const { currentLocale, cycleLanguage, languageNames } = useLocale()
 const { t } = useI18n()
-
-const currentThemeIcon = computed(() =>
-  theme.value === ThemesVariant.Light ? 'mdi:weather-sunny' : 'mdi:weather-night',
-)
-
-function toggleTheme() {
-  setTheme(theme.value === ThemesVariant.Light ? ThemesVariant.Dark : ThemesVariant.Light)
-}
 
 function handleOpenPlugins() {
   emit('openPlugins')
@@ -63,7 +55,7 @@ function handleOpenAiSettings() {
             <Icon :icon="currentThemeIcon" class="item-icon" />
             <span>{{ t('settings.theme') }}</span>
           </div>
-          <span class="value-text">{{ theme === 'light' ? t('settings.themeLight') : t('settings.themeDark') }}</span>
+          <span class="value-text">{{ t(themeLabel) }}</span>
         </div>
         <!-- Выбор языка -->
         <div class="menu-item" @click="cycleLanguage">
