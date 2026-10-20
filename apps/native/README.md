@@ -36,3 +36,18 @@ Runner с тегом `docker` должен поддерживать Linux x64 Do
 В GitHub Actions тот же push тега запускает job `Build Tauri Linux` в
 `Build & Deploy`. deb, rpm и AppImage доступны в артефакте
 `wander-mark-linux-x64-<tag>` в течение 30 дней.
+
+Для тегов GitHub создаёт общий draft-релиз `wander-mark <tag>`.
+Linux job прикрепляет deb, rpm и AppImage, а `Build signed Android APK`
+собирает и прикрепляет подписанный ARM64 APK. Релиз остаётся черновиком
+для проверки перед публикацией. Артефакты Actions также сохраняются.
+Для подписи нужны секреты `ANDROID_KEY_BASE64`, `ANDROID_KEY_ALIAS` и
+`ANDROID_KEY_PASSWORD` (пароль хранилища и ключа).
+
+Локальная Android-сборка при установленном Java 17, Android SDK и NDK:
+
+```sh
+bun run --cwd apps/native tauri:android:init
+bun run --cwd apps/native tauri icon ../client/public/logo.png
+bun run --cwd apps/native tauri:android:build
+```

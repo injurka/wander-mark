@@ -1,6 +1,6 @@
 {
   "name": "@injurka/wander-mark-native",
-  "version": "2.8.3",
+  "version": "2.8.4",
   "private": true,
   "type": "module",
   "description": "wander-mark Native Shell (Tauri)",
@@ -8,7 +8,9 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:build:linux:x64": "tauri build --target x86_64-unknown-linux-gnu"
+    "tauri:build:linux:x64": "tauri build --target x86_64-unknown-linux-gnu",
+    "tauri:android:init": "tauri android init --ci",
+    "tauri:android:build": "tauri android build --apk --target aarch64 --ci"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4"

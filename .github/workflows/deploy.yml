@@ -87,11 +87,27 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  create-release:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create draft release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: wander-mark ${{ github.ref_name }}
+          body: Download the Android APK or Linux package below.
+          draft: true
+          prerelease: false
+
   build-tauri-linux:
+    needs: [create-release]
     name: Build Tauri Linux
     runs-on: ubuntu-22.04
     permissions:
-      contents: read
+      contents: write
     env:
       APPIMAGE_EXTRACT_AND_RUN: '1'
       VITE_APP_VERSION: ${{ github.ref_name }}
@@ -147,3 +163,121 @@ jobs:
             apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
             apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
             apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
+
+      - name: Attach Linux packages to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          fail_on_unmatched_files: true
+          files: |
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
+
+  build-android:
+    name: Build signed Android APK
+    needs: [create-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VITE_APP_VERSION: ${{ github.ref_name }}
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android NDK and signing tools
+        run: sdkmanager "ndk;26.3.11579264" "build-tools;34.0.0"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.95.0'
+          targets: aarch64-linux-android
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/native/src-tauri -> target
+          key: android-arm64
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Set version from tag
+        run: |
+          bun -e '
+            const version = process.env.GITHUB_REF_NAME.replace(/^v/, "");
+            if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version))
+              throw new Error("Release tag must be a semantic version");
+            await Bun.write(".ci-tauri-release.json", JSON.stringify({ version }));
+          '
+
+      - name: Initialize Android project
+        run: bun run --cwd apps/native tauri:android:init --config "$GITHUB_WORKSPACE/.ci-tauri-release.json"
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/26.3.11579264
+
+      - name: Generate Android icons
+        run: bun run --cwd apps/native tauri icon ../client/public/logo.png
+
+      - name: Build Android APK
+        run: bun run --cwd apps/native tauri:android:build --config "$GITHUB_WORKSPACE/.ci-tauri-release.json"
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/26.3.11579264
+          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 16
+          CARGO_PROFILE_RELEASE_LTO: thin
+
+      - name: Sign APK
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: apps/native/src-tauri/gen/android/app/build/outputs/apk/universal/release
+          signingKeyBase64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '34.0.0'
+
+      - name: Rename APK
+        env:
+          SIGNED_APK: ${{ steps.sign.outputs.signedReleaseFile }}
+        run: cp "$SIGNED_APK" "wander-mark-${RELEASE_TAG}-android-arm64.apk"
+
+      - name: Upload Android APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wander-mark-android-arm64-${{ github.ref_name }}
+          retention-days: 30
+          if-no-files-found: error
+          path: wander-mark-*-android-arm64.apk
+
+      - name: Attach APK to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          draft: true
+          fail_on_unmatched_files: true
+          files: wander-mark-*-android-arm64.apk
