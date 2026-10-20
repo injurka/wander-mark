@@ -86,3 +86,64 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  build-tauri-linux:
+    name: Build Tauri Linux
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    env:
+      APPIMAGE_EXTRACT_AND_RUN: '1'
+      VITE_APP_VERSION: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.95.0'
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libssl-dev libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf file rpm
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/native/src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Set version from tag
+        run: |
+          bun -e '
+            const version = process.env.GITHUB_REF_NAME.replace(/^v/, "");
+            if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version))
+              throw new Error("Release tag must be a semantic version, for example v2.8.3");
+            await Bun.write(".ci-tauri-release.json", JSON.stringify({ version }));
+          '
+
+      - name: Build Tauri Linux packages
+        run: bun run build:linux --config "$GITHUB_WORKSPACE/.ci-tauri-release.json" --ci
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: wander-mark-linux-x64-${{ github.ref_name }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+            apps/native/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage

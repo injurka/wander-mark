@@ -32,3 +32,7 @@ SemVer, например `v2.7.13` или `2.7.13`: версия передаё�
 Деплой через Portainer ожидает успешного завершения Linux-сборки.
 Runner с тегом `docker` должен поддерживать Linux x64 Docker images,
 иметь доступ к Debian packages, crates.io и GitHub releases.
+
+В GitHub Actions тот же push тега запускает job `Build Tauri Linux` в
+`Build & Deploy`. deb, rpm и AppImage доступны в артефакте
+`wander-mark-linux-x64-<tag>` в течение 30 дней.
