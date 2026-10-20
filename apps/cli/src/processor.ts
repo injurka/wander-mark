@@ -6,12 +6,12 @@
 
 /* eslint-disable e18e/prefer-static-regex */
 import type { Dirent } from 'node:fs'
-import type { ContentNavItem, FileMetaData, ProcessingContext } from './types'
+import type { ContentNavItem, FileMetaData, ProcessingContext } from './types.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { FRONT_MATTER_REGEX, OBSIDIAN_LINK_REGEX } from './constants'
-import { ContentNavItemType } from './types'
-import { ensureDirectoryExists, extractSysnameFromFrontMatter, extractTags, isImageExtension, safeCopyFile, stripMarkdown } from './utils'
+import { FRONT_MATTER_REGEX, OBSIDIAN_LINK_REGEX } from './constants.js'
+import { ContentNavItemType } from './types.js'
+import { ensureDirectoryExists, extractSysnameFromFrontMatter, extractTags, isImageExtension, safeCopyFile, stripMarkdown } from './utils.js'
 
 function resolveWikiLinkTarget(linkPath: string, fileMap: Map<string, string>): string | undefined {
   const normalizedPath = linkPath

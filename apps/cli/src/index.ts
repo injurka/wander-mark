@@ -8,11 +8,11 @@
 
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import { runAutoGeneration } from './auto'
-import { loadConfig } from './config'
-import { runDeploy } from './deploy'
-import { runDeployS3 } from './deploy-s3'
-import { runDeployS3Rclone } from './deploy-s3-rclone'
+import { runAutoGeneration } from './auto.js'
+import { loadConfig } from './config.js'
+import { runDeployS3Rclone } from './deploy-s3-rclone.js'
+import { runDeployS3 } from './deploy-s3.js'
+import { runDeploy } from './deploy.js'
 
 async function bootstrap() {
   const { values } = parseArgs({

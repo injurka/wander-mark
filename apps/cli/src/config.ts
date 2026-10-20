@@ -4,7 +4,7 @@
  * @module
  */
 
-import type { ProjectConfig } from './types'
+import type { ProjectConfig } from './types.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 

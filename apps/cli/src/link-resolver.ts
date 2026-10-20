@@ -8,8 +8,8 @@
 import type { Dirent } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { IMAGE_DEST_FOLDER } from './constants'
-import { extractSysnameFromFrontMatter } from './utils'
+import { IMAGE_DEST_FOLDER } from './constants.js'
+import { extractSysnameFromFrontMatter } from './utils.js'
 
 /**
  * Scans a source directory recursively and builds a map from unambiguous base

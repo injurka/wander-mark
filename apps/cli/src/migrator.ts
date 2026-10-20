@@ -8,12 +8,12 @@
  * @module
  */
 
-import type { ContentNavItem, ProcessingContext } from './types'
+import type { ContentNavItem, ProcessingContext } from './types.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { IMAGE_DEST_FOLDER, NAV_FILENAME, TREE_FILENAME } from './constants'
-import { buildFileMapRecursive } from './link-resolver'
-import { processDirectoryRecursive } from './processor'
+import { IMAGE_DEST_FOLDER, NAV_FILENAME, TREE_FILENAME } from './constants.js'
+import { buildFileMapRecursive } from './link-resolver.js'
+import { processDirectoryRecursive } from './processor.js'
 
 /**
  * Run the full migration for a single vault.

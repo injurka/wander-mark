@@ -4,11 +4,11 @@
  * @module
  */
 
-import type { ProjectConfig } from './types'
+import type { ProjectConfig } from './types.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
-import { main as runMigrator } from './migrator'
+import { main as runMigrator } from './migrator.js'
 
 async function copyVaultMetaFiles(config: ProjectConfig, sourcePath: string, exportDirName: string) {
   const sourceMetaRoot = path.resolve(process.cwd(), config.paths.metaSource)

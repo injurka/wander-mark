@@ -9,7 +9,7 @@
 /* eslint-disable e18e/prefer-static-regex */
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { FRONT_MATTER_REGEX, IMAGE_EXTENSIONS, INLINE_TAG_REGEX, SYSNAME_REGEX } from './constants'
+import { FRONT_MATTER_REGEX, IMAGE_EXTENSIONS, INLINE_TAG_REGEX, SYSNAME_REGEX } from './constants.js'
 
 /**
  * Проверяет, является ли расширение файла расширением изображения.
