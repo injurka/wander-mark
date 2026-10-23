@@ -186,8 +186,12 @@ function revealInTree() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
-  height: 50px;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-bottom: 0;
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  height: calc(50px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
   border-bottom: 1px solid var(--border-secondary-color);
   background-color: rgba(var(--bg-header-color), 0.85);
   backdrop-filter: blur(12px);
@@ -287,7 +291,10 @@ function revealInTree() {
 
 @include media-down(md) {
   .content-header {
-    padding: 0 12px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+    padding-bottom: 0;
+    padding-left: calc(12px + env(safe-area-inset-left, 0px));
     gap: 8px;
   }
   .breadcrumb-item {

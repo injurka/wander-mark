@@ -236,12 +236,20 @@ function getTimeAgo(timestamp?: number) {
   top: 0;
   left: 0;
   right: 0;
-  padding: 16px 24px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-right: calc(24px + env(safe-area-inset-right, 0px));
+  padding-bottom: 16px;
+  padding-left: calc(24px + env(safe-area-inset-left, 0px));
   display: flex;
   justify-content: flex-end;
   z-index: 10;
+  box-sizing: border-box;
+
   @include media-down(sm) {
-    padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-right: calc(16px + env(safe-area-inset-right, 0px));
+    padding-bottom: 12px;
+    padding-left: calc(16px + env(safe-area-inset-left, 0px));
   }
 }
 .settings-actions {
@@ -262,7 +270,8 @@ function getTimeAgo(timestamp?: number) {
   z-index: 1;
   max-width: 900px;
   margin: 0 auto;
-  padding: 100px 20px 80px;
+  padding: calc(100px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px))
+    calc(80px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
   display: flex;
   flex-direction: column;
   gap: 60px;

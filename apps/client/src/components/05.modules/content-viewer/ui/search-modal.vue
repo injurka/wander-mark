@@ -232,7 +232,11 @@ function getFormattedPath(url: string) {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 10vh;
+  padding-top: calc(10vh + env(safe-area-inset-top, 0px));
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  box-sizing: border-box;
 }
 
 .search-modal {

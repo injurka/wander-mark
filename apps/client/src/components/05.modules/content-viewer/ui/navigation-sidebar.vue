@@ -191,9 +191,13 @@ function stopResize() {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  padding-right: calc(8px + env(safe-area-inset-right, 0px));
+  padding-bottom: 8px;
+  padding-left: calc(8px + env(safe-area-inset-left, 0px));
   border-bottom: 1px solid var(--border-secondary-color);
-  height: 50px;
+  height: calc(50px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
   flex-shrink: 0;
 
   @include media-down(md) {
@@ -217,6 +221,13 @@ function stopResize() {
   flex-direction: row;
   align-items: center;
   gap: 4px;
+  box-sizing: border-box;
+
+  @include media-down(md) {
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(8px + env(safe-area-inset-left, 0px));
+    padding-right: calc(8px + env(safe-area-inset-right, 0px));
+  }
 }
 
 .home-link {

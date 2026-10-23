@@ -615,7 +615,7 @@ watch(() => [params.value.vault, data.value.settings] as const, async ([vault, s
   min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 50px 0 env(safe-area-inset-bottom, 0) 0;
+  padding: calc(50px + env(safe-area-inset-top, 0px)) 0 env(safe-area-inset-bottom, 0) 0;
   -webkit-overflow-scrolling: touch;
 
   overscroll-behavior-y: none;
