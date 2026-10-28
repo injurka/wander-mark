@@ -202,9 +202,6 @@ watch(() => route.path, () => {
   if (!isSidebarEnabled.value) {
     menu.value = false
   }
-  else if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-    menu.value = true
-  }
   scrollableRef.value?.scrollTo({ top: 0, behavior: 'instant' })
 })
 
