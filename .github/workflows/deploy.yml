@@ -205,7 +205,27 @@ jobs:
           packages: platform-tools
 
       - name: Install Android NDK and signing tools
-        run: sdkmanager "ndk;26.3.11579264" "build-tools;34.0.0"
+        shell: bash
+        run: |
+          install_sdk_package() {
+            local package="$1"
+            local package_path="$2"
+            for attempt in 1 2 3; do
+              if sdkmanager "$package"; then
+                return 0
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "::error::Failed to install $package after $attempt attempts"
+                return 1
+              fi
+              echo "::warning::Installation of $package failed (attempt $attempt/3); retrying with a fresh download"
+              # Discard the incomplete package and SDK Manager's staged archive.
+              rm -rf -- "${ANDROID_HOME:?}/$package_path" "${ANDROID_HOME:?}/.temp"
+              sleep 10
+            done
+          }
+          install_sdk_package "ndk;26.3.11579264" "ndk/26.3.11579264"
+          install_sdk_package "build-tools;34.0.0" "build-tools/34.0.0"
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
