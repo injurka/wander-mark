@@ -22,9 +22,12 @@ const rpc = createBirpc<MainThreadFunctions, DbWorkerFunctions>(functions, {
 
 type Sqlite3 = Awaited<ReturnType<typeof sqlite3InitModule>>
 
-let db: InstanceType<Sqlite3['oo1']['OpfsDb']> | null = null
+type Database = InstanceType<Sqlite3['oo1']['DB']>
 
-function createSchema(database: InstanceType<Sqlite3['oo1']['OpfsDb']>) {
+let db: Database | null = null
+let initialization: Promise<void> | null = null
+
+function createSchema(database: Database) {
   database.exec(`
     CREATE TABLE IF NOT EXISTS files (
       vault_id TEXT NOT NULL,
@@ -45,31 +48,48 @@ function createSchema(database: InstanceType<Sqlite3['oo1']['OpfsDb']>) {
   `)
 }
 
-async function initDb(): Promise<void> {
-  if (db)
-    return
-
+async function openDatabase(): Promise<void> {
   const sqlite3 = await (sqlite3InitModule as (config?: object) => ReturnType<typeof sqlite3InitModule>)({
     print: () => {},
     printErr: (e: unknown) => console.error('[sqlite]', e),
   })
-  if (!('OpfsDb' in sqlite3.oo1))
-    throw new Error('OPFS недоступен в этом окружении')
 
-  db = new sqlite3.oo1.OpfsDb('/wander-mark.db', 'c')
+  // Android WebView может не предоставлять SharedArrayBuffer даже с COOP/COEP.
+  // SAH pool хранит БД в OPFS без SharedArrayBuffer и отдельного proxy-worker.
+  const database = 'OpfsDb' in sqlite3.oo1
+    ? new sqlite3.oo1.OpfsDb('/wander-mark.db', 'c')
+    : new (await sqlite3.installOpfsSAHPoolVfs({})).OpfsSAHPoolDb('/wander-mark.db')
 
-  createSchema(db)
+  try {
+    createSchema(database)
+    db = database
+  }
+  catch (error) {
+    database.close()
+    throw error
+  }
 }
 
-function requireDb() {
-  if (!db)
-    throw new Error('БД не инициализирована. Вызовите initDb()')
+async function initDb(): Promise<void> {
+  if (db)
+    return
 
-  return db
+  if (!initialization) {
+    initialization = openDatabase().catch((error) => {
+      initialization = null
+      throw error
+    })
+  }
+  await initialization
+}
+
+async function requireDb(): Promise<Database> {
+  await initDb()
+  return db!
 }
 
 /** Извлекает title/tags из search.json батча и перестраивает FTS-индекс хранилища */
-function rebuildFtsFromSearchJson(database: ReturnType<typeof requireDb>, vaultId: string, searchJson: string) {
+function rebuildFtsFromSearchJson(database: Database, vaultId: string, searchJson: string) {
   let items: Array<{ title?: string, url?: string, id?: string, tags?: string[] | string, content?: string }>
 
   try {
@@ -101,7 +121,7 @@ function rebuildFtsFromSearchJson(database: ReturnType<typeof requireDb>, vaultI
 }
 
 async function syncTextBatch(vaultId: string, files: TextFilePayload[]): Promise<void> {
-  const database = requireDb()
+  const database = await requireDb()
 
   database.exec('BEGIN TRANSACTION')
 
@@ -169,7 +189,7 @@ async function writeMedia(vaultId: string, path: string, data: ArrayBuffer): Pro
 }
 
 async function getFile(vaultId: string, path: string): Promise<string | null> {
-  const database = requireDb()
+  const database = await requireDb()
   const rows = database.exec({
     sql: 'SELECT content FROM files WHERE vault_id = ? AND path = ?',
     bind: [vaultId, path],
@@ -181,13 +201,13 @@ async function getFile(vaultId: string, path: string): Promise<string | null> {
 }
 
 async function deleteFile(vaultId: string, path: string): Promise<void> {
-  const database = requireDb()
+  const database = await requireDb()
   database.exec({ sql: 'DELETE FROM files WHERE vault_id = ? AND path = ?', bind: [vaultId, path] })
   database.exec({ sql: 'DELETE FROM search_index WHERE vault_id = ? AND path = ?', bind: [vaultId, path] })
 }
 
 async function searchFTS(query: string, vaultId: string): Promise<SearchResultItem[]> {
-  const database = requireDb()
+  const database = await requireDb()
   const tokens = query.trim().split(/\s+/).filter(t => t.length >= 2)
   if (!tokens.length)
     return []
@@ -215,7 +235,7 @@ async function searchFTS(query: string, vaultId: string): Promise<SearchResultIt
 }
 
 async function deleteVault(vaultId: string): Promise<void> {
-  const database = requireDb()
+  const database = await requireDb()
   database.exec({ sql: 'DELETE FROM files WHERE vault_id = ?', bind: [vaultId] })
   database.exec({ sql: 'DELETE FROM search_index WHERE vault_id = ?', bind: [vaultId] })
 

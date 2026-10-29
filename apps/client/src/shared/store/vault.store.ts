@@ -164,6 +164,9 @@ export const useVaultStore = defineStore('vault', () => {
     setSyncProgress(vaultId, 0)
 
     try {
+      // Проверяем локальное хранилище до скачивания файлов.
+      await dbRpc.initDb()
+
       // 1. Получаем удаленный nav.json
       const navRes = await fetch(`${vault.url}/content/${vaultId}/nav.json`)
       if (!navRes.ok)
